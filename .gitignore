@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.coverage
+htmlcov/
+
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.lot
+*.lof
+
+# Environments and IDEs
+.env
+.venv
+env/
+venv/
+ENV/
+.idea/
+.DS_Store
+
+# Local temporary files and archives
+*.tmp
+*.bak
+*.rar
+*.zip
+v3/
+Descripcion del proyecto.pdf
+ficha_aprendizaje_grupo5.tex
+guia_ficha_aprendizaje.tex
+.vscode/
+python/results/
+python/data/processed/benchmark_results.json
+
+# Agent internal tooling
+.agents/
+.claude/
+agent/
+skills-lock.json
+data/skills/
