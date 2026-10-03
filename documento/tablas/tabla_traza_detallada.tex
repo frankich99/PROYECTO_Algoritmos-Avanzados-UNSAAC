@@ -1,0 +1,23 @@
+\begin{table}[H]
+    \centering
+    \setlength{\tabcolsep}{3.5pt}
+    \fontsize{10}{12.5}\selectfont
+    \caption{Traza matricial de distancias mínimas y predecesores en cada iteración del algoritmo.}
+    \label{tab:traza_detallada}
+    \begin{tabular}{@{}cclcccccc@{}}
+        \toprule
+        \textbf{Iter.} & \textbf{Vértice $u$} & \textbf{Acción / Relajación} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{D} & \textbf{E} & \textbf{F} \\
+        \midrule
+        $k=0$ & Inicial & Inserción en cola & 0 / - & $\infty$ / - & $\infty$ / - & $\infty$ / - & $\infty$ / - & $\infty$ / - \\
+        $k=1$ & A ($d=0$) & Relaja B (180), Relaja C (450) & \textbf{0} / - & 180 / A & 450 / A & $\infty$ / - & $\infty$ / - & $\infty$ / - \\
+        $k=2$ & B ($d=180$) & Relaja D (400), Descarta C & \textbf{0} / - & \textbf{180} / A & 450 / A & 400 / B & $\infty$ / - & $\infty$ / - \\
+        $k=3$ & D ($d=400$) & Relaja E (650), Descarta C & \textbf{0} / - & \textbf{180} / A & 450 / A & \textbf{400} / B & 650 / D & $\infty$ / - \\
+        $k=4$ & C ($d=450$) & Relaja F (800), Descarta E & \textbf{0} / - & \textbf{180} / A & \textbf{450} / A & \textbf{400} / B & 650 / D & 800 / C \\
+        $k=5$ & E ($d=650$) & Descarta F & \textbf{0} / - & \textbf{180} / A & \textbf{450} / A & \textbf{400} / B & \textbf{650} / D & 800 / C \\
+        $k=6$ & F ($d=800$) & Sin aristas salientes & \textbf{0} / - & \textbf{180} / A & \textbf{450} / A & \textbf{400} / B & \textbf{650} / D & \textbf{800} / C \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.15cm}
+    \raggedright
+    \textit{Nota.} Notación \textit{distancia / predecesor} ($d[v] / \pi[v]$). Cifras en negrita indican nodos cerrados en $S$.
+\end{table}

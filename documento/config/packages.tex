@@ -1,0 +1,105 @@
+% ==============================================================================
+% Paquetes base y codificación
+% ==============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla, es-nodecimaldot]{babel}
+\usepackage{csquotes}
+
+% Márgenes formato APA 7 (1 pulgada / 2.54 cm en todos los lados)
+\usepackage[margin=2.54cm, headheight=16pt]{geometry}
+
+% Tipografía clásica y espacio interlineal (APA 7 estándar: 1.5)
+\usepackage{mathptmx}
+\usepackage{setspace}
+\onehalfspacing
+
+% Paquetes matemáticos rigurosos
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+% Figuras y tablas profesionales bajo estándar APA 7 (sin líneas verticales)
+\usepackage{graphicx}
+\graphicspath{{./}{figuras/}{./figuras/}}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{etoolbox}
+\usepackage{multirow}
+\usepackage{array}
+\AtBeginEnvironment{table}{\fontsize{10}{12.5}\selectfont\centering}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Formato de títulos de figuras y tablas según APA 7
+\DeclareCaptionLabelSeparator{newline}{\newline}
+\captionsetup[figure]{
+    labelfont=bf,
+    textfont=it,
+    labelsep=newline,
+    singlelinecheck=false,
+    justification=raggedright
+}
+\captionsetup[table]{
+    labelfont=bf,
+    textfont=it,
+    labelsep=newline,
+    singlelinecheck=false,
+    justification=raggedright
+}
+
+% Diagramas vectoriales con TikZ
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, backgrounds, babel}
+
+% Encabezados y numeración formal
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape Universidad Nacional de San Antonio Abad del Cusco}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Enlaces y URLs con corte automático de línea
+\usepackage{xurl}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    breaklinks=true,
+    linkcolor=blue!80!black,
+    citecolor=blue!80!black,
+    urlcolor=blue!80!black,
+    pdftitle={Rutas Mínimas con Distintas Colas de Prioridad en Redes Viales Urbanas de la Ciudad del Cusco},
+    pdfauthor={Grupo 5 - UNSAAC}
+}
+
+% Ajustes microtipográficos para evitar Overfull hbox
+\usepackage{microtype}
+\emergencystretch=2.5em
+\tolerance=2000
+\hbadness=2000
+
+% Sangría de primera línea estilo APA
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{0.3em}
+
+% Citas y Referencias - Estilo APA 7ma Edición (BibLaTeX + Biber)
+\usepackage[
+    backend=biber,
+    style=apa,
+    sorting=nyt
+]{biblatex}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+\addbibresource{referencias.bib}
+
+% Algoritmos y pseudocódigo
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Inclusión de código fuente (Python)
+\usepackage{listings}
+\input{config/code_listings.tex}

@@ -1,0 +1,194 @@
+\section{Formulación Matemática del Problema y Caso de Estudio en Cusco}
+\label{sec:formulacion}
+
+\subsection{Definición Formal del Grafo Vial Urbano}
+El problema de cálculo de rutas mínimas en la red vial urbana del Cusco se formula formalmente como la determinación del camino de costo acumulado mínimo sobre un grafo dirigido y ponderado:
+\begin{equation}
+    G = (V, E, W)
+\end{equation}
+donde:
+\begin{itemize}
+    \item $V = \{v_1, v_2, \dots, v_n\}$ es el conjunto finito de vértices que representan las intersecciones viales, nodos semaforizados o cambios de geometría del Centro Histórico.
+    \item $E \subseteq V \times V$ es el conjunto de aristas dirigidas (arcos), donde cada par ordenado $e = (u, v) \in E$ representa un tramo de vía transitable exclusivamente en el sentido permitido desde la intersección $u$ hacia la intersección $v$.
+    \item $W: E \to \mathbb{R}^+$ es la función de costo aplicado o impedancia generalizada de viaje asignada a cada arista $e \in E$, cumpliendo estrictamente con la restricción de no negatividad:
+    \begin{equation}
+        w(u, v) \ge 0, \quad \forall (u, v) \in E
+    \end{equation}
+\end{itemize}
+
+\subsection{Parámetros de Entrada, Variables de Decisión y Salidas del Sistema}
+\subsubsection{Parámetros de Entrada}
+\begin{enumerate}
+    \item El grafo vial estructurado $G = (V, E, W)$.
+    \item El nodo de origen $s \in V$, correspondiente a la estación o ubicación inicial de la unidad de emergencia (para el caso de estudio, $s = \text{A}$, Plaza Mayor del Cusco).
+    \item Los atributos físicos de cada arista $(u, v) \in E$: longitud métrica $L(u, v)$, tipo de vía $\text{tipo}(u, v)$ (avenida, calle céntrica, calle residencial) y la pendiente topográfica longitudinal $\text{pendiente}(u, v)$ expresada en porcentaje decimal.
+\end{enumerate}
+
+\subsubsection{Variables de Decisión Binarias}
+Para formular el problema bajo el enfoque clásico de programación entera en redes, se define para cada arista $(u, v) \in E$ una variable de flujo binaria:
+\begin{equation}
+    x_{uv} = \begin{cases} 
+        1, & \text{si el tramo vial } (u, v) \text{ forma parte del camino mínimo óptimo;} \\ 
+        0, & \text{en caso contrario.} 
+    \end{cases}
+\end{equation}
+
+\subsubsection{Salidas del Sistema}
+\begin{enumerate}
+    \item Un vector de distancias mínimas definitivas $d: V \to \mathbb{R}^+$, donde $d[v]$ representa el costo mínimo de desplazamiento desde $s$ hasta $v$.
+    \item Un vector de predecesores $\pi: V \to V \cup \{\text{NIL}\}$, que permite reconstruir de forma invertida la secuencia única de intersecciones que conforman la ruta mínima:
+    \begin{equation}
+        P(s, t) = \langle s = v_0, v_1, v_2, \dots, v_k = t \rangle
+    \end{equation}
+\end{enumerate}
+
+\subsection{Restricciones de Conservación de Flujo y No Negatividad}
+El flujo neto en cada vértice $u \in V$ debe satisfacer el principio de balance de conservación de flujo unitario para un destino específico $t \in V \setminus \{s\}$:
+\begin{equation}
+    \sum_{v: (u, v) \in E} x_{uv} - \sum_{v: (v, u) \in E} x_{vu} = \begin{cases} 
+        1, & \text{si } u = s \text{ (fuente);} \\ 
+        -1, & \text{si } u = t \text{ (sumidero);} \\ 
+        0, & \text{si } u \in V \setminus \{s, t\} \text{ (nodos de tránsito intermedio).} 
+    \end{cases}
+\end{equation}
+Asimismo, se garantiza la ausencia de costos negativos:
+\begin{equation}
+    x_{uv} \in \{0, 1\}, \quad w(u, v) \ge 0, \quad \forall (u, v) \in E
+\end{equation}
+
+\subsection{Función Objetivo y Modelo de Costo Generalizado para Cusco}
+La función objetivo busca minimizar el costo total acumulado del trayecto:
+\begin{equation}
+    \min Z = \sum_{(u, v) \in E} w(u, v) \cdot x_{uv}
+\end{equation}
+
+\subsubsection{Formulación de la Impedancia Vial Andina}
+Para modelar de forma realista el comportamiento de vehículos de emergencia en Cusco, resulta indispensable formular una función de costo que no se limite a la distancia métrica. El costo aplicado $w(u, v)$ en segundos de viaje efectivo se modela como:
+\begin{equation}
+    w(u, v) = T_{\text{base}}(u, v) \cdot \Phi(\text{pendiente}(u, v)) \cdot \Psi_{\text{vial}}(u, v)
+\end{equation}
+donde:
+\begin{itemize}
+    \item $T_{\text{base}}(u, v)$ es el tiempo de viaje base en flujo libre:
+    \begin{equation}
+        T_{\text{base}}(u, v) = \frac{L(u, v)}{V_{\text{nom}}(\text{tipo}(u, v))}
+    \end{equation}
+    con velocidades nominales de diseño: $V_{\text{nom}}(\text{avenida}) = 11.11 \text{ m/s}$ ($40 \text{ km/h}$), $V_{\text{nom}}(\text{calle\_centro}) = 6.94 \text{ m/s}$ ($25 \text{ km/h}$), y $V_{\text{nom}}(\text{calle\_residencial}) = 5.56 \text{ m/s}$ ($20 \text{ km/h}$).
+    \item $\Phi(\text{pendiente})$ es el factor de penalización topográfica por gradiente positivo:
+    \begin{equation}
+        \Phi(\text{pendiente}) = 1.0 + \alpha \cdot \max(0, \text{pendiente}(u, v))
+    \end{equation}
+    donde el coeficiente $\alpha = 2.5$ calibra el esfuerzo motriz de vehículos pesados (ambulancias/camiones cisterna) al ascender pendientes andinas pronunciadas. Las pendientes descendentes no generan penalización motriz ($\max(0, \text{pendiente}) = 0$).
+    \item $\Psi_{\text{vial}}$ es el coeficiente de restricción de maniobrabilidad: $\Psi = 1.20$ para calles estrechas coloniales con adoquín y $\Psi = 1.00$ para avenidas amplias asfaltadas.
+\end{itemize}
+
+\subsection{Instancia Pequeña Resuelta Manualmente: Centro Histórico del Cusco}
+Se define una instancia canónica de 6 intersecciones estratégicas ($|V| = 6$) y 9 tramos viales dirigidos ($|E| = 9$) representativa de la red vial cusqueña (Figura \ref{fig:grafo_tikz}).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2.8cm and 3.5cm,
+        vertex/.style={circle, draw=blue!80, fill=blue!10, very thick, minimum size=1.1cm, font=\bfseries\large},
+        edge_label/.style={font=\small\bfseries, fill=white, inner sep=2pt, rounded corners=2pt},
+        every edge/.style={draw=black!75, -{Latex[length=3mm, width=2mm]}, very thick}
+    ]
+        % Definición de Nodos
+        \node[vertex, fill=green!20, draw=green!70!black] (A) at (0, 3) {A};
+        \node[vertex] (B) at (4, 3) {B};
+        \node[vertex] (C) at (0, 0) {C};
+        \node[vertex] (D) at (8, 3) {D};
+        \node[vertex] (E) at (8, 0) {E};
+        \node[vertex, fill=red!20, draw=red!70!black] (F) at (3.5, -1.8) {F};
+
+        % Etiquetas descriptivas
+        \node[above=0.15cm of A, font=\scriptsize\itshape] {Plaza Mayor};
+        \node[above=0.15cm of B, font=\scriptsize\itshape] {Plaza Regocijo};
+        \node[left=0.15cm of C, font=\scriptsize\itshape] {Qorikancha};
+        \node[above=0.15cm of D, font=\scriptsize\itshape] {San Francisco};
+        \node[right=0.15cm of E, font=\scriptsize\itshape] {Mercado San Pedro};
+        \node[below=0.15cm of F, font=\scriptsize\itshape] {Limacpampa};
+
+        % Aristas dirigidas con pesos métricos y tramos
+        \path (A) edge node[edge_label, above] {180 m} (B);
+        \path (A) edge node[edge_label, left] {450 m} (C);
+        \path (B) edge node[edge_label, above] {220 m} (D);
+        \path (B) edge node[edge_label, right, pos=0.4] {400 m} (C);
+        \path (C) edge node[edge_label, below] {350 m} (F);
+        \path (C) edge node[edge_label, above] {600 m} (E);
+        \path (D) edge node[edge_label, right] {250 m} (E);
+        \path (D) edge node[edge_label, above, sloped] {500 m} (C);
+        \path (E) edge node[edge_label, below, sloped] {700 m} (F);
+    \end{tikzpicture}
+    \caption{Grafo vial dirigido representativo del Centro Histórico del Cusco ($|V|=6, |E|=9$)}
+    \label{fig:grafo_tikz}
+\end{figure}
+
+La Tabla \ref{tab:aristas_cusco} resume las características geométricas y físicas reales de cada tramo vial, exportada directamente desde el modelo computacional.
+
+\input{tablas/tabla_aristas_cusco.tex}
+
+\subsection{Traza Manual Paso a Paso del Algoritmo de Dijkstra ($k=0$ a $k=6$)}
+A continuación, se desarrolla analíticamente la traza manual paso a paso del Algoritmo de Dijkstra desde el origen $s = \text{A}$ (Plaza Mayor) utilizando la métrica de distancia física para verificación determinista:
+
+\begin{itemize}
+    \item \textbf{Inicialización ($k=0$):}
+    \begin{align*}
+        &d[\text{A}] = 0, \quad d[\text{B}] = \infty, \quad d[\text{C}] = \infty, \quad d[\text{D}] = \infty, \quad d[\text{E}] = \infty, \quad d[\text{F}] = \infty \\
+        &\pi[\text{nodo}] = \text{NIL}, \quad \forall \text{nodo} \in V; \quad S = \emptyset; \quad Q = \{(\text{A}, 0), (\text{B}, \infty), (\text{C}, \infty), (\text{D}, \infty), (\text{E}, \infty), (\text{F}, \infty)\}
+    \end{align*}
+
+    \item \textbf{Paso 1 ($k=1$):}
+    Se extrae el mínimo de $Q$: $u = \text{A}$ con $d[\text{A}] = 0$. Vértice permanente: $S = \{\text{A}\}$.
+    Aristas salientes de A: $(A, B)$ y $(A, C)$.
+    \begin{itemize}
+        \item Relajación de $(A, B)$: $d[\text{A}] + w(A, B) = 0 + 180 = 180 < d[\text{B}] (\infty)$. Se actualiza $d[\text{B}] = 180$, $\pi[\text{B}] = \text{A}$. \texttt{Decrease-Key}$(Q, \text{B}, 180)$.
+        \item Relajación de $(A, C)$: $d[\text{A}] + w(A, C) = 0 + 450 = 450 < d[\text{C}] (\infty)$. Se actualiza $d[\text{C}] = 450$, $\pi[\text{C}] = \text{A}$. \texttt{Decrease-Key}$(Q, \text{C}, 450)$.
+    \end{itemize}
+
+    \item \textbf{Paso 2 ($k=2$):}
+    Se extrae el mínimo de $Q$: $u = \text{B}$ con $d[\text{B}] = 180$. Vértice permanente: $S = \{\text{A}, \text{B}\}$.
+    Aristas salientes de B: $(B, D)$ y $(B, C)$.
+    \begin{itemize}
+        \item Relajación de $(B, D)$: $d[\text{B}] + w(B, D) = 180 + 220 = 400 < d[\text{D}] (\infty)$. Se actualiza $d[\text{D}] = 400$, $\pi[\text{D}] = \text{B}$. \texttt{Decrease-Key}$(Q, \text{D}, 400)$.
+        \item Relajación de $(B, C)$: $d[\text{B}] + w(B, C) = 180 + 400 = 580 \not< d[\text{C}] (450)$. No hay cambio.
+    \end{itemize}
+
+    \item \textbf{Paso 3 ($k=3$):}
+    Mínimos candidatos en $Q$: D ($d=400$) y C ($d=450$). Se extrae $u = \text{D}$ con $d[\text{D}] = 400$. $S = \{\text{A}, \text{B}, \text{D}\}$.
+    Aristas salientes de D: $(D, E)$ y $(D, C)$.
+    \begin{itemize}
+        \item Relajación de $(D, E)$: $d[\text{D}] + w(D, E) = 400 + 250 = 650 < d[\text{E}] (\infty)$. Se actualiza $d[\text{E}] = 650$, $\pi[\text{E}] = \text{D}$. \texttt{Decrease-Key}$(Q, \text{E}, 650)$.
+        \item Relajación de $(D, C)$: $d[\text{D}] + w(D, C) = 400 + 500 = 900 \not< d[\text{C}] (450)$. No hay cambio.
+    \end{itemize}
+
+    \item \textbf{Paso 4 ($k=4$):}
+    Se extrae $u = \text{C}$ con $d[\text{C}] = 450$. $S = \{\text{A}, \text{B}, \text{D}, \text{C}\}$.
+    Aristas salientes de C: $(C, F)$ y $(C, E)$.
+    \begin{itemize}
+        \item Relajación de $(C, F)$: $d[\text{C}] + w(C, F) = 450 + 350 = 800 < d[\text{F}] (\infty)$. Se actualiza $d[\text{F}] = 800$, $\pi[\text{F}] = \text{C}$. \texttt{Decrease-Key}$(Q, \text{F}, 800)$.
+        \item Relajación de $(C, E)$: $d[\text{C}] + w(C, E) = 450 + 600 = 1050 \not< d[\text{E}] (650)$. No hay cambio.
+    \end{itemize}
+
+    \item \textbf{Paso 5 ($k=5$):}
+    Se extrae $u = \text{E}$ con $d[\text{E}] = 650$. $S = \{\text{A}, \text{B}, \text{D}, \text{C}, \text{E}\}$.
+    Arista saliente de E: $(E, F)$.
+    \begin{itemize}
+        \item Relajación de $(E, F)$: $d[\text{E}] + w(E, F) = 650 + 700 = 1350 \not< d[\text{F}] (800)$. No hay cambio.
+    \end{itemize}
+
+    \item \textbf{Paso 6 ($k=6$):}
+    Se extrae el último nodo restante $u = \text{F}$ con $d[\text{F}] = 800$. $S = V$. La cola de prioridad $Q$ queda vacía. Finaliza el algoritmo.
+\end{itemize}
+
+La Tabla \ref{tab:traza_detallada} sintetiza la evolución algorítmica iteración por iteración generada automáticamente por el solver.
+
+\input{tablas/tabla_traza_detallada.tex}
+
+\subsubsection{Reconstrucción de Rutas Mínimas Óptimas}
+A partir del vector de predecesores $\pi = \{\text{A}: \text{NIL}, \text{B}: \text{A}, \text{C}: \text{A}, \text{D}: \text{B}, \text{E}: \text{D}, \text{F}: \text{C}\}$, las rutas mínimas desde la Plaza Mayor (A) se reconstruyen mediante retroceso encadenado:
+\begin{itemize}
+    \item \textbf{Ruta a Mercado San Pedro (E):} $\text{E} \leftarrow \pi[\text{E}]=\text{D} \leftarrow \pi[\text{D}]=\text{B} \leftarrow \pi[\text{B}]=\text{A} \implies \mathbf{A \to B \to D \to E}$ con costo total de $\mathbf{650.0\text{ m}}$.
+    \item \textbf{Ruta a Plazoleta Limacpampa (F):} $\text{F} \leftarrow \pi[\text{F}]=\text{C} \leftarrow \pi[\text{C}]=\text{A} \implies \mathbf{A \to C \to F}$ con costo total de $\mathbf{800.0\text{ m}}$.
+\end{itemize}
+Ambos resultados analíticos concuerdan de forma idéntica con las salidas producidas por el solver de software implementado en Python.

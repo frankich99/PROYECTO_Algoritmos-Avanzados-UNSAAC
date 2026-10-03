@@ -1,0 +1,112 @@
+\documentclass[11pt,a4paper]{article}
+
+% Inclusión de configuración y paquetes
+\input{config/packages.tex}
+
+\begin{document}
+
+% =========================================================================
+% PORTADA INSTITUCIONAL - UNSAAC (GRUPO 5)
+% =========================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{-0.5cm}
+    
+    {\fontsize{13}{16}\selectfont \textbf{UNIVERSIDAD NACIONAL DE SAN ANTONIO ABAD DEL CUSCO}}\\[0.25cm]
+    {\fontsize{11}{14}\selectfont \textbf{FACULTAD DE INGENIERÍA ELÉCTRICA,}}\\
+    {\fontsize{11}{14}\selectfont \textbf{ELECTRÓNICA, INFORMÁTICA Y MECÁNICA}}\\[0.25cm]
+    {\fontsize{11}{14}\selectfont \textbf{ESCUELA PROFESIONAL DE INGENIERÍA INFORMÁTICA}}\\
+    {\fontsize{11}{14}\selectfont \textbf{Y DE SISTEMAS}}\\[0.6cm]
+    
+    \includegraphics[width=3.8cm]{figuras/escudo.png}\\[0.5cm]
+    
+    {\fontsize{13}{16}\selectfont \textbf{INFORME TÉCNICO DE INVESTIGACIÓN}}\\[0.3cm]
+    \rule{\textwidth}{1.2pt}\\[0.35cm]
+    {\fontsize{13}{16.5}\selectfont \textbf{“RUTAS MÍNIMAS CON DISTINTAS COLAS DE PRIORIDAD EN REDES VIALES URBANAS DE LA CIUDAD DEL CUSCO”}}\\[0.25cm]
+    \rule{\textwidth}{1.2pt}\\[0.6cm]
+    
+    \begin{minipage}{0.88\textwidth}
+        \setstretch{1.2}
+        \textbf{Asignatura:} ALGORITMOS AVANZADOS (Semestre 2026-2)\\[0.25cm]
+        \textbf{Docente Responsable:} Ing. Héctor Eduardo Ugarte Rojas\\[0.25cm]
+        \textbf{Identificador:} GRUPO 5\\[0.25cm]
+        \textbf{Presentado por:}\\[0.2cm]
+        \hspace*{0.4cm}\textbullet\quad Choquenaira Quispe, Noe Franklin \hfill 133962\\[0.15cm]
+        \hspace*{0.4cm}\textbullet\quad Porroa Sivana, Yeni Ruth \hfill 120893\\[0.15cm]
+        \hspace*{0.4cm}\textbullet\quad Quispe Rimachi, Romario \hfill 164257\\[0.15cm]
+        \hspace*{0.4cm}\textbullet\quad Yaranga Achahui, Aldo \hfill 103179
+    \end{minipage}\\[0.4cm]
+    
+    \vfill
+    {\textbf{Cusco – Perú – 2026}}\\[0.2cm]
+\end{titlepage}
+
+% =========================================================================
+% SECCIONES PRELIMINARES
+% =========================================================================
+\pagenumbering{roman}
+\setcounter{tocdepth}{3}
+
+\begingroup
+\setstretch{1.10}
+\setlength{\parskip}{1pt}
+\tableofcontents
+\newpage
+
+\listoffigures
+\vspace{0.6cm}
+\listoftables
+\endgroup
+\newpage
+
+% =========================================================================
+% CUERPO DEL INFORME (FASE 1: CORE DE NOE CHOQUENAIRA)
+% =========================================================================
+\pagenumbering{arabic}
+
+% Sección 1: Introducción
+\input{capitulos/02_introduccion.tex}
+\newpage
+
+% =========================================================================
+% PENDIENTE RAMA YENI (Yeni Porroa - 120893): Descomentar siguientes 2 capítulos:
+% \input{capitulos/03_fundamentos_aprendizaje.tex}
+% \newpage
+% \input{capitulos/04_evaluacion_stack.tex}
+% \newpage
+% =========================================================================
+
+% Sección 4: Formulación Matemática del Problema y Caso de Estudio en Cusco
+\input{capitulos/05_formulacion_problema.tex}
+\newpage
+
+% Sección 5: Diseño Algorítmico e Invariantes Formales de Dijkstra
+\input{capitulos/06_diseno_algoritmico.tex}
+\newpage
+
+% Sección 6: Diseño e Implementación del Prototipo Inicial
+\input{capitulos/07_diseno_implementacion.tex}
+\newpage
+
+% =========================================================================
+% PENDIENTE COMMIT 3 (Romario Quispe - 164257): Descomentar siguientes 2 capítulos:
+% \input{capitulos/09_metodologia_experimental.tex}
+% \newpage
+% \input{capitulos/10_resultados_prototipo.tex}
+% \newpage
+% =========================================================================
+
+% =========================================================================
+% PENDIENTE COMMIT 4 (Aldo Yaranga - 103179): Descomentar siguientes 2 capítulos:
+% \input{capitulos/08_estrategia_pruebas.tex}
+% \newpage
+% \input{capitulos/14_anexos.tex}
+% \newpage
+% =========================================================================
+
+% =========================================================================
+% REFERENCIAS BIBLIOGRÁFICAS (APA 7ma Edición)
+% =========================================================================
+\printbibliography[heading=bibintoc,title={Referencias Bibliográficas}]
+
+\end{document}
