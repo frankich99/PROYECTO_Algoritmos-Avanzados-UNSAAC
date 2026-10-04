@@ -1,0 +1,76 @@
+\section{Evaluación y Selección del Stack Tecnológico}
+\label{sec:stack}
+
+\subsection{Identificación de Herramientas Candidatas}
+El equipo llevó a cabo un análisis comparativo y riguroso de herramientas emergentes y consolidadas en cuatro capas operativas: lenguaje de programación, manejo de redes viales, framework de pruebas y entorno de documentación (Tabla \ref{tab:alternativas_stack}).
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.2}
+    \setlength{\tabcolsep}{4.5pt}
+    \caption{Herramientas candidatas evaluadas por capa tecnológica}
+    \label{tab:alternativas_stack}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Capa} & \textbf{Alternativas Evaluadas} & \textbf{Propósito y Características Evaluadas} \\
+        \midrule
+        Lenguaje Principal & C++20 vs. Rust 1.75 vs. Python 3.12 & Rendimiento en microsegundos, sobrecarga de bajo nivel vs. expresividad matemática, tipado y velocidad de prototipado. \\
+        Malla Geoespacial & OSMnx / NetworkX vs. Overpass API vs. PostGIS & Descarga automatizada, simplificación topológica, curvas de nivel y cálculo de grafos dirigidos. \\
+        Pruebas de Software & Pytest vs. Unittest vs. GoogleTest & Automatización de aserciones, diseño AAA, parametrización de casos límite y cobertura. \\
+        Instrumentación & \texttt{perf\_counter\_ns} vs. cProfile vs. Valgrind & Precisión temporal a nivel de nanosegundos, perfilado de llamadas y consumo de memoria. \\
+        Documentación & LaTeX (MiKTeX/TeX Live) vs. Typst vs. Word & Formato APA 7ma edición estricto, gestión bibliográfica con Biber/BibLaTeX y ecuaciones avanzadas. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Matriz Multicriterio de Comparación Tecnológica}
+Para sustentar la elección bajo criterios cuantitativos y cualitativos objetivos, se formuló una matriz de ponderación multicriterio considerando cuatro variables críticas (Tabla \ref{tab:matriz_multicriterio}):
+\begin{itemize}
+    \item \textbf{C1: Expresividad y Legibilidad Algorítmica (Peso 30\%):} Capacidad de plasmar las estructuras de datos y algoritmos de forma transparente y directamente verificable contra la literatura matemática.
+    \item \textbf{C2: Capacidad de Instrumentación y Aislamiento (Peso 25\%):} Facilidad para medir tiempos de reloj de alta precisión, conteo de primitivas y huella de memoria sin intermediarios intrusivos.
+    \item \textbf{C3: Reproducibilidad y Portabilidad Multiplataforma (Peso 25\%):} Capacidad de ejecución inmediata en cualquier sistema operativo (Linux, Windows, macOS) sin requerir cadenas complejas de compilación cruzada.
+    \item \textbf{C4: Curva de Aprendizaje y Velocidad de Adopción (Peso 20\%):} Tiempo necesario para que los cuatro integrantes del equipo dominen la tecnología e implementen prototipos tempranos estables y verificables.
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.2}
+    \setlength{\tabcolsep}{5pt}
+    \caption{Matriz multicriterio para la selección del lenguaje y entorno de desarrollo (Escala 1 a 5)}
+    \label{tab:matriz_multicriterio}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xccccc@{}}
+        \toprule
+        \textbf{Alternativa Evaluada} & \textbf{C1 (30\%)} & \textbf{C2 (25\%)} & \textbf{C3 (25\%)} & \textbf{C4 (20\%)} & \textbf{Puntuación Ponderada} \\
+        \midrule
+        \textbf{Python 3.12 (Seleccionado)} & 5.0 & 4.2 & 4.8 & 4.8 & \textbf{4.71} \\
+        \textbf{C++20 (GCC/Clang)} & 3.8 & 4.8 & 3.5 & 2.8 & \textbf{3.78} \\
+        \textbf{Rust 1.75} & 4.0 & 4.6 & 3.6 & 2.2 & \textbf{3.69} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Tecnología Seleccionada y Justificación Técnica}
+Con base en la evaluación multicriterio, se seleccionó el siguiente stack tecnológico:
+\begin{enumerate}
+    \item \textbf{Python 3.12+ con anotaciones de tipo (\texttt{typing}):} Provee un equilibrio óptimo entre rigurosidad sintáctica y agilidad de experimentación. Las tres estructuras de datos de cola (\texttt{IndexedMinHeap}, \texttt{DAryHeap}, \texttt{FibonacciHeap}) se programaron de forma pura, sin recurrir a paquetes preconstruidos como \texttt{heapq} o colas de SciPy, asegurando que la evaluación refleje la lógica algorítmica diseñada.
+    \item \textbf{OSMnx \& GeoPandas:} Permiten modelar redes viales reales directamente desde OpenStreetMap, abstrayendo intersecciones como nodos y tramos de calle como aristas dirigidas ponderadas con atributos geométricos y sentidos viales oficiales.
+    \item \textbf{Pytest con formato AAA:} Garantiza la reproducibilidad mediante pruebas unitarias parametrizadas que verifican de manera continua las invariantes de montículo y la exactitud de distancias.
+    \item \textbf{LaTeX con MiKTeX y biblatex-apa:} Plataforma tipográfica que garantiza la adhesión plena al formato APA 7ma edición, generación nativa de tablas científicas \texttt{booktabs} e incrustación directa de código fuente con \texttt{listings}.
+\end{enumerate}
+
+\subsection{Procedimiento de Aprendizaje e Integración del Stack}
+La integración del stack se estructuró en tres fases de adopción temprana:
+\begin{enumerate}
+    \item \textbf{Entorno Aislado y Gestión de Dependencias:} Configuración de entornos virtuales (\texttt{venv}) y definición de un archivo \texttt{requirements.txt} libre de rutas absolutas locales, garantizando portabilidad en cualquier máquina de desarrollo.
+    \item \textbf{Construcción del Prototipo de Adopción Temprana:} Desarrollo de la primera versión del Min-Heap indexado acoplado a un solver básico de Dijkstra para 6 intersecciones cusqueñas.
+    \item \textbf{Automatización de Artefactos Tipográficos:} Desarrollo del módulo \texttt{latex\_exporter.py}, el cual extrae el historial iterativo de Dijkstra y los parámetros de las aristas viales para volcarlos en archivos \texttt{.tex} en \texttt{documento/tablas/}, eliminando cualquier transcripción manual propensa a error humano.
+\end{enumerate}
+
+\subsection{Registro de Dificultades de Adopción y Soluciones Aplicadas}
+\begin{itemize}
+    \item \textbf{Dificultad 1 (Incompatibilidad de Codificación en Windows):} Al imprimir caracteres especiales en la consola de comandos de Windows (CP1252), se generaban errores de tipo \texttt{UnicodeEncodeError}. \textit{Solución:} Se estandarizó la salida mediante marcadores ASCII limpios como \texttt{[OK]} y se configuró la codificación UTF-8 explícita en todos los flujos de lectura/escritura de archivos.
+    \item \textbf{Dificultad 2 (Dependencias C-Ext en OSMnx/GDAL):} La instalación de GDAL en entornos Windows presenta conflictos de compilación de binarios. \textit{Solución:} Se serializó la topología de la red en un archivo JSON nativo (\texttt{cusco\_centro\_network.json}), permitiendo la ejecución y validación de todo el pipeline sin dependencias binarias externas complejas.
+    \item \textbf{Dificultad 3 (Overfull Hbox en Tablas APA 7):} Las tablas de traza algorítmica generaban advertencias de desbordamiento horizontal en LaTeX. \textit{Solución:} Se rediseñaron las columnas utilizando el paquete \texttt{tabularx} con columnas de ancho flexible \texttt{X} y tamaño de fuente \texttt{\textbackslash small}.
+\end{itemize}
