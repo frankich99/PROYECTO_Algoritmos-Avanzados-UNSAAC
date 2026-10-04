@@ -1,0 +1,133 @@
+\section*{Anexos}
+\addcontentsline{toc}{section}{Anexos}
+\label{sec:anexos}
+
+\subsection*{Anexo A: Manual de Instalación y Configuración del Entorno Reproducible}
+\addcontentsline{toc}{subsection}{Anexo A: Manual de Instalación y Configuración}
+\label{anexo:instalacion}
+La instalación y despliegue del sistema se diseñaron con portabilidad total, garantizando que el entorno no dependa de rutas absolutas locales ni configuraciones propietarias:
+
+\paragraph{1. Requisitos Previos del Sistema:}
+\begin{itemize}
+    \item Intérprete Python 3.10 o superior (verificado en Python 3.12 de 64 bits).
+    \item Administrador de paquetes \texttt{pip} y herramienta de control de versiones \texttt{git}.
+    \item Distribución LaTeX moderna (MiKTeX 24+ o TeX Live) para la compilación del informe.
+\end{itemize}
+
+\paragraph{2. Clonación del Repositorio y Configuración del Entorno Virtual:}
+\begin{lstlisting}[language=bash, caption={Clonación y activación del entorno virtual}]
+git clone https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC.git
+cd PROYECTO_Algoritmos-Avanzados-UNSAAC
+
+# Crear y activar entorno virtual en Windows (PowerShell):
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+
+# Instalación de dependencias:
+pip install -r requirements.txt
+\end{lstlisting}
+
+\subsection*{Anexo B: Manual de Uso y Ejecución del Prototipo y Suite de Pruebas}
+\addcontentsline{toc}{subsection}{Anexo B: Manual de Uso y Ejecución}
+\label{anexo:uso}
+
+\paragraph{1. Demostración Directa del Prototipo en Consola:}
+Para ejecutar el algoritmo de Dijkstra sobre la red del Centro Histórico, serializar el grafo en formato JSON y calcular las métricas:
+\begin{lstlisting}[language=bash, caption={Ejecución del pipeline principal}]
+cd python
+python main.py
+\end{lstlisting}
+El script imprime en consola las distancias óptimas, tiempos con impedancia andina y verifica que las tres colas de prioridad convergen exactamente a la misma solución.
+
+\paragraph{2. Ejecución de la Suite de Pruebas Automatizadas:}
+Para verificar los 11 casos de prueba (básicos, límites, adversos y de equivalencia cruzada):
+\begin{lstlisting}[language=bash, caption={Comandos de ejecución de pruebas unitarias}]
+python -m unittest discover -s tests -v
+\end{lstlisting}
+
+\paragraph{3. Compilación del Informe en LaTeX:}
+\begin{lstlisting}[language=bash, caption={Compilación del documento PDF}]
+cd documento
+.\compilar.ps1
+\end{lstlisting}
+
+\newpage
+\subsection*{Anexo C: Bitácora de Aprendizaje Autónomo y Resolución de Dificultades}
+\addcontentsline{toc}{subsection}{Anexo C: Bitácora de Aprendizaje Autónomo}
+\label{anexo:bitacora}
+La Tabla \ref{tab:bitacora_detallada} resume las actividades de autoaprendizaje, fuentes consultadas y dificultades resueltas por cada integrante del Grupo 5.
+
+\begin{table}[H]
+    \centering
+    \fontsize{8.5}{10.5}\selectfont
+    \renewcommand{\arraystretch}{1.06}
+    \setlength{\tabcolsep}{3.2pt}
+    \caption{Bitácora de autoaprendizaje individual y resolución de dificultades}
+    \label{tab:bitacora_detallada}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{1.7cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Integrante} & \textbf{Fecha} & \textbf{Fuente Consultada} & \textbf{Dificultad Encontrada} & \textbf{Resolución Autónoma} \\
+        \midrule
+        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 18/09/2026 & Arquitectura de software y Cormen et al. (Cap. 24). & Desacoplamiento del solver SSSP para inyección intercambiable de colas de prioridad. & Diseñó la arquitectura modular en 4 capas y el contrato de interfaz abstracto en \texttt{dijkstra.py}. \\
+        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 21/09/2026 & Cartografía municipal y modelos de impedancia vial andina. & Preservación de subestructura óptima ante pendientes severas y sentidos viales asimétricos. & Formuló la función de costo $\Phi(\theta) = 1 + \alpha \max(0, \theta)^2$, garantizó pesos no negativos $w'(u,v) \ge 0$ y serializó la red en JSON. \\
+        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 02/10/2026 & Validación cruzada algorítmica y oráculo diferencial. & Divergencias de latencia y conteo de primitivas entre estructuras en grafos densos. & Diseñó el instrumental de telemetría de operaciones y coordinó la integración de resultados experimentales. \\
+        \midrule
+        Porroa, Yeni Ruth & 20/09/2026 & Sedgewick \& Wayne sobre colas indexadas. & Búsqueda lineal en \texttt{decrease\_key} degradaba Dijkstra a $O(|V|^2)$. & Diseñó tabla de mapeo inverso de posiciones ($\text{pos}[v]$) sincronizada en $O(1)$. \\
+        Porroa, Yeni Ruth & 25/09/2026 & LaMarca \& Ladner (1996) sobre memoria caché. & Aritmética de índices para montículos $d$-arios contiguos base cero. & Formuló e implementó las relaciones $\lfloor (i-1)/d \rfloor$ y $d \cdot i + k$, optimizando el montículo 4-ario. \\
+        \midrule
+        Quispe, Romario & 24/09/2026 & Cormen et al. (Cap. 19) sobre Fibonacci Heaps. & Enlaces circulares dobles al extraer la raíz mínima. & Diseñó rutinas atómicas \texttt{\_remove\_node} y \texttt{\_add\_root} validadas con punteros circulares. \\
+        Quispe, Romario & 28/09/2026 & Tarjan (1983) sobre potencial amortizado. & Bucles infinitos por banderas \texttt{mark} inconsistentes. & Implementó la regla estricta: desmarcar nodo al ascender a raíz e interrumpir cascada si padre no estaba marcado. \\
+        \midrule
+        Yaranga, Aldo & 29/09/2026 & Estándar Arrange-Act-Assert en Pytest. & Bucles por nodos inalcanzables en componentes disconexas. & Agregó corte temprano cuando la distancia tentativa es $\infty$ y estructuró 11 pruebas unitarias. \\
+        Yaranga, Aldo & 03/10/2026 & Formato APA 7ma edición y paquetes \texttt{booktabs}. & Tablas anchas desbordaban márgenes estándar. & Automatizó la exportación en Python formateando tablas con columnas dinámicas \texttt{tabularx}. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\newpage
+\subsection*{Anexo D: Matriz de Trazabilidad de Objetivos y Componentes}
+\addcontentsline{toc}{subsection}{Anexo D: Matriz de Trazabilidad de Objetivos}
+\label{anexo:trazabilidad}
+La Tabla \ref{tab:matriz_trazabilidad} sintetiza la correspondencia entre los objetivos metodológicos y su desarrollo en las secciones del documento.
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.18}
+    \setlength{\tabcolsep}{4.5pt}
+    \caption{Matriz de correspondencia entre objetivos y secciones del informe}
+    \label{tab:matriz_trazabilidad}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.5cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Componente} & \textbf{Objetivo Técnico} & \textbf{Sección y Evidencia en el Documento} \\
+        \midrule
+        \multirow{4}{*}{\textbf{Formulación Inicial}} 
+        & Contexto y delimitación del problema & \S\ref{sec:introduccion}: Despacho de emergencias en el Centro Histórico del Cusco. \\
+        & Formulación matemática rigurosa & \S\ref{sec:formulacion}: Grafo $G=(V,E,W)$, variables de decisión y restricciones. \\
+        & Función objetivo e impedancia andina & \S\ref{sec:formulacion}: Costo con penalización por gradiente ($\alpha = 2.5$). \\
+        & Instancia pequeña resuelta manualmente & \S\ref{sec:formulacion}: Traza analítica paso a paso ($k=0\dots6$) sobre 6 nodos y 9 aristas. \\
+        \midrule
+        \multirow{4}{*}{\textbf{Diseño Algorítmico}} 
+        & Pseudocódigos formales con Decrease-Key & \S\ref{sec:diseno_algoritmico}: Algoritmo estructurado y prueba por inducción matemática. \\
+        & Análisis asintótico comparativo & \S\ref{sec:diseno_algoritmico}: Cotas temporales y espaciales de Binary, 4-ary y Fibonacci Heap. \\
+        & Matriz de selección del stack & \S\ref{sec:stack}: Evaluación multicriterio objetiva (Python 3.12 y LaTeX). \\
+        & Plan de validación y suite de pruebas & \S\ref{sec:pruebas}: 11 suites unitarias bajo patrón AAA y oráculo diferencial. \\
+        \midrule
+        \multirow{3}{*}{\textbf{Prototipo Mínimo}} 
+        & Repositorio activo y modular & \S\ref{sec:implementacion}: Arquitectura desacoplada, paquetes en \texttt{python/src/} y JSON. \\
+        & Validación de salida sobre el sistema & \S\ref{sec:resultados}: Distancias, tiempos y conteo de primitivas verificado. \\
+        & Demostración directa sin diapositivas & \S\ref{sec:resultados} y Anexo B: Protocolo de ejecución interactiva en consola y Colab. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\vspace{0.4cm}
+\subsection*{Anexo E: Evidencias de Seguimiento y Actas de Acuerdos de Equipo}
+\addcontentsline{toc}{subsection}{Anexo E: Evidencias de Seguimiento}
+\label{anexo:seguimiento}
+\begin{itemize}
+    \item \textbf{Sesión de Coordinación 1 (18/09/2026):} Asignación formal de la línea de investigación (Grupo 5: Rutas mínimas con distintas colas de prioridad en redes viales del Cusco). Diagnóstico inicial de brechas técnicas, diseño de la arquitectura en 4 capas y adopción del stack tecnológico Python 3.12 y LaTeX.
+    \item \textbf{Sesión de Coordinación 2 (24/09/2026):} Definición matemática del modelo de impedancia andina $\Phi(\theta)$, validación geométrica de la red del Centro Histórico de Cusco (6 nodos, 9 aristas) y verificación de los primeros avances en montículos contiguos (Binary y 4-ary).
+    \item \textbf{Sesión de Coordinación 3 (29/09/2026):} Integración del solver desacoplado de Dijkstra con Fibonacci Heap. Ejecución de la suite de pruebas unitarias bajo estándar AAA en Pytest y resolución de invariantes de cortes en cascada.
+    \item \textbf{Sesión de Coordinación 4 (04/10/2026):} Ejecución del banco de escalabilidad computacional, consolidación del informe científico formal bajo norma APA 7ma edición y verificación de compilación reproducible del documento final.
+\end{itemize}
