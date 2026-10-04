@@ -1,0 +1,377 @@
+{
+  "scales": [
+    10,
+    25,
+    50,
+    100,
+    250,
+    500,
+    1000
+  ],
+  "queue_types": [
+    "binary_heap",
+    "4ary_heap",
+    "fibonacci_heap"
+  ],
+  "data": {
+    "binary_heap": [
+      {
+        "nodes": 10,
+        "edges": 35,
+        "mean_us": 82.07,
+        "std_us": 10.91,
+        "min_us": 75.4,
+        "max_us": 119.2
+      },
+      {
+        "nodes": 25,
+        "edges": 87,
+        "mean_us": 233.95,
+        "std_us": 35.99,
+        "min_us": 202.4,
+        "max_us": 314.4
+      },
+      {
+        "nodes": 50,
+        "edges": 175,
+        "mean_us": 670.98,
+        "std_us": 138.9,
+        "min_us": 522.1,
+        "max_us": 906.4
+      },
+      {
+        "nodes": 100,
+        "edges": 350,
+        "mean_us": 1658.93,
+        "std_us": 332.75,
+        "min_us": 1309.4,
+        "max_us": 2547.2
+      },
+      {
+        "nodes": 250,
+        "edges": 875,
+        "mean_us": 9578.59,
+        "std_us": 2057.51,
+        "min_us": 6196.2,
+        "max_us": 14579.1
+      },
+      {
+        "nodes": 500,
+        "edges": 1750,
+        "mean_us": 29086.77,
+        "std_us": 1001.34,
+        "min_us": 26740.0,
+        "max_us": 30906.9
+      },
+      {
+        "nodes": 1000,
+        "edges": 3500,
+        "mean_us": 117092.28,
+        "std_us": 14090.03,
+        "min_us": 95956.0,
+        "max_us": 156750.9
+      }
+    ],
+    "4ary_heap": [
+      {
+        "nodes": 10,
+        "edges": 35,
+        "mean_us": 79.08,
+        "std_us": 2.52,
+        "min_us": 76.7,
+        "max_us": 87.7
+      },
+      {
+        "nodes": 25,
+        "edges": 87,
+        "mean_us": 323.17,
+        "std_us": 86.77,
+        "min_us": 229.0,
+        "max_us": 489.1
+      },
+      {
+        "nodes": 50,
+        "edges": 175,
+        "mean_us": 633.03,
+        "std_us": 94.23,
+        "min_us": 563.2,
+        "max_us": 951.0
+      },
+      {
+        "nodes": 100,
+        "edges": 350,
+        "mean_us": 1665.49,
+        "std_us": 230.36,
+        "min_us": 1403.6,
+        "max_us": 2139.2
+      },
+      {
+        "nodes": 250,
+        "edges": 875,
+        "mean_us": 9156.4,
+        "std_us": 1337.02,
+        "min_us": 7834.5,
+        "max_us": 13469.1
+      },
+      {
+        "nodes": 500,
+        "edges": 1750,
+        "mean_us": 24427.71,
+        "std_us": 8046.64,
+        "min_us": 19233.5,
+        "max_us": 53441.4
+      },
+      {
+        "nodes": 1000,
+        "edges": 3500,
+        "mean_us": 115476.24,
+        "std_us": 31064.52,
+        "min_us": 90092.2,
+        "max_us": 222011.8
+      }
+    ],
+    "fibonacci_heap": [
+      {
+        "nodes": 10,
+        "edges": 35,
+        "mean_us": 160.43,
+        "std_us": 86.54,
+        "min_us": 101.2,
+        "max_us": 365.9
+      },
+      {
+        "nodes": 25,
+        "edges": 87,
+        "mean_us": 352.22,
+        "std_us": 52.6,
+        "min_us": 295.1,
+        "max_us": 504.3
+      },
+      {
+        "nodes": 50,
+        "edges": 175,
+        "mean_us": 806.19,
+        "std_us": 132.61,
+        "min_us": 689.7,
+        "max_us": 1198.2
+      },
+      {
+        "nodes": 100,
+        "edges": 350,
+        "mean_us": 1979.23,
+        "std_us": 352.82,
+        "min_us": 1588.7,
+        "max_us": 2770.3
+      },
+      {
+        "nodes": 250,
+        "edges": 875,
+        "mean_us": 9124.65,
+        "std_us": 6028.97,
+        "min_us": 6479.4,
+        "max_us": 31172.1
+      },
+      {
+        "nodes": 500,
+        "edges": 1750,
+        "mean_us": 21085.29,
+        "std_us": 925.41,
+        "min_us": 19423.5,
+        "max_us": 22445.7
+      },
+      {
+        "nodes": 1000,
+        "edges": 3500,
+        "mean_us": 110401.23,
+        "std_us": 12466.84,
+        "min_us": 95652.8,
+        "max_us": 138693.9
+      }
+    ]
+  },
+  "edge_counts": [
+    35,
+    87,
+    175,
+    350,
+    875,
+    1750,
+    3500
+  ],
+  "operation_counts": {
+    "binary_heap": [
+      {
+        "queue_type": "binary_heap",
+        "iterations": 10,
+        "insert_ops": 10,
+        "extract_min_ops": 10,
+        "decrease_key_ops": 12,
+        "relax_attempts": 19
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 25,
+        "insert_ops": 25,
+        "extract_min_ops": 25,
+        "decrease_key_ops": 28,
+        "relax_attempts": 40
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 50,
+        "insert_ops": 50,
+        "extract_min_ops": 50,
+        "decrease_key_ops": 64,
+        "relax_attempts": 99
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 100,
+        "insert_ops": 100,
+        "extract_min_ops": 100,
+        "decrease_key_ops": 132,
+        "relax_attempts": 194
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 250,
+        "insert_ops": 250,
+        "extract_min_ops": 250,
+        "decrease_key_ops": 315,
+        "relax_attempts": 456
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 500,
+        "insert_ops": 500,
+        "extract_min_ops": 500,
+        "decrease_key_ops": 620,
+        "relax_attempts": 916
+      },
+      {
+        "queue_type": "binary_heap",
+        "iterations": 1000,
+        "insert_ops": 1000,
+        "extract_min_ops": 1000,
+        "decrease_key_ops": 1261,
+        "relax_attempts": 1895
+      }
+    ],
+    "4ary_heap": [
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 10,
+        "insert_ops": 10,
+        "extract_min_ops": 10,
+        "decrease_key_ops": 12,
+        "relax_attempts": 19
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 25,
+        "insert_ops": 25,
+        "extract_min_ops": 25,
+        "decrease_key_ops": 28,
+        "relax_attempts": 40
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 50,
+        "insert_ops": 50,
+        "extract_min_ops": 50,
+        "decrease_key_ops": 64,
+        "relax_attempts": 99
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 100,
+        "insert_ops": 100,
+        "extract_min_ops": 100,
+        "decrease_key_ops": 132,
+        "relax_attempts": 194
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 250,
+        "insert_ops": 250,
+        "extract_min_ops": 250,
+        "decrease_key_ops": 315,
+        "relax_attempts": 456
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 500,
+        "insert_ops": 500,
+        "extract_min_ops": 500,
+        "decrease_key_ops": 620,
+        "relax_attempts": 916
+      },
+      {
+        "queue_type": "4ary_heap",
+        "iterations": 1000,
+        "insert_ops": 1000,
+        "extract_min_ops": 1000,
+        "decrease_key_ops": 1261,
+        "relax_attempts": 1895
+      }
+    ],
+    "fibonacci_heap": [
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 10,
+        "insert_ops": 10,
+        "extract_min_ops": 10,
+        "decrease_key_ops": 12,
+        "relax_attempts": 19
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 25,
+        "insert_ops": 25,
+        "extract_min_ops": 25,
+        "decrease_key_ops": 28,
+        "relax_attempts": 40
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 50,
+        "insert_ops": 50,
+        "extract_min_ops": 50,
+        "decrease_key_ops": 64,
+        "relax_attempts": 99
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 100,
+        "insert_ops": 100,
+        "extract_min_ops": 100,
+        "decrease_key_ops": 132,
+        "relax_attempts": 194
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 250,
+        "insert_ops": 250,
+        "extract_min_ops": 250,
+        "decrease_key_ops": 315,
+        "relax_attempts": 456
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 500,
+        "insert_ops": 500,
+        "extract_min_ops": 500,
+        "decrease_key_ops": 620,
+        "relax_attempts": 916
+      },
+      {
+        "queue_type": "fibonacci_heap",
+        "iterations": 1000,
+        "insert_ops": 1000,
+        "extract_min_ops": 1000,
+        "decrease_key_ops": 1261,
+        "relax_attempts": 1895
+      }
+    ]
+  }
+}

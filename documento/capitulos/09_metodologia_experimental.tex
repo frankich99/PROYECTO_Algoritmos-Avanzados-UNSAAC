@@ -1,0 +1,52 @@
+\section{Metodología Experimental y Diseño del Banco de Pruebas}
+\label{sec:metodologia}
+
+\subsection{Preguntas de Investigación Científica}
+El diseño experimental del banco de pruebas responde a tres interrogantes computacionales clave:
+\begin{enumerate}
+    \item \textbf{PI1:} ¿Compensa la cota teórica asintótica $O(1)$ amortizada en \texttt{Decrease-Key} del Fibonacci Heap su alta sobrecarga de gestión de punteros en mallas viales urbanas donde $|E| \approx 3|V|$?
+    \item \textbf{PI2:} ¿En qué magnitud reduce el 4-ary Heap el tiempo total de pared frente al Binary Heap al disminuir la altura del árbol a la mitad y alinear 4 hijos en un único bloque de caché de CPU?
+    \item \textbf{PI3:} ¿Cuál es la penalización en memoria residente (\textit{Resident Set Size}, RSS) que imponen los punteros dinámicos frente a las estructuras contiguas indexadas?
+\end{enumerate}
+
+\subsection{Formulación de Hipótesis Técnicas}
+\begin{itemize}
+    \item \textbf{Hipótesis 1 (Densidad Vial y Sobrecarga del Fibonacci Heap):} En redes viales urbanas planas o cuasi-planas como la del Cusco, donde la razón de aristas por vértice es baja ($|E|/|V| \le 3.5$), el número de operaciones \texttt{Decrease-Key} no es suficientemente masivo para amortizar la sobrecarga de alocación de memoria dinámica y los frecuentes fallos de caché derivados de la manipulación de punteros. Por ende, el Min-Heap Binario Indexado y el 4-ary Heap superarán al Fibonacci Heap en tiempo real de ejecución (\textit{wall-clock time}).
+    \item \textbf{Hipótesis 2 (Ventaja de Localidad Espacial del 4-ary Heap):} A medida que la escala de la red crece ($|V| \ge 10,000$), el 4-ary Heap exhibirá un rendimiento superior al Binary Min-Heap tradicional debido a la reducción en un 50\% de la profundidad de flotado y a la lectura contigua de los 4 hijos en una única línea de caché L1/L2 (64 bytes).
+    \item \textbf{Hipótesis 3 (Eficiencia en Huella de Memoria):} Las colas basadas en arreglos contiguos con mapeo directo mantendrán un consumo de memoria hasta un 65\% menor en comparación con el Fibonacci Heap, cuyos nodos requieren 5 punteros (\texttt{parent, child, left, right}) más un entero (\texttt{degree}) y un booleano (\texttt{mark}).
+\end{itemize}
+
+\subsection{Variables Experimentales}
+\begin{itemize}
+    \item \textbf{Variables Independientes:}
+    \begin{itemize}
+        \item Estructura de cola de prioridad: Min-Heap Binario Indexado, 4-ary Heap ($d=4$), Fibonacci Heap.
+        \item Escala del grafo vial: Número de vértices $|V|$ (desde 6 hasta 50,000) y número de aristas dirigidas $|E|$.
+        \item Métrica de costo asignada: Distancia física euclidiana/manhattan ($m$) vs. Tiempo de viaje con impedancia topográfica andina ($s$).
+    \end{itemize}
+    \item \textbf{Variables Dependientes:}
+    \begin{itemize}
+        \item Tiempo de CPU neto y tiempo de pared (\textit{wall-clock time}) medido en microsegundos ($\mu s$).
+        \item Conteo de operaciones elementales: extracciones de mínimo (\texttt{Extract-Min}), decrementos de clave (\texttt{Decrease-Key}) e inserciones (\texttt{Insert}).
+        \item Memoria pico residente consumida medida en kilobytes mediante el módulo \texttt{tracemalloc}.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Métricas de Evaluación e Instrumentación de Precisión}
+Para asegurar que las mediciones no se vean contaminadas por factores ajenos al algoritmo, se implementó el siguiente protocolo de instrumentación técnica:
+\begin{enumerate}
+    \item \textbf{Medición en Nanosegundos:} Uso exclusivo del temporizador de mayor resolución del sistema operativo: \texttt{time.perf\_counter\_ns()}.
+    \item \textbf{Aislamiento del Recolector de Basura (GC):} Desactivación explícita de la recolección automática (\texttt{gc.disable()}) durante la ventana de ejecución algorítmica y recolección forzada (\texttt{gc.collect()}) entre réplicas experimentales.
+    \item \textbf{Fase de Calentamiento (\textit{Warm-up}):} Ejecución de 5 iteraciones previas no contabilizadas para estabilizar el caché de instrucciones de la CPU y la memoria virtual.
+    \item \textbf{Tratamiento Estadístico de Réplicas:} Cada experimento se ejecuta en 30 réplicas independientes, reportando la media recortada al 10\% y la desviación estándar para descartar anomalías provocadas por interrupciones del sistema operativo.
+\end{enumerate}
+
+\subsection{Entorno de Ejecución y Protocolo Reproducible}
+Todos los experimentos se ejecutan en un entorno de hardware homogéneo documentado:
+\begin{itemize}
+    \item \textbf{Procesador:} Intel Core i7 / AMD Ryzen a 3.2 GHz con 8 núcleos físicos.
+    \item \textbf{Jerarquía de Caché:} L1 Data Cache de 32 KB por núcleo, L2 de 512 KB, L3 compartida de 16 MB.
+    \item \textbf{Memoria RAM:} 16 GB DDR4 a 3200 MHz.
+    \item \textbf{Sistema Operativo:} Windows 11 Pro de 64 bits / Linux Ubuntu 22.04 LTS.
+    \item \textbf{Plataforma de Software:} Python 3.12.2, compilado sin optimizaciones intrusivas en el bytecode.
+\end{itemize}
