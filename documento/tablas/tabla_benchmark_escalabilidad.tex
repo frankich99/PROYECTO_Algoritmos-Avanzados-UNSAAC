@@ -1,0 +1,23 @@
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \setlength{\tabcolsep}{2pt}
+    \caption{Evaluación experimental de tiempo de ejecución ($\mu s$) según el número de vértices $|V|$ y colas de prioridad}
+    \label{tab:benchmark_escalabilidad}
+    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}rrcrcrc@{}}
+        \toprule
+        \textbf{$|V|$} & \textbf{$|E|$} & \textbf{Binary Heap ($\mu s$)} & \textbf{4-ary Heap ($\mu s$)} & \textbf{Speedup 4-ary} & \textbf{Fibonacci Heap ($\mu s$)} & \textbf{Speedup Fib.} \\
+        \midrule
+        10 & 35 & 76.7 $\pm 4.2$ & 75.7 $\pm 2.7$ & 1.01x & 99.6 $\pm 2.5$ & 0.77x \\
+        25 & 87 & 202.8 $\pm 13.1$ & 224.2 $\pm 10.1$ & 0.90x & 278.3 $\pm 10.8$ & 0.73x \\
+        50 & 175 & 581.7 $\pm 85.8$ & 579.9 $\pm 79.7$ & 1.00x & 739.9 $\pm 73.0$ & 0.79x \\
+        100 & 350 & 1294.7 $\pm 96.9$ & 1354.6 $\pm 35.5$ & 0.96x & 1562.1 $\pm 68.0$ & 0.83x \\
+        250 & 875 & 6197.9 $\pm 808.3$ & 5170.9 $\pm 198.5$ & 1.20x & 7738.8 $\pm 5823.0$ & 0.80x \\
+        500 & 1750 & 22279.2 $\pm 1051.9$ & 18684.3 $\pm 5461.2$ & 1.19x & 17495.8 $\pm 1425.2$ & 1.27x \\
+        1000 & 3500 & 84998.3 $\pm 11917.9$ & 79961.7 $\pm 11780.8$ & 1.06x & 78175.6 $\pm 9205.0$ & 1.09x \\
+        \bottomrule
+    \end{tabular*}
+    \vspace{0.15cm}
+    \raggedright
+    \textit{Nota.} Tiempos promedio calculados sobre 20 repeticiones independientes con semillas fijadas. Speedup relativo frente a Binary Heap.
+\end{table}

@@ -1,0 +1,18 @@
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \caption{Tiempos medios de ejecución del algoritmo de Dijkstra según la cola de prioridad (instancia $N=6$, 10,000 repeticiones)}
+    \label{tab:benchmark_preliminar}
+    \begin{tabularx}{\textwidth}{p{4.5cm}cccX}
+        \toprule
+        \textbf{Estructura de Cola} & \textbf{Tiempo Medio ($\mu s$)} & \textbf{Desv. Est. ($\mu s$)} & \textbf{Speedup Relativo} & \textbf{Observación Experimental} \\
+        \midrule
+        \textbf{Binary Min-Heap} & 33.1 & $\pm 15.4$ & \textbf{1.00x (Base)} & Sin indirección de punteros \\
+        4-ary Heap & 35.7 & $\pm 6.3$ & 0.93x & Altura log4 N \\
+        Fibonacci Heap & 51.5 & $\pm 14.9$ & 0.64x & Punteros dinámicos \\
+        \bottomrule
+    \end{tabularx}
+    \vspace{0.15cm}
+    \raggedright
+    \textit{Nota.} Mediciones recolectadas con \texttt{time.perf\_counter()} bajo entorno controlado.
+\end{table}

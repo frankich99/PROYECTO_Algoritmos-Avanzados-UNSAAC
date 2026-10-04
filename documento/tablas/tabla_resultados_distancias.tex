@@ -1,0 +1,21 @@
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \caption{Resultados computacionales de distancias y tiempos óptimos calculados desde Plaza Mayor}
+    \label{tab:resultados_distancias}
+    \begin{tabularx}{\textwidth}{clccX}
+        \toprule
+        \textbf{Nodo} & \textbf{Nombre de la Intersección} & \textbf{Distancia Pura ($m$)} & \textbf{Tiempo Efectivo ($s$)} & \textbf{Secuencia de Ruta Óptima} \\
+        \midrule
+        \textbf{A} & Plaza Mayor del Cusco & 0.0 & 0.0 & \texttt{A} \\
+        \textbf{B} & Plaza Regocijo (Cusipata) & 180.0 & 44.8 & \texttt{A -> B} \\
+        \textbf{C} & Qorikancha (Santo Domingo) & 450.0 & 108.0 & \texttt{A -> C} \\
+        \textbf{D} & Plaza San Francisco & 400.0 & 101.6 & \texttt{A -> B -> D} \\
+        \textbf{E} & Mercado Central San Pedro & 650.0 & 165.3 & \texttt{A -> B -> D -> E} \\
+        \textbf{F} & Plazoleta Limacpampa & 800.0 & 144.4 & \texttt{A -> C -> F} \\
+        \bottomrule
+    \end{tabularx}
+    \vspace{0.15cm}
+    \raggedright
+    \textit{Nota.} Solución calculada desde el vértice fuente $s = \text{A}$ (Plaza Mayor).
+\end{table}
