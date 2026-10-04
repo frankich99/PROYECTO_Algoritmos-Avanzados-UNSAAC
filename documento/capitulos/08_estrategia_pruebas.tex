@@ -1,0 +1,59 @@
+\section{Estrategia de Pruebas y Validación Automatizada}
+\label{sec:pruebas}
+
+\subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
+Para garantizar la confiabilidad y correctitud matemática del software, la verificación no se limita a inspecciones visuales o ejecuciones manuales aisladas, sino que se fundamenta en una suite de pruebas unitarias automatizadas desarrollada con el framework \texttt{pytest} / \texttt{unittest}. Cada prueba sigue la convención estándar de tres fases:
+\begin{itemize}
+    \item \textbf{Arrange (Organizar):} Inicialización del entorno, instanciación de la estructura de datos o construcción del grafo vial de prueba y definición explícita del resultado esperado.
+    \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{extract\_min}, \texttt{decrease\_key}, \texttt{dijkstra\_solver}).
+    \item \textbf{Assert (Afirmar):} Comprobación determinista mediante aserciones de igualdad (\texttt{assertEqual}), orden (\texttt{assertGreater}) o manejo de excepciones (\texttt{assertRaises}).
+\end{itemize}
+
+\subsection{Tipología y Cobertura de Casos de Prueba}
+La suite de pruebas (Tabla \ref{tab:suite_pruebas}) se divide en cuatro categorías operacionales diseñadas para detectar fallas en límites asintóticos y condiciones anómalas:
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.2}
+    \setlength{\tabcolsep}{5pt}
+    \caption{Clasificación de la suite de pruebas unitarias y casos evaluados}
+    \label{tab:suite_pruebas}
+    \begin{tabularx}{\textwidth}{@{}>{\ttfamily\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.4cm}@{}}
+        \toprule
+        \textbf{Función de Prueba} & \textbf{Condición Evaluada y Aserción AAA} & \textbf{Resultado} \\
+        \midrule
+        \multicolumn{3}{@{}l}{\textit{\textbf{1. Pruebas Funcionales de Colas y Algoritmo}}} \\
+        \midrule
+        test\_indexed\_min\_heap & Inserción, flotado \texttt{decrease\_key} y extracción de mínimo en montículo binario. & Aprobado (1 ms) \\
+        test\_d\_ary\_heap & Aritmética de índices y hundido multinario en montículo 4-ario contiguo. & Aprobado (1 ms) \\
+        test\_fibonacci\_heap & Enlaces circulares, cortes en cascada y consolidación de árboles en Fibonacci Heap. & Aprobado (1 ms) \\
+        test\_dijkstra\_cusco & Distancias mínimas exactas en la red vial del Cusco (6 nodos). & Aprobado (1 ms) \\
+        \midrule
+        \multicolumn{3}{@{}l}{\textit{\textbf{2. Casos Límite y Condiciones de Borde (Edge Cases)}}} \\
+        \midrule
+        test\_single\_node & Grafo trivial con un solo nodo ($|V|=1, |E|=0$). & Aprobado (1 ms) \\
+        test\_disconnected & Vértice inalcanzable; distancia $\infty$ y camino vacío devuelto. & Aprobado (1 ms) \\
+        test\_empty\_extraction & Invocación de \texttt{extract\_min} en cola vacía levanta \texttt{IndexError}. & Aprobado (1 ms) \\
+        test\_invalid\_decrease & Intento de incrementar distancia es ignorado (\textit{no-op}). & Aprobado (1 ms) \\
+        \midrule
+        \multicolumn{3}{@{}l}{\textit{\textbf{3. Condiciones Adversas y Topografía Andina}}} \\
+        \midrule
+        test\_downhill\_slope & Pendiente negativa severa ($-15\%$) acotada por $\max(0, s)$. & Aprobado (1 ms) \\
+        test\_zero\_weight\_edges & Tramos rasantes con costo 0 no generan ciclos ni distorsiones numéricas. & Aprobado (1 ms) \\
+        \midrule
+        \multicolumn{3}{@{}l}{\textit{\textbf{4. Escalabilidad y Equivalencia Cruzada (Cross-Validation)}}} \\
+        \midrule
+        test\_cross\_validation & Grafo sintético ($|V|=50, |E|=200$). Distancias 100\% idénticas entre Binary, 4-ary y Fibonacci Heap. & Aprobado (6 ms) \\
+        \bottomrule
+    \end{tabularx}
+    \vspace{0.15cm}
+    \raggedright \fontsize{9}{11}\selectfont \textit{Nota.} Todas las pruebas fueron ejecutadas con el framework \texttt{pytest} / \texttt{unittest} bajo el patrón Arrange-Act-Assert (AAA).
+\end{table}
+
+\subsection{Validación Cruzada y Equivalencia Algorítmica}
+Un aspecto metodológico central del proyecto consiste en la validación cruzada (\textit{cross-validation}). Dado que el Algoritmo de Dijkstra es determinista para grafos con aristas con costos estrictamente positivos, las distancias calculadas deben ser matemáticamente idénticas sin importar si la cola de prioridad es un montículo binario, un montículo 4-ario o un montículo de Fibonacci:
+\begin{equation}
+    |d_{\text{binary}}[v] - d_{\text{4ary}}[v]| < \epsilon \quad \land \quad |d_{\text{binary}}[v] - d_{\text{fibonacci}}[v]| < \epsilon, \quad \forall v \in V, \quad \epsilon = 10^{-6}
+\end{equation}
+La prueba \texttt{test\_cross\_validation\_random\_synthetic\_graph} ejecuta esta verificación sobre 50 nodos y 200 aristas generadas con semilla fija (\texttt{seed=42}), garantizando reproducibilidad y confirmando que ninguna optimización de bajo nivel introdujo errores de cálculo en las distancias.
