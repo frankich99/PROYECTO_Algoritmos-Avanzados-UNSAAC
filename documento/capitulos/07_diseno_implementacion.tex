@@ -58,8 +58,25 @@ El repositorio organiza su código fuente en el paquete \texttt{src/}:
     \item \textbf{\texttt{src/models/cusco\_network.py}:} Mapeo explícito de la topología vial del Centro Histórico de Cusco, serialización y carga en formato JSON.
     \item \textbf{\texttt{src/utils/cost\_model.py}:} Lógica de cálculo del costo generalizado e impedancia por gradiente altitudinal andino.
     \item \textbf{\texttt{src/utils/latex\_exporter.py}:} Rutina automatizada que formatea diccionarios de traza en tablas LaTeX bajo el estándar \texttt{booktabs}.
-    \item \textbf{\texttt{src/visualization/generate\_figures.py}:} Renderizador de gráficos vectoriales y matriciales de alta resolución (300 DPI) con Matplotlib y NetworkX.
+    \item \textbf{\texttt{src/visualization/generate\_figures.py}:} Renderizador de figuras científicas con Matplotlib y generador de especificaciones vectoriales en formato DOT para \textbf{Graphviz}.
+    \item \textbf{\texttt{src/cli.py}:} Interfaz unificada de línea de comandos (CLI) y menú interactivo por consola (comandos \texttt{run}, \texttt{compare}, \texttt{generate}, \texttt{verify}, \texttt{benchmark}, \texttt{graphviz} y \texttt{menu}).
+    \item \textbf{\texttt{src/verification/certificate.py}:} Certificador formal de optimalidad independiente que comprueba en $O(|V|+|E|)$ las condiciones de Bellman sin re-ejecutar Dijkstra.
+    \item \textbf{\texttt{src/algorithms/reference.py}:} Algoritmos canónicos de referencia (Bellman-Ford para grafos con pesos arbitrarios y Dijkstra sobre arreglo no ordenado).
 \end{enumerate}
+
+\subsection{Visualización de Grafos Viales con Graphviz (.dot)}
+Atendiendo a las recomendaciones de diseño y legibilidad del revisor, el sistema integra generación nativa de especificaciones en lenguaje DOT de \textbf{Graphviz} (archivos \texttt{red\_vial\_cusco.dot} y \texttt{ruta\_optima\_cusco.dot}). 
+
+Se seleccionó Graphviz frente a librerías interactivas pesadas (como Plotly) debido a sus ventajas fundamentales:
+\begin{itemize}
+    \item \textbf{Rigor Estándar en Teoría de Grafos:} Graphviz es el estándar canónico en ciencias de la computación para el trazado jerárquico y ortogonal determinista de grafos dirigidos.
+    \item \textbf{Salida Vectorial Ligera:} Produce diagramas SVG/PDF sin dependencias pesadas de navegadores web ni tiempos de compilación elevados.
+    \item \textbf{Trazabilidad y Resaltado de Rutas:} Permite estilizar nodos con sus nombres toponímicos completos y resaltar el camino mínimo de emergencia (en verde esmeralda con mayor grosor de línea, \texttt{penwidth=3.2}) mientras atenúa las aristas no seleccionadas.
+    \item \textbf{Integración Nativa en la Nube:} En entornos interactivos como Google Colab, se renderiza directamente con \texttt{graphviz.Source} sin instalaciones adicionales.
+\end{itemize}
+
+\subsection{Rol de NetworkX como Oráculo de Verificación Canónica}
+Es fundamental precisar que la librería \texttt{NetworkX} \textbf{no} se utiliza para resolver los caminos mínimos en el sistema en producción (todas las estructuras de datos y el algoritmo de Dijkstra fueron programados de manera pura y desde cero por el equipo). Su rol en la arquitectura es exclusivamente el de \textbf{oráculo externo de prueba} (\textit{ground truth oracle}) dentro de la suite automatizada de pruebas unitarias con Pytest (Sección \ref{sec:pruebas}), garantizando matemáticamente que los vectores de distancias calculados por nuestras tres colas de prioridad coinciden con la referencia canónica en decenas de instancias aleatorias y reales.
 
 \subsection{Formatos de Datos y Serialización JSON}
 Para garantizar que la ingestión de datos no dependa de estructuras en memoria volátiles ni rutas locales rígidas, la red vial del Cusco se serializa formalmente en formato JSON bajo la ruta estándar \texttt{data/processed/cusco\_centro\_network.json}:
