@@ -109,46 +109,35 @@ Para posibilitar la sustitución dinámica y transparente de colas en el solver 
     \item \texttt{is\_empty() -> bool}: Determina en $O(1)$ si existen vértices pendientes de procesamiento.
 \end{itemize}
 
-\subsection{Implementación de Algoritmos y Estructuras Nucleares}
-A continuación, se presentan los códigos fuente de los algoritmos y estructuras nucleares desarrollados, embebidos directamente desde el repositorio:
+\subsection{Módulos Reutilizados e Integración de Componentes}
+\label{sec:integracion_modulos}
+La función \texttt{solve(instancia, origen, método)} implementada en el módulo \texttt{src/algorithms/registry.py} constituye el punto unificado de invocación para la totalidad de algoritmos del sistema. La interfaz de línea de comandos (CLI) y los módulos de experimentación reutilizan los componentes de forma transversal (Tabla \ref{tab:modulos_reutilizados}).
 
-\lstinputlisting[
-    language=Python,
-    caption={Implementación desacoplada del algoritmo de Dijkstra con inyección de colas (\texttt{python/src/algorithms/dijkstra.py})},
-    label={lst:dijkstra_py},
-    firstline=1,
-    lastline=75
-]{../python/src/algorithms/dijkstra.py}
+\begin{table}[H]
+    \caption{Módulos reutilizados e integrados en la arquitectura del sistema}
+    \label{tab:modulos_reutilizados}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\ttfamily\small\raggedright\arraybackslash}p{4.6cm}X@{}}
+        \toprule
+        \textbf{Función} & \textbf{Módulo} & \textbf{Descripción Técnica} \\
+        \midrule
+        Lectura & src/io/\allowbreak graph\_io.py & Deserialización de JSON vial con impedancia andina, JSON estándar, lista de aristas y cadenas en línea (\texttt{--inline}). \\
+        Validación & src/io/\allowbreak graph\_io.py & Comprobación estricta de precondiciones y captura de excepciones defensivas. \\
+        Generación & src/generators/\allowbreak instance\_generator.py & Creación determinista de grafos viales sintéticos con semilla fija para pruebas de escalabilidad. \\
+        Ejecución & src/algorithms/\allowbreak registry.py & Inyección desacoplada de la estructura de cola de prioridad seleccionada. \\
+        Verificación & src/verification/\allowbreak certificate.py & Validación analítica de optimalidad de Bellman y clasificación de diferencias en (|V|+|E|)$. \\
+        Telemetría & src/utils/\allowbreak measurement.py & Protocolo de medición de tiempo de CPU de alta resolución con etapas de calentamiento (\textit{warmup}). \\
+        Presentación & src/utils/\allowbreak presentation.py & Formateo tabular de rutas en consola y exportación de trazas JSON. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
-\lstinputlisting[
-    language=Python,
-    caption={Implementación del Min-Heap Binario Indexado (\texttt{python/src/datastructures/indexed\_min\_heap.py})},
-    label={lst:indexed_heap_py},
-    firstline=1,
-    lastline=60
-]{../python/src/datastructures/indexed_min_heap.py}
+\subsection{Manejo Defensivo de Entradas y Códigos de Salida Seguros}
+\label{sec:manejo_entradas_invalidas}
+Todas las alternativas algorítmicas comparten el mismo módulo de validación previa en \texttt{src/io/graph\_io.py}. Una entrada no conforme se rechaza de forma homogénea e inmediata antes de invocar el algoritmo, protegiendo al sistema de estados inconsistentes.
 
-\lstinputlisting[
-    language=Python,
-    caption={Implementación del Montículo 4-ario contiguo (\texttt{python/src/datastructures/d\_ary\_heap.py})},
-    label={lst:dary_heap_py},
-    firstline=1,
-    lastline=60
-]{../python/src/datastructures/d_ary_heap.py}
-
-% [PENDIENTE COMMIT 3 (Romario Quispe - 164257): Descomentar siguiente listing tras copiar fibonacci_heap.py]
-\lstinputlisting[
-    language=Python,
-    caption={Implementación del Fibonacci Heap con cortes en cascada (\texttt{python/src/datastructures/fibonacci\_heap.py})},
-    label={lst:fibonacci_heap_py},
-    firstline=1,
-    lastline=70
-]{../python/src/datastructures/fibonacci_heap.py}
-
-\lstinputlisting[
-    language=Python,
-    caption={Modelo de costo e impedancia topográfica andina (\texttt{python/src/utils/cost\_model.py})},
-    label={lst:cost_model_py},
-    firstline=1,
-    lastline=44
-]{../python/src/utils/cost_model.py}
+La interfaz de comandos comunica el estado de ejecución mediante códigos de salida formales:
+\begin{itemize}
+    \item \textbf{Código 0 (Éxito):} Ejecución algorítmica completada y validada satisfactoriamente.
+    \item \textbf{Código 1 (Fallo de Verificación):} El certificador de optimalidad detectó divergencias numéricas o violación de las condiciones de Bellman.
+    \item \textbf{Código 2 (Entrada Inválida):} Se detectó y bloqueó una anomalía en la entrada: archivos inexistentes, codificación no UTF-8, JSON mal formado, campos incompletos, pesos negativos o no numéricos (NaN, $\infty$), identificadores de vértice duplicados o nodos origen inexistentes.
+\end{itemize}

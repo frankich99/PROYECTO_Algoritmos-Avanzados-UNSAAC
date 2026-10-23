@@ -20,7 +20,7 @@
     
     \includegraphics[width=3.8cm]{figuras/escudo.png}\\[0.5cm]
     
-    {\fontsize{13}{16}\selectfont \textbf{INFORME TÉCNICO DE INVESTIGACIÓN}}\\[0.3cm]
+    {\fontsize{13}{16}\selectfont \textbf{INFORME TÉCNICO DE INVESTIGACIÓN FORMATIVA}}\\[0.3cm]
     \rule{\textwidth}{1.2pt}\\[0.35cm]
     {\fontsize{13}{16.5}\selectfont \textbf{“RUTAS MÍNIMAS CON DISTINTAS COLAS DE PRIORIDAD EN REDES VIALES URBANAS DE LA CIUDAD DEL CUSCO”}}\\[0.25cm]
     \rule{\textwidth}{1.2pt}\\[0.6cm]
@@ -60,55 +60,49 @@
 \newpage
 
 % =========================================================================
-% CUERPO DEL INFORME (FASE 1: CORE DE NOE CHOQUENAIRA)
+% CUERPO PRINCIPAL DEL INFORME TÉCNICO
 % =========================================================================
 \pagenumbering{arabic}
 
-% Sección 1: Introducción
+% Sección 1: Introducción y Planteamiento del Problema
 \input{capitulos/02_introduccion.tex}
 \newpage
 
-% =========================================================================
-% PENDIENTE RAMA YENI (Yeni Porroa - 120893): Descomentar siguientes 2 capítulos:
+% Sección 2: Fundamentos Teóricos: Caminos Mínimos, Búsqueda Heurística A* y Colas de Prioridad
 \input{capitulos/03_fundamentos_aprendizaje.tex}
 \newpage
+
+% Sección 3: Evaluación y Selección del Stack Tecnológico
 \input{capitulos/04_evaluacion_stack.tex}
 \newpage
-% =========================================================================
 
 % Sección 4: Formulación Matemática del Problema y Caso de Estudio en Cusco
 \input{capitulos/05_formulacion_problema.tex}
 \newpage
 
-% Sección 5: Diseño Algorítmico e Invariantes Formales de Dijkstra
+% Sección 5: Diseño Algorítmico, Invariantes Formales y Comparativa Teórica de Montículos
 \input{capitulos/06_diseno_algoritmico.tex}
 \newpage
 
-% Sección 6: Diseño e Implementación del Prototipo Inicial
+% Sección 6: Arquitectura Modular del Software e Implementación del Sistema
 \input{capitulos/07_diseno_implementacion.tex}
 \newpage
 
-% =========================================================================
-% PENDIENTE COMMIT 3 (Romario Quispe - 164257): Descomentar siguientes 2 capítulos:
-\input{capitulos/09_metodologia_experimental.tex}
-\newpage
-\input{capitulos/10_resultados_prototipo.tex}
-\newpage
-% =========================================================================
-
-% =========================================================================
-% PENDIENTE COMMIT 4 (Aldo Yaranga - 103179): Descomentar siguientes 2 capítulos:
+% Sección 7: Estrategia de Pruebas Automatizadas y Certificación Formal de Optimalidad
 \input{capitulos/08_estrategia_pruebas.tex}
 \newpage
 
-% Avances 4 y 5 (Unidad 2)
-\input{capitulos/11_avance4_implementacion.tex}
+% Sección 8: Metodología Experimental y Diseño del Banco de Pruebas
+\input{capitulos/09_metodologia_experimental.tex}
 \newpage
-\input{capitulos/12_avance5_integracion.tex}
+
+% Sección 9: Resultados Computacionales, Evaluación de Escalabilidad y Discusión Técnica
+\input{capitulos/10_resultados_prototipo.tex}
 \newpage
+
+% Sección 10: Anexos Técnicos
 \input{capitulos/14_anexos.tex}
-% \newpage
-% =========================================================================
+\newpage
 
 % =========================================================================
 % REFERENCIAS BIBLIOGRÁFICAS (APA 7ma Edición)
