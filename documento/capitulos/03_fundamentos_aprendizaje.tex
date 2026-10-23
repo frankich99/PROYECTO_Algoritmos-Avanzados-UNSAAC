@@ -79,3 +79,50 @@ Durante la construcción del prototipo, surgieron tres dificultades técnicas su
     \item \textbf{Manejo de Raíces Marcadas en Fibonacci Heap:} La pérdida de un segundo hijo en nodos del Fibonacci Heap requería activar la cascada de cortes hacia los ancestros. Se implementó una rutina recursiva \texttt{\_cascading\_cut} que verifica el estado booleano de la bandera \texttt{mark}, restableciéndola a falso al promover el nodo a la lista raíz.
     \item \textbf{Penalización Asimétrica por Pendiente:} La impedancia topográfica en calles cusqueñas no debe penalizar los tramos en descenso de la misma forma que los tramos en ascenso. El modelo se formuló mediante un operador $\max(0, \text{pendiente})$, asegurando que las bajadas no disminuyan artificialmente el tiempo de viaje por debajo de la velocidad libre de diseño de la vía.
 \end{itemize}
+\subsection{Búsqueda Heurística Orientada a Objetivos: El Algoritmo $A^*$ (A-Star)}
+\label{sec:a_star_teoria}
+En el ámbito de la optimización de rutas urbanas para vehículos de emergencia, una limitación inherente del Algoritmo de Dijkstra es su naturaleza no informada: explora el espacio de búsqueda en todas direcciones formando un frente de onda circular radial concéntrico al origen $s$. Para problemas de ruteo punto a punto ($s 	o t$) —como el despacho de una ambulancia desde su base hacia un hospital o punto de auxilio específico—, el algoritmo canónico incurre en la expansión innecesaria de múltiples nodos en direcciones opuestas al destino.
+
+El Algoritmo $A^*$ \parencite{hart1968formal} resuelve este desafío incorporando información heurística del dominio espacial. En lugar de priorizar únicamente la distancia acumulada conocida $g(n)$, la cola de prioridad gestiona los vértices tentativos mediante una función de evaluación compuesta:
+\begin{equation}
+    f(n) = g(n) + h(n)
+\end{equation}
+donde:
+\begin{itemize}
+    \item $g(n)$ es el costo mínimo exacto acumulado desde el origen $s$ hasta el vértice $n$ (equivalente a $d[n]$ en Dijkstra).
+    \item $h(n)$ es una función heurística que estima el costo residual de viaje desde el vértice $n$ hasta el sumidero objetivo $t$.
+    \item $f(n)$ representa el costo total proyectado de la mejor trayectoria que partiendo de $s$, pasa por $n$ y culmina en $t$.
+\end{itemize}
+
+\subsubsection{Garantías de Optimalidad: Admisibilidad y Consistencia}
+Para asegurar que $A^*$ encuentre invariablemente el camino de costo mínimo sin sobreestimaciones, la función heurística $h(n)$ debe satisfacer dos propiedades fundamentales:
+\begin{enumerate}
+    \item \textbf{Admisibilidad:} Para todo vértice $n \in V$, la estimación no supera el costo real mínimo $h^*(n)$ al destino:
+    \begin{equation}
+        0 \le h(n) \le h^*(n), \quad orall n \in V
+    \end{equation}
+    Si la heurística es admisible, $A^*$ garantiza hallar la ruta óptima. Nótese que si $h(n) = 0$ para todo $n$, $A^*$ se reduce exactamente al Algoritmo de Dijkstra canónico.
+    \item \textbf{Consistencia (Monotonicidad):} Para toda arista dirigida $(u, v) \in E$, la estimación satisface la desigualdad triangular:
+    \begin{equation}
+        h(u) \le w(u, v) + h(v)
+    \end{equation}
+    Si $h$ es consistente, la secuencia de valores $f(n)$ a lo largo de cualquier camino es monótonamente no decreciente. Esto garantiza que cuando un vértice $u$ es extraído de la cola de prioridad, su distancia acumulada $g(u)$ ya es definitivamente óptima ($g(u) = \delta(s, u)$), eliminando la necesidad de reabrir vértices cerrados y preservando la complejidad temporal subyacente.
+\end{enumerate}
+
+\subsubsection{Formulación de la Heurística para la Red Vial Andina de Cusco}
+Para el caso de estudio de la red vial cusqueña bajo la métrica de tiempo con impedancia topográfica, la heurística admisible y consistente se formula a partir de la distancia euclidiana en línea recta normalizada por la velocidad máxima permitida en la red:
+\begin{equation}
+    h_{\text{tiempo}}(u, t) = \frac{\sqrt{(x_u - x_t)^2 + (y_u - y_t)^2}}{V_{\max}}
+\end{equation}
+donde $V_{\max} = 35\text{ km/h} \approx 9.72\text{ m/s}$ corresponde a la velocidad máxima en avenidas. Dado que ninguna vía permite circular a velocidades superiores y la línea recta representa la cota inferior física de cualquier recorrido vial ($D_{\text{Euclídea}} \le L_{\text{vial}}$), se cumple rigurosamente que $h_{\text{tiempo}}(u, t) \le T^*(u, t)$. 
+
+\textbf{Impacto en el Proyecto de Investigación:} La integración de $A^*$ en el sistema computacional permite podar entre un 30\% y un 70\% de los nodos expandidos frente a Dijkstra, concentrando la exploración en una elipse dirigida hacia el objetivo de emergencia.
+
+\subsection{Metodología de Pruebas Unitarias: El Patrón AAA (Arrange - Act - Assert)}
+\label{sec:patron_aaa}
+Para garantizar la fiabilidad del software científico desarrollado, la totalidad de la suite de pruebas automatizadas (225 pruebas unitarias con Pytest) se estructuró bajo el patrón de diseño \textbf{AAA (Arrange - Act - Assert)}, estándar en la ingeniería de software moderna:
+\begin{itemize}
+    \item \textbf{Arrange (Organizar / Disponer):} Se configuran las precondiciones del ensayo: se carga la red vial o se genera un grafo sintético, se fija la semilla pseudoaleatoria, se define el vértice origen y se instancia la estructura de cola de prioridad a evaluar.
+    \item \textbf{Act (Actuar / Ejecutar):} Se invoca el algoritmo bajo prueba (solver de Dijkstra o $A^*$) con los parámetros definidos, capturando los vectores de distancias resultantes, la reconstrucción de rutas y la telemetría de operaciones elementales.
+    \item \textbf{Assert (Afirmar / Verificar):} Se verifica formalmente mediante aserciones booleanas estrictas que: (a) las distancias calculadas coinciden con la solución manual o el oráculo de referencia; (b) se satisfacen las condiciones del certificado de optimalidad de Bellman; y (c) no se violaron las invariantes internas del montículo.
+\end{itemize}
