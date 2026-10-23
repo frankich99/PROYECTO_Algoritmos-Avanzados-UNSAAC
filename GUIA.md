@@ -8,7 +8,7 @@
 
 ## 0. Resumen Ejecutivo: ¿Está Completo o es Mucha Información?
 
-* **El Informe Académico (`documento/main.pdf` - 60 páginas):** Es formal, exhaustivo y riguroso. Cubre toda la matemática, formulación teórica de $A^*$, análisis de jerarquía de memoria caché, pseudocódigo y pruebas. **Está completo y no le falta nada.**
+* **El Informe Académico (`documento/main.pdf` - 57 páginas):** Es formal, exhaustivo y riguroso. Cubre toda la matemática, formulación teórica de $A^*$, análisis de jerarquía de memoria caché, pseudocódigo y pruebas. **Está completo y no le falta nada.**
 * **Esta Guía (`GUIA.md`):** Es tu **"machete" de bolsillo** de 5 a 10 minutos de lectura. Contiene exclusivamente **qué decir con tus propias palabras** y **qué comandos correr** para no enredarte con teoría pesada durante la sustentación.
 * **El Código (`python/`):** Está **100% verificado, sin fallos y con 221 pruebas automatizadas pasando exitosamente**.
 

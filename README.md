@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-221%20passed%20(100%25)-brightgreen.svg)](python/tests/)
-[![Documento](https://img.shields.io/badge/documento-60%20páginas%20(LaTeX)-orange.svg)](documento/main.pdf)
+[![Documento](https://img.shields.io/badge/documento-57%20páginas%20(LaTeX)-orange.svg)](documento/main.pdf)
 [![Google Colab](https://img.shields.io/badge/Google%20Colab-26%20celdas%20(interactivo)-yellow.svg)](python/colab/rutas_minimas_cusco.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/blob/main/python/colab/rutas_minimas_cusco.ipynb)
 [![License](https://img.shields.io/badge/license-Académica%20UNSAAC-lightgrey.svg)](LICENSE)
@@ -19,7 +19,7 @@
 
 | Integrante | Código | Rol y Responsabilidad Principal | Rama en GitHub |
 | :--- | :---: | :--- | :--- |
-| **Noe Franklin Choquenaira Quispe** | **133962** | **Líder de Proyecto & Arquitecto:** Arquitectura modular desacoplada en 4 capas, diseño e implementación del **Algoritmo $A^*$** con heurística admisible, visualización vectorial con **Graphviz**, desarrollo del cuaderno **Google Colab** (26 celdas) e informe final de 60 páginas. | [`ramaFRANKI`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaFRANKI) |
+| **Noe Franklin Choquenaira Quispe** | **133962** | **Líder de Proyecto & Arquitecto:** Arquitectura modular desacoplada en 4 capas, diseño e implementación del **Algoritmo $A^*$** con heurística admisible, visualización vectorial con **Graphviz**, desarrollo del cuaderno **Google Colab** (26 celdas) e informe final de 57 páginas (14 secciones canónicas). | [`ramaFRANKI`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaFRANKI) |
 | **Aldo Yaranga Achahui** | **103179** | **QA & Validación:** Suite de 221 pruebas automatizadas bajo el patrón **AAA (Arrange-Act-Assert)**, implementación del certificador de optimalidad de Bellman $O(\|V\|+\|E\|)$ y opciones avanzadas de la interfaz CLI. | [`ramaAldo`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaAldo) |
 | **Yeni Ruth Porroa Sivana** | **120893** | **Estructuras de Datos & Caché:** Implementación y optimización de **`DAryHeap` ($d=4$)** alineado a líneas de caché de CPU (64 bytes), estudio comparativo de montículos y matriz de selección técnica. | [`ramaYeni`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaYeni) |
 | **Romario Quispe Rimachi** | **164257** | **Benchmarking & Modelado:** Generador de redes sintéticas reproducibles ($\bar{d} \approx 3.5$), protocolo experimental de escalabilidad en tiempo de CPU ($\mu s$) y calibración de la función de impedancia andina ($\alpha = 2.5$). | [`RamaRomario`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/RamaRomario) |
@@ -29,7 +29,7 @@
 ## 📌 Enlaces Rápidos del Proyecto
 
 * 📖 **[GUIA.md](GUIA.md):** Guía rápida de sustentación oral (el "machete" con preguntas del docente y comandos en vivo).
-* 📑 **[documento/main.pdf](documento/main.pdf):** Informe académico completo de **60 páginas** compilado en LaTeX con rigor matemático y experimental.
+* 📑 **[documento/main.pdf](documento/main.pdf):** Informe académico completo de **57 páginas** (14 secciones canónicas) compilado en LaTeX con rigor matemático y experimental.
 * 🚀 **[python/colab/rutas_minimas_cusco.ipynb](python/colab/rutas_minimas_cusco.ipynb):** Cuaderno interactivo listo para ejecutar en Google Colab con 26 celdas, Graphviz interactivo y batería de pruebas.
 * 📋 **[docs/AVANCE_4.md](docs/AVANCE_4.md):** Guion de demostración y requisitos del Avance 4 (Algoritmo 1: Binary Min-Heap).
 * 📋 **[docs/AVANCE_5.md](docs/AVANCE_5.md):** Guion de demostración y requisitos del Avance 5 (Segunda alternativa: 4-ary Heap, Fibonacci Heap, integración y equivalencia).
