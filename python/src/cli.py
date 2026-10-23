@@ -298,6 +298,45 @@ def cmd_demo(_args) -> int:
 
 
 # ---------------------------------------------------------------------------
+def cmd_astar(args) -> int:
+    from src.models.cusco_network import load_cusco_instance, NODES_CUSCO
+    from src.algorithms.dijkstra import dijkstra_solver
+    from src.algorithms.a_star import a_star_solver
+    
+    inst = load_from_args(args)
+    source = resolve_source(inst, args.source)
+    target = getattr(args, "target", None)
+    if not target:
+        target = "E" if "E" in inst.nodes else inst.nodes[-1]
+    
+    print(_describe(inst, source))
+    print(f"Búsqueda Heurística A* (A-Star) hacia destino objetivo: {inst.label(target)}")
+    
+    # Resolver con Dijkstra (SSSP tradicional)
+    dijk_res = dijkstra_solver(inst.nodes, inst.adj, source, queue_type=args.queue)
+    dijk_dist = dijk_res["distances"][target]
+    dijk_path = " -> ".join(dijk_res["paths"][target])
+    
+    # Resolver con A* (Búsqueda focalizada con heurística admisible)
+    astar_res = a_star_solver(inst.nodes, inst.adj, source, target, queue_type=args.queue, metric=inst.metric)
+    astar_dist = astar_res["target_distance"]
+    astar_path = " -> ".join(astar_res["path"])
+    
+    u = _unit(inst)
+    print("\nComparativa Dijkstra vs A* (A-Star):")
+    rows = [
+        ["Algoritmo", "Nodos Expandidos", "Relajaciones", "Costo Óptimo", "Ruta Reconstruida"],
+        ["Dijkstra Canónico", str(len(inst.nodes)), str(dijk_res["stats"].get("relax_attempts", "-")), f"{dijk_dist:.2f}{u}", dijk_path],
+        ["A* Heurístico", str(astar_res["stats"]["expanded_nodes"]), str(astar_res["stats"]["relax_attempts"]), f"{astar_dist:.2f}{u}", astar_path]
+    ]
+    print(pres.table(rows[0], rows[1:]))
+    
+    poda_pct = (1.0 - (astar_res["stats"]["expanded_nodes"] / len(inst.nodes))) * 100.0
+    print(f"\nEficiencia de Poda A*: {poda_pct:.1f}% de nodos no necesitaron ser expandidos.")
+    print(f"Optimalidad: {'GARANTIZADA (Costos idénticos)' if abs(dijk_dist - astar_dist) < 1e-6 else 'Diferencia detectada'}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python main.py",
@@ -351,6 +390,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--target", "-t", help="Nodo destino para resaltar el camino óptimo")
     p.add_argument("--output", "-o", help="Ruta de salida del archivo .dot")
     p.set_defaults(func=cmd_graphviz)
+
+    p = sub.add_parser("astar", help="Ejecuta el Algoritmo A* y lo compara contra Dijkstra")
+    _add_input_args(p)
+    p.add_argument("--target", "-t", default="E", help="Vértice objetivo")
+    p.add_argument("--queue", "-q", default="binary_heap", help="binary_heap | 4ary_heap | fibonacci_heap")
+    p.set_defaults(func=cmd_astar)
 
     sub.add_parser("menu", help="Menú interactivo").set_defaults(func=cmd_menu)
     sub.add_parser("demo", help="Pipeline completo de demostración").set_defaults(func=cmd_demo)
