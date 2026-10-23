@@ -1,92 +1,126 @@
-# Rutas mínimas con distintas colas de prioridad: red vial del Cusco
+# Prototipo Computacional: Rutas Mínimas en Redes Viales del Cusco
 
-Algoritmo de Dijkstra con tres colas de prioridad intercambiables y una referencia independiente (Bellman-Ford), sobre la red vial del Centro Histórico del Cusco y sobre instancias sintéticas.
+Implementación modular en Python del **Algoritmo de Dijkstra Parametrizado** y la **Búsqueda Heurística A\*** ($A^*$) sobre la red vial urbana del Centro Histórico del Cusco, con inyección desacoplada de tres estructuras de cola de prioridad puras y una referencia canónica independiente.
 
-**Curso:** Algoritmos Avanzados (2026-II) · UNSAAC
-**Grupo 5:** Choquenaira Q., Porroa S., Quispe R., Yaranga A.
-**Guías de sustentación:** [Avance 4](../docs/AVANCE_4.md) · [Avance 5](../docs/AVANCE_5.md)
+[![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/tests-221%20passed-brightgreen.svg)](tests/)
+[![Google Colab](https://img.shields.io/badge/Colab-26%20celdas-yellow.svg)](colab/rutas_minimas_cusco.ipynb)
 
-## Alternativas
+**Asignatura:** Algoritmos Avanzados (2026-II) · UNSAAC  
+**Grupo 5:** Choquenaira Q. Noe (Líder), Yaranga A. Aldo, Porroa S. Yeni Ruth, Quispe R. Romario  
+**Guías de Sustentación:** [GUIA.md](../GUIA.md) · [Avance 4](../docs/AVANCE_4.md) · [Avance 5](../docs/AVANCE_5.md)
 
-| Nombre en la CLI | Estructura | Decrease-Key | Extract-Min | Dijkstra total |
-|:--|:--|:--|:--|:--|
-| `binary_heap` (Avance 4) | Binary Heap indexado | O(log V) | O(log V) | O((V+E) log V) |
-| `4ary_heap` (Avance 5) | 4-ary Heap indexado | O(log₄ V) | O(4 log₄ V) | O((4V+E) log₄ V) |
-| `fibonacci_heap` (Avance 5) | Fibonacci Heap | O(1) amort. | O(log V) amort. | O(V log V + E) |
-| `bellman_ford` | Referencia de validación | — | — | O(V·E) |
+---
 
-## Instalación y ejecución
+## 1. Alternativas de Solución y Algoritmos Integrados
+
+| Nombre en la CLI | Algoritmo / Estructura | Inserción | Decrease-Key | Extract-Min | Complejidad SSSP | Propósito en el Proyecto |
+|:--|:--|:--|:--|:--|:--|:--|
+| `binary_heap` | **Binary Min-Heap Indexado** | $O(\log V)$ | $O(\log V)$ | $O(\log V)$ | $O((V+E)\log V)$ | Línea base canónica en arreglo contiguo + tabla `pos` $O(1)$. |
+| `4ary_heap` | **4-ary Heap Contiguo ($d=4$)** | $O(\log_4 V)$ | $O(\log_4 V)$ | $O(4 \log_4 V)$ | $O((4V+E)\log_4 V)$ | **Óptimo para redes viales grandes ($N \ge 500$):** alta localidad de caché L1 (64B). |
+| `fibonacci_heap` | **Fibonacci Heap Dinámico** | $O(1)$ | $O(1)$ amort. | $O(\log V)$ amort. | $O(E + V\log V)$ | Cota teórica óptima mediante postergación perezosa y árboles dinámicos. |
+| `astar` | **Algoritmo $A^*$ (A-Star)** | $O(\log V)$ | $O(\log V)$ | $O(\log V)$ | Depende de $h(u)$ | **Ruteo de emergencia punto a punto ($s \to t$):** poda del 30% al 70% de nodos. |
+| `bellman_ford` | **Bellman-Ford (Referencia)** | — | — | — | $O(V \cdot E)$ | Oráculo independiente para validar consistencia matemática y ciclos negativos. |
+
+---
+
+## 2. Instalación y Requisitos
+
+Requiere **Python 3.10** o superior:
 
 ```bash
 cd python
-pip install -r requirements.txt
 
-python main.py                 # demostración completa (rutas, verificación, tablas, benchmark, figuras)
-python main.py --help          # interfaz común
-python -m pytest               # 219 pruebas
+# Crear y activar entorno virtual
+python -m venv .venv
+# En Windows:
+.venv\Scripts\activate
+# En Linux/macOS:
+source .venv/bin/activate
+
+# Instalar dependencias científicas y de pruebas
+pip install -r requirements.txt
 ```
 
-## Comandos
+---
+
+## 3. Comandos de la Interfaz Unificada (CLI)
+
+El punto de entrada es `main.py`, que ofrece subcomandos para todas las funcionalidades:
 
 ```bash
-python main.py list                                            # alternativas disponibles
-python main.py run                                             # red del Cusco, tiempo, origen A, binary_heap
-python main.py run --metric distance -q all --trace            # las 3 colas + comparación + traza
-python main.py run -i data/instances/clrs_24_6.txt -q fib -o results/r.json
+# Ejecutar demostración completa del sistema:
+python main.py
+
+# Listar las alternativas de algoritmos y colas disponibles:
+python main.py list
+
+# Ejecutar Dijkstra en la red de Cusco con métrica de tiempo (Dijkstra Modificado):
+python main.py run --metric time
+
+# Ejecutar Dijkstra con métrica física de distancia pura:
+python main.py run --metric distance
+
+# Demostración del Algoritmo A* hacia el Mercado Central San Pedro ('E'):
+python main.py astar --target E
+
+# Exportar especificación vectorial Graphviz (.dot) con ruta resaltada:
+python main.py graphviz --target E
+
+# Comparativa de las 3 colas de prioridad sobre la red de Cusco:
+python main.py compare --metric time
+
+# Instancia pequeña resuelta manualmente (Cormen CLRS 3ra Ed. Fig. 24.6):
+python main.py run -i data/instances/clrs_24_6.txt --trace
+
+# Salida verificable con certificado de optimalidad independiente de Bellman:
+python main.py run -i data/instances/clrs_24_6.txt -o results/r.json
 python main.py verify -i data/instances/clrs_24_6.txt -r results/r.json
-python main.py run --inline "A B 4; A C 1; C B 2" -s A -q all  # instancia dictada en la sesión
-python main.py compare -i data/instances/empates_grid_3x3.json # todas + Bellman-Ford, diferencias clasificadas
-python main.py generate --type random --nodes 500 --seed 7 -o results/r500.json
-python main.py generate --type grid --rows 4 --cols 4 --weights unit -o results/grid.json
-python main.py benchmark --scales 100 500 1000 --runs 5
-python main.py menu                                            # menú interactivo
+
+# Resolver grafo personalizado dictado en vivo por el docente durante la sesión:
+python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
+
+# Generar redes sintéticas reproducibles con semilla pseudoaleatoria:
+python main.py generate --type random --nodes 300 --seed 42 -o results/sintetico_300.json
+
+# Ejecutar banco de pruebas de escalabilidad experimental:
+python main.py benchmark --scales 50 100 250 500 --runs 5
+
+# Menú interactivo guiado por consola:
+python main.py menu
 ```
 
-Códigos de salida: `0` correcto · `1` la verificación encontró errores · `2` entrada inválida.
+### Códigos de Salida Seguros
+- `0`: Ejecución y verificación correctas.
+- `1`: Falla en verificación o divergencia de certificados.
+- `2`: Entrada inválida detectada por validación defensiva (pesos negativos, JSON mal formado, nodo inexistente).
 
-## Formatos de entrada
+---
 
-- **JSON vial** (`data/instances/cusco_centro.json`): aristas con `length_m`, `street_type` y `gradient_pct`; el peso se calcula con la impedancia andina según `--metric time|distance`.
-- **JSON genérico:** `{"name", "directed", "source", "nodes": [...], "edges": [{"origin","destination","weight"}] | [[u, v, w]]}`.
-- **Lista de aristas** (`.txt` / `.csv`): `u v w` por línea; `#` para comentarios; directivas `source X`, `node X` (vértice aislado) y `undirected`.
-- **En línea:** `--inline "u v w; u v w"` (más `--undirected` si corresponde).
+## 4. Batería de Pruebas Automatizadas (Pytest)
 
-## Instancias incluidas (`data/instances/`)
+Las 221 pruebas automatizadas siguen el patrón **AAA (Arrange - Act - Assert)**:
 
-| Archivo | Uso |
-|---|---|
-| `cusco_centro.json` | Caso de estudio: 6 intersecciones, 9 tramos. |
-| `clrs_24_6.txt` | Resuelta a mano (Cormen, Fig. 24.6): s=0, y=5, z=7, t=8, x=9. |
-| `desconectado.txt` | Vértices inalcanzables y aislados. |
-| `empates_rombo.txt`, `empates_grid_3x3.json` | Varios caminos óptimos (rutas pueden diferir con igual costo). |
-| `cuadricula_vial_6x6.json` | Cuadrícula sintética con pendientes y tipos de vía. |
-| `invalidas/*` | Peso negativo, ciclo negativo, peso no numérico, campos incompletos, nodo inexistente, JSON mal formado, nodos duplicados. |
-
-## Estructura
-
+```bash
+python -m pytest -v
 ```
-python/
-├── main.py                          # entrada: demo sin argumentos; CLI con argumentos
-├── src/
-│   ├── cli.py                       # interfaz común (run/compare/generate/verify/benchmark/menu)
-│   ├── algorithms/
-│   │   ├── dijkstra.py              # Dijkstra con inyección de cola ([Lk] = línea del pseudocódigo)
-│   │   ├── reference.py             # Bellman-Ford y Dijkstra con arreglo (referencias)
-│   │   └── registry.py              # solve(instancia, origen, método)
-│   ├── datastructures/
-│   │   ├── base.py                  # contrato PriorityQueue
-│   │   ├── indexed_min_heap.py      # Binary Heap + tabla de posiciones
-│   │   ├── d_ary_heap.py            # Heap d-ario (d = 4)
-│   │   ├── fibonacci_heap.py        # Fibonacci Heap
-│   │   └── registry.py              # selección de cola por nombre
-│   ├── io/graph_io.py               # lectura + validación de instancias
-│   ├── generators/instance_generator.py
-│   ├── verification/certificate.py  # certificado de optimalidad + comparación clasificada
-│   ├── models/cusco_network.py      # red del Centro Histórico
-│   ├── utils/                       # cost_model, measurement, presentation, latex_exporter
-│   ├── benchmarks/scalability_benchmark.py
-│   └── visualization/generate_figures.py
-├── tests/                           # 219 pruebas (pytest)
-├── data/instances/                  # instancias de demostración e inválidas
-└── results/                         # salidas generadas (ignorado por git)
-```
+
+Cobertura de pruebas:
+- `test_cli.py`: Validación de la interfaz CLI, comandos, flags y exportación de Graphviz.
+- `test_dijkstra.py`: Correctitud del algoritmo de Dijkstra e inyección de colas.
+- `test_dijkstra_manual.py`: Validación contra instancias manuales (Cormen CLRS 24.6) y casos de borde.
+- `test_equivalence.py`: Equivalencia estricta entre Binary Heap, 4-ary Heap, Fibonacci Heap y NetworkX.
+- `test_priority_queues.py`: Invariantes de montículo, inserción, extracción mínima y `decrease_key`.
+- `test_validation_io.py`: Detección defensiva de pesos negativos, ciclos y nodos inexistentes.
+
+---
+
+## 5. Cuaderno Google Colab
+
+En el directorio `colab/` se incluye el cuaderno interactivo `rutas_minimas_cusco.ipynb` (26 celdas), el cual puede ejecutarse directamente en la nube:
+- Implementación completa de las 3 colas de prioridad puras.
+- Algoritmo Dijkstra desacoplado y algoritmo $A^*$.
+- Visualización interactiva vectorial con **Graphviz** (`graphviz.Source`).
+- Suite de 7 pruebas unitarias ejecutadas directamente en el cuaderno.
+- Celda interactiva en vivo para evaluar cualquier par origen-destino propuesto durante la sustentación.
+- Gráficos de escalabilidad empírica de tiempos de CPU en microsegundos.
