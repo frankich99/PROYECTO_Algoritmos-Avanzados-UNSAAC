@@ -112,3 +112,49 @@ La Tabla \ref{tab:complejidades} resume formalmente las cotas asintóticas tempo
     \vspace{0.15cm}
     \raggedright \fontsize{9}{11}\selectfont \textit{Nota.} El asterisco ($^*$) denota costo amortizado según el método del potencial. Para montículos $d$-arios ($d=4$), la cota es $O((d \cdot |V| + |E|)\log_d |V|)$.
 \end{table}
+\subsection{Comparativa de Objetivos, Desempeño Real y Criterios de Selección}
+\label{sec:comparativa_profunda_colas}
+Para orientar la toma de decisiones técnicas en la investigación y en el desarrollo del proyecto semestral, se sintetizan a continuación los objetivos de diseño, los resultados empíricos y los criterios de uso de las estructuras analizadas:
+
+\subsubsection{¿Qué persigue y qué logra cada estructura?}
+\begin{enumerate}
+    \item \textbf{Binary Min-Heap Indexado:}
+    \begin{itemize}
+        \item \textit{Objetivo de diseño:} Proveer una implementación canónica y balanceada basada en un arreglo contiguo en memoria, con bajo consumo espacial (sin punteros explícitos) y búsqueda inmediata en $O(1)$ para la disminución de clave mediante la tabla hash inversa $\text{pos}[v]$.
+        \item \textit{Comportamiento real:} En grafos viales pequeños ($|V| \le 250$), es sumamente competitivo debido a su baja sobrecarga constante. Sin embargo, su árbol posee una profundidad de $\lceil \log_2 |V| \rceil$ niveles, lo cual genera un número elevado de intercambios de memoria y actualizaciones de la tabla hash.
+    \end{itemize}
+    \item \textbf{4-ary Heap Contiguo ($d=4$):}
+    \begin{itemize}
+        \item \textit{Objetivo de diseño:} Explotar la arquitectura de la memoria caché de los procesadores modernos (líneas de caché L1/L2 de 64 bytes) y aplanar la estructura del árbol a la mitad de niveles ($\log_4 |V| = 0.5 \log_2 |V|$).
+        \item \textit{Comportamiento real:} Aunque realiza más comparaciones por nivel durante \texttt{\_sift\_down} (al evaluar 4 hijos contiguos), reduce en aproximadamente un $40\%$ el número total de intercambios (\textit{swaps}) y escrituras en memoria. A partir de $N \ge 500$ nodos, se consolida como la alternativa más rápida en tiempo de CPU para redes viales.
+    \end{itemize}
+    \item \textbf{Fibonacci Heap:}
+    \begin{itemize}
+        \item \textit{Objetivo de diseño:} Alcanzar la cota asintótica óptima teórica conocida $O(|E| + |V|\log |V|)$ mediante la postergación perezosa (\textit{lazy}) de la reestructuración arbórea, permitiendo \texttt{Decrease-Key} en $O(1)$ amortizado.
+        \item \textit{Comportamiento real:} Logra reducir efectivamente entre un 25\% y un 35\% el número de comparaciones de clave frente a los heaps de arreglo. No obstante, en redes viales urbanas (que son sumamente dispersas con $|E| \approx 3.5|V|$), la cantidad de operaciones \texttt{Decrease-Key} es del mismo orden que $|V|$. Por ende, el beneficio asintótico no compensa el elevado costo de alocar múltiples objetos en el montículo dinámico y recorrer listas circulares doblemente enlazadas, sufriendo frecuentes fallos de caché.
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Guía Práctica de Selección para el Investigador y Desarrollador}
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{12}\selectfont
+    \renewcommand{\arraystretch}{1.25}
+    \caption{Guía de selección práctica de algoritmos y estructuras en redes de transporte}
+    \label{tab:guia_seleccion}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Algoritmo / Estructura} & \textbf{Escenario de Aplicación Recomendado} & \textbf{Justificación Técnica y Acción a Realizar} \\
+        \midrule
+        \textbf{Dijkstra + DAryHeap (d=4)} \newline \textit{(Recomendado General)} & Cálculo SSSP en redes viales urbanas medianas y grandes ($N \ge 500$). & Estructura óptima en tiempo real. Utilizar cuando se requiere calcular caminos mínimos hacia todos los destinos sobre la malla vial metropolitana. \\
+        \addlinespace
+        \textbf{Dijkstra + Binary Heap} & Redes viales pequeñas ($N < 500$), microcontroladores o memoria restringida. & Implementación sencilla y robusta. Utilizar para prototipado rápido o cuando el costo de memoria por nodo debe ser estrictamente mínimo. \\
+        \addlinespace
+        \textbf{Dijkstra + Fibonacci Heap} & Grafos muy densos ($|E| \gg |V|$, ej. redes de telecomunicaciones completas). & Utilizar únicamente cuando la razón $|E|/|V| \ge 20$, donde el costo constante amortizado $O(1)$ en \texttt{Decrease-Key} supera el sobrecosto de punteros. \\
+        \addlinespace
+        \textbf{Algoritmo $A^*$ (A-Star)} \newline \textit{(Recomendado Emergencias)} & Ruteo punto a punto ($s \to t$) para despacho de ambulancias hacia un hospital. & Utilizar cuando el destino es específico. Emplear la heurística admisible euclidiana $D/V_{\max}$, podando hasta el 70\% del grafo frente a Dijkstra. \\
+        \addlinespace
+        \textbf{Bellman-Ford} & Validación de consistencia y detección de ciclos negativos. & Emplear como oráculo independiente de verificación en suites de pruebas o cuando el modelo admita costos negativos (ej. incentivos de peaje). \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
