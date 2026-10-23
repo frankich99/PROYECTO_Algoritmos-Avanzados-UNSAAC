@@ -82,6 +82,15 @@ donde:
     \item $\Psi_{\text{vial}}$ es el coeficiente de restricción de maniobrabilidad: $\Psi = 1.20$ para calles estrechas coloniales con adoquín y $\Psi = 1.00$ para avenidas amplias asfaltadas.
 \end{itemize}
 
+\subsubsection{Dijkstra Modificado por Impedancia Topográfica Andina}
+La modificación sustancial al enfoque canónico de Dijkstra radica en sustituir la distancia física euclidiana ($w(u,v) = L(u,v)$) por la función de impedancia generalizada en segundos ($w(u,v) = 	ext{costo}(u,v)$), respondiendo a tres restricciones físicas críticas de la ciudad del Cusco:
+\begin{enumerate}
+    \item \textbf{Sentido Único Estricto (Direccionalidad Vial):} El grafo es estrictamente dirigido ($E \subset V \times V$). Calles coloniales como Espaderos ($A \to B$) o Marqués ($B \to D$) poseen un único sentido de circulación vehicular; una ambulancia no puede transitar en sentido inverso ($B \to A$) debido a la estrechez física de la calzada que imposibilita adelantar o esquivar el flujo contrario.
+    \item \textbf{Angostura de Calles Coloniales y Pasajes:} Las vías del casco monumental poseen calzadas de un solo carril adoquinado con alta densidad peatonal y radios de giro cerrados, reduciendo la velocidad nominal a $15\text{ km/h}$ en calles céntricas y $8\text{ km/h}$ en pasajes peatonales, en contraste con los $35\text{ km/h}$ transitables en avenidas periféricas (Av. Tullumayo o Av. El Sol).
+    \item \textbf{Gradiente Topográfico Andino (Subidas Críticas):} Con pendientes que superan el $8\%$, el factor $\Phi = 1.0 + 2.5 \cdot \max(0, \text{pendiente}/100)$ penaliza severamente el esfuerzo motriz de unidades vehiculares pesadas en subida, mientras que en bajadas el vehículo desciende a velocidad nominal sin esfuerzo mecánico adicional.
+\end{enumerate}
+Como consecuencia directa de esta modificación, el árbol de caminos mínimos resultante difiere estratégicamente: un trayecto más largo en distancia métrica pero que discurre por avenidas llanas resulta significativamente más rápido que un atajo físico a través de callejones coloniales empinados y angostos.
+
 \subsection{Instancia Pequeña Resuelta Manualmente: Centro Histórico del Cusco}
 Se define una instancia canónica de 6 intersecciones estratégicas ($|V| = 6$) y 9 tramos viales dirigidos ($|E| = 9$) representativa de la red vial cusqueña (Figura \ref{fig:grafo_tikz}).
 

@@ -22,20 +22,28 @@ El problema central que aborda este proyecto radica en investigar, implementar y
 Diseñar, implementar y evaluar experimentalmente una solución computacional modular para el cálculo de rutas mínimas en la red vial urbana de la ciudad del Cusco, contrastando el desempeño en tiempo de ejecución, operaciones elementales y consumo de memoria del Algoritmo de Dijkstra instrumentado con tres estructuras de colas de prioridad: Min-Heap Binario Indexado, $d$-ary Heap y Fibonacci Heap.
 
 \subsubsection{Objetivos Específicos}
+Siguiendo la metodología de ingeniería de software y análisis de algoritmos, los objetivos específicos se ordenan en cuatro fases secuenciales e integradas:
 \begin{enumerate}
-    \item \textbf{OE1 (Modelado Matemático y Topográfico):} Formular el grafo vial dirigido del Centro Histórico del Cusco y definir una función de costo generalizado que integre longitud física, velocidad de diseño por jerarquía vial y penalización por gradiente altitudinal andino.
-    \item \textbf{OE2 (Diseño e Implementación Algorítmica):} Implementar en Python 3 de manera pura y desacoplada las estructuras de datos de Min-Heap Binario Indexado, 4-ary Heap y Fibonacci Heap con soporte formal para la operación \texttt{Decrease-Key} en tiempo sublineal o constante amortizado.
-    \item \textbf{OE3 (Verificación y Pruebas Rigurosas):} Validar analíticamente una instancia pequeña de la red vial mediante traza manual paso a paso y construir una suite de pruebas automatizadas con Pytest bajo el estándar Arrange-Act-Assert (AAA) cubriendo casos básicos, límites, adversos y de escala.
-    \item \textbf{OE4 (Investigación y Aprendizaje Autónomo):} Fortalecer la autonomía técnica y metodológica mediante el diagnóstico riguroso de brechas conceptuales, la selección justificada del stack tecnológico y el diseño de un marco experimental reproducible.
+    \item \textbf{OE1 (Modelar):} Formular el modelo matemático del grafo vial dirigido del Centro Histórico del Cusco, definiendo una función de costo generalizado (impedancia andina) que cuantifique el impacto de calles de un solo sentido, calles angostas coloniales, pasajes peatonales y gradientes altitudinales positivos.
+    \item \textbf{OE2 (Diseñar e Implementar):} Diseñar e implementar bajo una arquitectura desacoplada en cuatro capas lógicas el algoritmo de Dijkstra parametrizado, integrando tres alternativas de colas de prioridad puras con soporte formal para \texttt{Decrease-Key}: Min-Heap Binario Indexado, 4-ary Heap ($d=4$) optimizado para líneas de caché L1/L2, y Fibonacci Heap amortizado.
+    \item \textbf{OE3 (Verificar):} Validar analíticamente la correctitud del algoritmo mediante traza manual paso a paso, certificado formal de optimalidad independiente en $O(|V|+|E|)$ y una suite automatizada de pruebas unitarias bajo el patrón Arrange-Act-Assert (AAA), contrastando los resultados contra oráculos canónicos de referencia (NetworkX y Bellman-Ford).
+    \item \textbf{OE4 (Evaluar e Investigar):} Evaluar experimentalmente la escalabilidad asintótica, el consumo de operaciones elementales y los tiempos de CPU en redes viales sintéticas y reales, contrastando la teoría asintótica clásica frente a la localidad espacial de memoria caché en hardware contemporáneo.
 \end{enumerate}
 
 \subsection{Alcance y Delimitación}
 El proyecto se delimita formalmente en las siguientes dimensiones:
 \begin{itemize}
-    \item \textbf{Delimitación Espacial:} La zona de estudio experimental inicial corresponde a la malla vial nuclear del Centro Histórico del Cusco (intersecciones entre Plaza Mayor, Plaza Regocijo, Qorikancha, San Francisco, San Pedro y Limacpampa), extensible a la red metropolitana completa mediante datos vectoriales de OpenStreetMap vía OSMnx.
-    \item \textbf{Delimitación Algorítmica:} Se evalúa el algoritmo de Dijkstra en grafos estáticos dirigidos con pesos deterministas no negativos. No se contemplan pesos negativos ni grafos con propiedades estocásticas o dinámicas en tiempo real en este hito.
-    \item \textbf{Alcance del Sistema:} Comprende la formulación matemática integral, el ejemplo manual resuelto, la arquitectura del prototipo inicial ejecutable, la suite de pruebas unitarias y los planes de investigación y experimentación.
+    \item \textbf{Delimitación Espacial:} La zona de estudio experimental corresponde a la malla vial nuclear del Centro Histórico del Cusco (6 intersecciones estratégicas: Plaza Mayor, Plaza Regocijo, Qorikancha, Plaza San Francisco, Mercado Central San Pedro y Plazoleta Limacpampa). Esta zona constituye el caso de estudio ideal debido a su altísima densidad de pasajes coloniales estrechos, giros de un solo sentido y severas pendientes topográficas. El sistema queda arquitectónicamente desacoplado y preparado para escalar a la red metropolitana completa mediante ingesta vectorial de OpenStreetMap vía OSMnx.
+    \item \textbf{Delimitación Algorítmica:} Se evalúa el algoritmo de Dijkstra en grafos dirigidos estáticos con costos deterministas no negativos ($w(e) \ge 0$). Para contrastar criterios con pesos negativos, se integra Bellman-Ford como algoritmo de referencia y verificación. No se modela congestión estocástica en tiempo real en esta fase.
+    \item \textbf{Alcance del Sistema:} Comprende la formulación matemática integral, la solución manual paso a paso, el núcleo ejecutable modular en Python con CLI interactiva, exportación vectorial de grafos con Graphviz (código DOT y diagramas), el cuaderno interactivo en Google Colab y la suite automatizada de 219 pruebas con Pytest.
 \end{itemize}
+
+\subsection{Control de Versiones y Repositorio Oficial en GitHub}
+Conforme a las directrices de reproducibilidad y trabajo colaborativo del curso, el desarrollo íntegro del proyecto se gestiona bajo el sistema de control de versiones Git y se aloja en el repositorio público oficial:
+\begin{center}
+    \url{https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC}
+\end{center}
+La organización de ramas adopta un esquema de integración continua estructurado: la rama \texttt{main} almacena las versiones estables consolidadas, complementada por ramas de desarrollo temáticas por integrante (\texttt{ramaFRANKI}, \texttt{ramaAldo}, \texttt{ramaYeni}, \texttt{RamaRomario}). Los avances computacionales, los datos procesados, la documentación técnica y las pruebas unitarias cuentan con trazabilidad completa mediante commits atómicos y descriptivos.
 
 \subsection{Organización del Documento}
 El presente informe se estructura rigurosamente en las siguientes secciones temáticas:
