@@ -222,6 +222,31 @@ def cmd_benchmark(args) -> int:
     return 0
 
 
+def cmd_graphviz(args) -> int:
+    from src.visualization.generate_figures import export_graphviz_dot
+    out_dir = PY_DIR / "results" / "figures"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_file = args.output or str(out_dir / ("ruta_optima_cusco.dot" if args.target else "red_vial_cusco.dot"))
+
+    highlight = None
+    if args.target:
+        from src.models.cusco_network import load_cusco_instance
+        from src.algorithms.registry import solve
+        inst = load_cusco_instance(args.metric)
+        source = args.source or "A"
+        res = solve(inst, source, "binary_heap")
+        highlight = res["paths"].get(args.target, [])
+        if not highlight:
+            print(f"[AVISO] No hay ruta alcanzable hacia el destino '{args.target}'.")
+
+    export_graphviz_dot([out_file], metric=args.metric, highlight_path=highlight)
+    print(f"Especificación Graphviz exportada exitosamente en: {out_file}")
+    if highlight:
+        print(f"Ruta óptima resaltada hacia {args.target}: {' -> '.join(highlight)}")
+    print("Nota: Puedes visualizar este archivo con la extensión Graphviz de VS Code o en https://dreampuf.github.io/GraphvizOnline/")
+    return 0
+
+
 def cmd_menu(_args, input_fn=input) -> int:
     """Menú interactivo: pensado para la demostración en vivo sin recordar parámetros."""
     inst: GraphInstance = load_cusco_instance("time")
@@ -230,7 +255,8 @@ def cmd_menu(_args, input_fn=input) -> int:
         print("1) Cargar red del Cusco (tiempo)   2) Cargar red del Cusco (distancia)")
         print("3) Cargar archivo de instancia      4) Escribir instancia en línea")
         print("5) Generar instancia aleatoria      6) Ejecutar una alternativa")
-        print("7) Comparar todas las alternativas  0) Salir")
+        print("7) Comparar todas las alternativas  8) Exportar grafo a Graphviz (.dot)")
+        print("0) Salir")
         op = input_fn("Opción: ").strip()
         try:
             if op == "0":
@@ -255,6 +281,10 @@ def cmd_menu(_args, input_fn=input) -> int:
                     ns.queue = input_fn("Alternativa [binary/4ary/fibonacci/bellman_ford/all] (binary): ").strip() or "binary"
                     ns.trace = input_fn("¿Mostrar traza? [s/N]: ").strip().lower() == "s"
                 (cmd_compare if op == "7" else cmd_run)(ns, inst)
+            elif op == "8":
+                tgt = input_fn("Destino a resaltar [B/C/D/E/F] (E): ").strip().upper() or "E"
+                ns = argparse.Namespace(metric=inst.metric, source="A", target=tgt, output=None)
+                cmd_graphviz(ns)
             else:
                 print("Opción no válida.")
         except (InvalidInstanceError, ValueError) as exc:
@@ -314,6 +344,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--seed", type=int, default=12345)
     p.add_argument("--output-dir", default=str(PY_DIR / "results" / "benchmark"))
     p.set_defaults(func=cmd_benchmark)
+
+    p = sub.add_parser("graphviz", help="Exporta la red vial o ruta óptima a especificación Graphviz (.dot)")
+    p.add_argument("--metric", choices=["time", "distance"], default="time", help="Métrica de impedancia")
+    p.add_argument("--source", "-s", default="A", help="Nodo origen")
+    p.add_argument("--target", "-t", help="Nodo destino para resaltar el camino óptimo")
+    p.add_argument("--output", "-o", help="Ruta de salida del archivo .dot")
+    p.set_defaults(func=cmd_graphviz)
 
     sub.add_parser("menu", help="Menú interactivo").set_defaults(func=cmd_menu)
     sub.add_parser("demo", help="Pipeline completo de demostración").set_defaults(func=cmd_demo)
