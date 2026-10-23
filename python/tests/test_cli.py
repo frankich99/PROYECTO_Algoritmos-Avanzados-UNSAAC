@@ -108,3 +108,9 @@ def test_graphviz_export(tmp_path, capsys):
     content = dot_file.read_text(encoding="utf-8")
     assert "digraph CuscoRoadNetwork" in content
     assert "A -> B" in content
+
+def test_astar_cli(capsys):
+    assert cli(["astar", "-t", "E"]) == 0
+    out = capsys.readouterr().out
+    assert "A* Heurístico" in out
+    assert "Optimalidad: GARANTIZADA" in out
