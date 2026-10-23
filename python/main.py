@@ -94,9 +94,14 @@ def run_demo_pipeline(run_benchmark: bool = True, make_figures: bool = True) -> 
         try:
             from src.visualization.generate_figures import (generate_cost_comparison_plot, generate_network_plot,
                                                             generate_operations_breakdown_plot,
-                                                            generate_scalability_plot)
+                                                            generate_scalability_plot,
+                                                            export_graphviz_dot)
             generate_network_plot([str(figures_dir / "grafo_cusco_mapa.png")])
             generate_cost_comparison_plot([str(figures_dir / "comparativa_metricas.png")])
+            # Exportar especificación vectorial Graphviz (.dot)
+            export_graphviz_dot([str(figures_dir / "red_vial_cusco.dot")], metric="time")
+            opt_path = base_t["paths"].get("E", [])
+            export_graphviz_dot([str(figures_dir / "ruta_optima_cusco.dot")], metric="time", highlight_path=opt_path)
             if bench is not None:
                 generate_scalability_plot(bench, [str(figures_dir / "benchmark_escalabilidad.png")])
                 generate_operations_breakdown_plot(bench, [str(figures_dir / "desglose_operaciones.png")])
