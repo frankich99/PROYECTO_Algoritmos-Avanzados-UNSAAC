@@ -1,0 +1,8 @@
+# Caso límite: G y H no son alcanzables desde A; Z es un vértice aislado.
+source A
+node Z
+A B 2
+B C 3
+A C 7
+G H 1
+H G 1

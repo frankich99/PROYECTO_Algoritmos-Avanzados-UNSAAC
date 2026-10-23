@@ -1,5 +1,21 @@
 """Configuración global de pytest y fixtures."""
+import sys
+from pathlib import Path
+
 import pytest
+
+PY_DIR = Path(__file__).resolve().parent.parent
+if str(PY_DIR) not in sys.path:
+    sys.path.insert(0, str(PY_DIR))
+
+INSTANCES = PY_DIR / "data" / "instances"
+QUEUES = ["binary_heap", "4ary_heap", "fibonacci_heap"]
+
+
+@pytest.fixture
+def instances_dir() -> Path:
+    return INSTANCES
+
 
 @pytest.fixture
 def sample_graph():

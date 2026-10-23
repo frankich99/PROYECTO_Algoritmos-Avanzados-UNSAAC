@@ -67,23 +67,24 @@ def export_trace_table(history: List[Dict[str, Any]], output_paths: List[str]) -
 
     closed_nodes = set()
     for step in history:
-        k = step["iteration"]
-        u = step["extracted_node"]
-        d_u = step["extracted_dist"]
+        # Formato de traza unificado de dijkstra_solver(record_trace=True)
+        k = step["k"]
+        u = step["extracted"]
+        d_u = step["dist_extracted"]
         closed_nodes.add(u)
 
         rel_notes = []
         for r in step["relaxations"]:
             if r["relaxed"]:
-                rel_notes.append(f"Relaja {r['destination']} ({r['new_dist']:.0f})")
+                rel_notes.append(f"Relaja {r['to_node']} ({r['new_dist']:.0f})")
             else:
-                rel_notes.append(f"Descarta {r['destination']}")
+                rel_notes.append(f"Descarta {r['to_node']}")
         action_text = ", ".join(rel_notes) if rel_notes else "Sin aristas"
 
         row_cells = []
         for n in nodes:
-            dist_val = step["current_distances"].get(n, float('inf'))
-            prev_val = step["current_predecessors"].get(n) or "-"
+            dist_val = step["distances"].get(n, float('inf'))
+            prev_val = step["predecessors"].get(n) or "-"
             d_str = f"{dist_val:.0f}" if dist_val != float('inf') else r"$\infty$"
             cell_text = f"{d_str} / {prev_val}"
             if n in closed_nodes:
