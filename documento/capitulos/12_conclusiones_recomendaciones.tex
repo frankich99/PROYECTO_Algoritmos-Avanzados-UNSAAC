@@ -1,0 +1,35 @@
+\section{Conclusiones y Recomendaciones}
+\label{sec:conclusiones}
+
+\subsection{Balance de Cumplimiento de los Objetivos del Proyecto}
+En correspondencia con los objetivos formulados al inicio de la investigación formativa, el equipo de investigación concluye satisfactoriamente las metas establecidas:
+\begin{enumerate}
+    \item \textbf{Cumplimiento del Objetivo General:} Se diseñó, implementó y evaluó experimentalmente una solución integral basada en algoritmos avanzados para rutas mínimas urbanas en la ciudad del Cusco, evidenciando solvencia en aprendizaje autónomo, adopción de herramientas reproducibles y pensamiento crítico para contrastar la teoría con datos empíricos.
+    \item \textbf{Cumplimiento de OE1 (Modelado Matemático e Impedancia Andina):} Se formalizó la topografía del Centro Histórico como un grafo dirigido ponderado $G = (V, E, W)$ y se formuló una función de impedancia topográfica $\Phi(\theta) = 1 + 2.5 \cdot \max(0, \theta)^2$ que penaliza las pendientes ascendentes preservando estrictamente la no negatividad de los pesos y la subestructura óptima.
+    \item \textbf{Cumplimiento de OE2 (Diseño Algorítmico y Desacoplamiento de Colas):} Se implementaron de forma nativa en Python 3 los algoritmos de Dijkstra y $A^*$, desacoplados mediante un contrato de interfaz común que permite la inyección indistinta del Min-Heap Binario Indexado, el 4-ary Heap Contiguo y el Fibonacci Heap.
+    \item \textbf{Cumplimiento de OE3 (Validación Rigurosa y Certificación Formal):} Se verificó la exactitud de los caminos mediante una suite automatizada de 221 pruebas unitarias bajo el estándar AAA, complementada por la validación cruzada frente al oráculo de NetworkX y la certificación matemática de optimalidad de Bellman en tiempo $O(|V| + |E|)$.
+    \item \textbf{Cumplimiento de OE4 (Atributo del Graduado AG\_C06):} Cada integrante superó de forma documentada sus brechas técnicas individuales, justificó la selección del stack tecnológico mediante análisis multicriterio y consolidó un banco experimental completamente reproducible.
+\end{enumerate}
+
+\subsection{Síntesis de Hallazgos Principales}
+\begin{itemize}
+    \item \textbf{Equivalencia Algorítmica Absoluta:} Las tres colas de prioridad y el algoritmo $A^*$ convergieron en el 100\% de las instancias evaluadas exactamente a los mismos costos mínimos y rutas óptimas, confirmando la solidez de las invariantes de datos y la corrección de las rutinas de disminución de clave (\texttt{Decrease-Key}).
+    \item \textbf{Dominancia del 4-ary Heap en Escala:} A partir de $|V| \ge 500$, la reducción a la mitad de la profundidad del árbol y la alineación de sus 4 hijos con una única línea de memoria caché (64 bytes) otorgaron al 4-ary Heap una aceleración de hasta un 12.0\% frente al montículo binario y una reducción de más de 40\% en intercambios de memoria en redes de hasta 5,000 vértices.
+    \item \textbf{Eficiencia de Poda con Algoritmo $A^*$:} La incorporación de la heurística euclidiana andina admisible y consistente redujo en un promedio de 65\% a 70\% la cantidad de vértices explorados respecto a Dijkstra tradicional, convirtiéndolo en la técnica predilecta para atención de emergencias punto a punto.
+    \item \textbf{Refutación Empírica del Fibonacci Heap en Redes Viales:} Se demostró rigurosamente que la cota asintótica óptima teórica $O(|E| + |V| \log |V|)$ no se traduce en eficiencia práctica sobre redes viales dispersas ($|E| \le 3.5|V|$), donde la fragmentación de memoria y los fallos de caché degradan severamente su desempeño.
+\end{itemize}
+
+\subsection{Lecciones Aprendidas en Aprendizaje Autónomo y Adaptación Tecnológica}
+\begin{itemize}
+    \item \textbf{Centralidad de la Jerarquía de Hardware:} La teoría asintótica clásica (\textit{Big-O}) ignora factores determinantes de la arquitectura computacional moderna, tales como la localidad espacial de la memoria caché, los fallos de traslación de páginas (TLB) y los costos de alocación dinámica en el \textit{heap} de la memoria RAM.
+    \item \textbf{Diseño Guiado por Invariantes y Pruebas:} La rigurosidad en la definición de precondiciones y postcondiciones, sumada al patrón Arrange-Act-Assert (AAA), previene fallos sutiles en operaciones complejas como los cortes en cascada de Fibonacci y la sincronización de tablas de mapeo inverso.
+    \item \textbf{Cultura de Reproducibilidad Científica:} La integración de pipelines automatizados (con scripts de pruebas unitarias, oráculos diferenciales y compilación de informes en LaTeX) erradica el error humano y garantiza la verificación inmediata de resultados.
+\end{itemize}
+
+\subsection{Recomendaciones Técnicas y Trabajo Futuro}
+Para la evolución y despliegue del sistema en aplicaciones urbanas reales, se recomienda:
+\begin{enumerate}
+    \item \textbf{Ingesta de la Malla Metropolitana Completa con OSMnx:} Escalar el grafo vial a toda la mancha urbana de la provincia del Cusco (distritos de Cusco, Wanchaq, Santiago, San Sebastián, San Jerónimo y Poroy), superando los 30,000 nodos y 75,000 segmentos viales.
+    \item \textbf{Incorporación de Modelos de Congestión Dinámica:} Extender el costo de impedancia estático hacia funciones dependientes del tiempo $c(e, t)$, alimentadas mediante datos históricos de tráfico vehicular o telemetría GPS en tiempo real.
+    \item \textbf{Desarrollo de Plataforma Web de Despacho:} Construir un servicio web REST en FastAPI y una interfaz cartográfica interactiva con Folium o MapLibre, orientada a operadores de centrales de emergencia (SAMU, Compañía de Bomberos 39 y Policía Nacional del Perú en Cusco).
+\end{enumerate}
