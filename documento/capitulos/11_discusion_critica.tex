@@ -1,0 +1,71 @@
+\section{Discusión Crítica de Hallazgos Empíricos}
+\label{sec:discusion}
+
+\subsection{Interpretación y Contraste entre Teoría y Evidencia Empírica}
+Uno de los hallazgos computacionales más reveladores del presente proyecto —que corrobora la literatura empírica canónica de \textcite{cherkassky1996shortest} y \textcite{lamarca1996cache}— radica en la marcada discrepancia existente entre la cota asintótica puramente matemática y el rendimiento real en tiempo de pared (\textit{wall-clock time}) sobre arquitecturas computacionales contemporáneas.
+
+Desde una perspectiva asintótica abstracta, la cota teórica del Fibonacci Heap \parencite{fredman1987fibonacci} es estrictamente superior a la del Min-Heap Binario Indexado:
+\begin{equation}
+    O(|E| + |V| \log |V|) \prec O((|V| + |E|) \log |V|)
+\end{equation}
+Sin embargo, esta superioridad matemática descansa sobre el supuesto de que el número de operaciones \texttt{Decrease-Key} ($|E|$) supera por varios órdenes de magnitud al número de extracciones mínimas ($|V|$), escenario que acontece exclusivamente en grafos de densidad extrema donde $|E| \to \Theta(|V|^2)$. En redes viales urbanas como la de Cusco, la propiedad de planaridad o cuasi-planaridad topológica impone un grado promedio de conectividad sumamente bajo ($2 \le \text{deg}(v) \le 4$), resultando en una razón arista-vértice acotada por $|E| \le 3.5 |V|$. 
+
+Bajo estas condiciones de dispersión vial, el volumen total de operaciones \texttt{Decrease-Key} es a lo sumo de $3.5 |V|$. Por ende, la reducción de $O(\log |V|)$ a $O(1)$ amortizado ahorra una cantidad modesta de comparaciones que resulta completamente eclipsada por la elevada constante oculta $c_{\text{Fib}} \gg c_{\text{Array}}$ inherente a la manipulación dinámica de punteros:
+\begin{enumerate}
+    \item \textbf{Costo de Alocación Dinámica y Boxing:} Cada vértice en el Fibonacci Heap requiere instanciar un nodo dinámico con 5 referencias de memoria (\texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}) más metadatos de grado y marcado booleano. En el modelo de objetos de Python, esto impone una sobrecarga de memoria de 48 a 64 bytes por nodo frente a los 12 bytes del montículo contiguo.
+    \item \textbf{Fallos Severos de Memoria Caché L1/L2:} El recorrido de listas circulares doblemente enlazadas induce accesos no contiguos a memoria principal (RAM), invalidando constantemente las líneas de caché de 64 bytes del procesador.
+    \item \textbf{Sobrecarga de Consolidación Amortizada:} Aunque las operaciones de inserción y decremento de clave son perezosas ($O(1)$), la operación \texttt{Extract-Min} transfiere toda la deuda computacional a una fase intensiva de consolidación de raíces mediante el barrido y sincronización de una tabla auxiliar de rangos.
+\end{enumerate}
+
+\subsection{Ventajas y Desventajas Prácticas de Cada Estructura Evaluada}
+La Tabla \ref{tab:resumen_pros_contras} resume las características operativas y trade-offs identificados durante la investigación.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11.5}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \setlength{\tabcolsep}{3.5pt}
+    \caption{Comparativa práctica de ventajas, desventajas y casos de uso óptimos}
+    \label{tab:resumen_pros_contras}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Estructura} & \textbf{Ventajas Principales} & \textbf{Desventajas Identificadas} & \textbf{Escenario Recomendado} \\
+        \midrule
+        \textbf{Indexed Min-Heap} & Almacenamiento contiguo, cero sobrecarga por punteros, indexación inversa $O(1)$ directa y mínima huella de memoria. & Altura de árbol $\lfloor \log_2 |V| \rfloor$; incrementa intercambios de flotado en grafos ultra-grandes. & Subredes urbanas, micro-enrutamiento y grafos de escala moderada ($|V| \le 1,000$). \\
+        \midrule
+        \textbf{4-ary Heap Contiguo} & Reduce la altura del árbol en un 50\% ($\log_4 |V|$); sus 4 hijos contiguos caben exactamente en una línea de caché (64 bytes). & Requiere 3 comparaciones por nivel durante el hundimiento (\texttt{\_sift\_down}), penalizando grafos diminutos. & Redes metropolitanas extensas ($|V| \ge 1,000$), despacho a nivel de distrito y provincia. \\
+        \midrule
+        \textbf{Fibonacci Heap} & Cota asintótica óptima teórica $O(|E| + |V| \log |V|)$; \texttt{Decrease-Key} en $O(1)$ amortizado sin ascensos. & Fragmentación de memoria RAM, fallos masivos de caché L1/L2 y consolidación costosa en \texttt{Extract-Min}. & Grafos densos no planares ($|E| \approx |V|^2$), investigación teórica de estructuras amortizadas. \\
+        \midrule
+        \textbf{Algoritmo $A^*$ (Heurística)} & Poda dirigida de nodos tentativos (60\% a 70\% de ahorro); preserva optimalidad con heurística admisible y consistente. & Requiere coordenadas espaciales $(x, y)$ o cálculo de distancias euclidianas; no aplica a SSSP todo-a-todos. & Rutas punto a punto de respuesta inmediata (origen de ambulancia a centro hospitalario). \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Evaluación de Escalabilidad y Punto de Cruce Empírico}
+A partir de los resultados cuantitativos reportados en la Tabla \ref{tab:benchmark_avance5}, se observa claramente el fenómeno de punto de cruce (\textit{cross-over point}):
+\begin{itemize}
+    \item En la instancia pequeña del Centro Histórico ($|V|=6$, $|E|=9$), el Min-Heap Binario Indexado obtiene el mejor tiempo ($55.0\ \mu s$), superando al 4-ary Heap ($62.0\ \mu s$) debido a que el overhead de evaluar tres comparaciones por nivel en el montículo cuaternario no aporta beneficios ante un árbol de profundidad menor a 3 niveles.
+    \item Al escalar a redes de tamaño intermedio y masivo ($|V|=500$ a $|V|=5,000$), la ventaja de la memoria caché y la menor altura del 4-ary Heap se consolidan de forma contundente: para $|V|=1,000$, el 4-ary Heap procesa el enrutamiento en $6.84\text{ ms}$ frente a los $7.42\text{ ms}$ del montículo binario; para $|V|=2,000$, logra $15.39\text{ ms}$ frente a $17.49\text{ ms}$ (un $12.0\%$ de aceleración sostenida); y para $|V|=5,000$, reduce los intercambios en memoria en un $40.4\%$ (27,603 swaps frente a 46,311).
+\end{itemize}
+
+\subsection{Limitaciones del Estudio}
+\begin{enumerate}
+    \item \textbf{Modelo de Velocidad Estática:} Se asume que las velocidades máximas y las condiciones de congestión vial son constantes en el tiempo, omitiendo la variabilidad dinámica del tráfico en horas punta de la ciudad del Cusco.
+    \item \textbf{Resolución de la Malla Sintética:} Si bien el caso de estudio del Centro Histórico cuenta con validación cartográfica real, la evaluación masiva de escalabilidad ($|V| \ge 1,000$) se realizó mediante grafos sintéticos con topología planar generada para reproducir la densidad del Cusco ($|E| \approx 3.3|V|$).
+    \item \textbf{Sobrecarga del Intérprete Python:} Aunque se implementaron las estructuras con tipado estricto y sin dependencias superfluas, el modelo de memoria del intérprete CPython introduce indirecciones de punteros internas que no existen en implementaciones nativas en C++ o Rust compiladas a código máquina directo.
+\end{enumerate}
+
+\subsection{Amenazas a la Validez}
+\begin{itemize}
+    \item \textbf{Validez Interna:} Perturbaciones del sistema operativo (cambios de contexto, servicios en segundo plano y pausas del recolector de basura). Esta amenaza se mitigó estrictamente mediante la desactivación del recolector de basura (\texttt{gc.disable()}) durante las ventanas de medición, la ejecución de 30 réplicas por caso y la computación del promedio y desviación estándar descartando los valores extremos.
+    \item \textbf{Validez Externa:} Los resultados y conclusiones de dominancia computacional no son extrapolables de manera directa a dominios no planares (redes sociales, grafos de enlaces web o redes de telecomunicaciones complejas), donde la densidad de aristas es masiva y el Fibonacci Heap o Pairing Heap podrían amortizar eficazmente sus costos.
+\end{itemize}
+
+\subsection{Situaciones de Conveniencia de Cada Alternativa}
+Para un equipo de ingeniería o de desarrollo de software vial en la ciudad del Cusco:
+\begin{itemize}
+    \item \textbf{Para consultas punto a punto de despacho inmediato (ambulancias, bomberos):} Se recomienda enfáticamente emplear el \textbf{Algoritmo $A^*$ respaldado por un 4-ary Heap}, aprovechando la poda espacial del 70\% y la máxima velocidad de procesamiento en caché.
+    \item \textbf{Para cálculo de rutas todo-hacia-todos o árboles completos de cobertura (SSSP):} Se recomienda el \textbf{Algoritmo de Dijkstra con 4-ary Heap Contiguo} para mallas metropolitanas de gran escala ($|V| > 1,000$) y el \textbf{Indexed Min-Heap} para micro-zonas patrimoniales.
+    \item \textbf{El Fibonacci Heap:} Debe reservarse exclusivamente como objeto de estudio teórico o en contextos donde la matriz de adyacencia sea completa y las operaciones \texttt{Decrease-Key} superen en millones a las extracciones.
+\end{itemize}
