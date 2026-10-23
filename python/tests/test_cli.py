@@ -100,3 +100,11 @@ def test_menu_scripted(capsys):
     assert cmd_menu(None, input_fn=lambda _p: next(answers)) == 0
     out = capsys.readouterr().out
     assert "A -> B -> C" in out and "[ERROR] Entrada inválida" in out and "Opción no válida" in out
+
+def test_graphviz_export(tmp_path, capsys):
+    dot_file = tmp_path / "test_graph.dot"
+    assert cli(["graphviz", "-o", str(dot_file), "-t", "E"]) == 0
+    assert dot_file.exists()
+    content = dot_file.read_text(encoding="utf-8")
+    assert "digraph CuscoRoadNetwork" in content
+    assert "A -> B" in content
