@@ -1,174 +1,163 @@
 # GUÍA RÁPIDA DE SUSTENTACIÓN: AVANCES 4 Y 5
 **Proyecto:** Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco  
 **Curso:** Algoritmos Avanzados (UNSAAC - 2026-II) · **Grupo 5**  
-**Docente:** Ing. Héctor Eduardo Ugarte Rojas  
+**Docente Revisor:** Ing. Héctor Eduardo Ugarte Rojas  
+**Ubicación del archivo:** `F:\unsaac\alg-avanzados\proyecto\GUIA.md`  
 
 ---
 
-## 1. Respuestas Precisas para las Preguntas del Docente
+## 0. Resumen Ejecutivo: ¿Está Completo o es Mucha Información?
 
-### A. Topografía del Cusco y "Dijkstra Modificado"
-* **¿Cómo se modela la topografía y el trazado urbano?**
-  1. **Calles de un solo sentido:** El grafo es estrictamente dirigido ($E \subseteq V \times V$). Si la calle Espaderos va de $A \to B$, una ambulancia no puede ir $B \to A$ porque la calzada colonial no permite el paso en contraflujo.
-  2. **Calles angostas y pasajes coloniales:** Tienen velocidad nominal reducida ($15\text{ km/h}$ en calles céntricas coloniales como Marqués o Santa Clara, y $8\text{ km/h}$ en peatonales como Loreto, frente a $35\text{ km/h}$ en avenidas amplias como Tullumayo o El Sol).
-  3. **Pendientes andinas (subidas):** Se aplica un modelo de impedancia con penalización por gradiente positivo:
-     $$\Phi = 1.0 + 2.5 \cdot \max(0, \text{pendiente}/100)$$
-     En subidas pronunciadas, los vehículos pesados de emergencia sufren sobreesfuerzo motriz crítico. En bajadas la penalización es nula ($\max = 0$).
-* **¿Qué es el "Dijkstra Modificado"?**
-  Es el algoritmo de Dijkstra optimizando **tiempo de viaje efectivo con impedancia topográfica** (`--metric time`) en lugar de la distancia puramente geométrica en metros (`--metric distance`). Permite que el sistema elija avenidas más largas pero planas y fluidas en vez de callejones coloniales empinados y angostos.
+* **El Informe Académico (`documento/main.pdf` - 60 páginas):** Es formal, exhaustivo y riguroso. Cubre toda la matemática, formulación teórica de $A^*$, análisis de jerarquía de memoria caché, pseudocódigo y pruebas. **Está completo y no le falta nada.**
+* **Esta Guía (`GUIA.md`):** Es tu **"machete" de bolsillo** de 5 a 10 minutos de lectura. Contiene exclusivamente **qué decir con tus propias palabras** y **qué comandos correr** para no enredarte con teoría pesada durante la sustentación.
+* **El Código (`python/`):** Está **100% verificado, sin fallos y con 221 pruebas automatizadas pasando exitosamente**.
 
 ---
 
-### B. Objetivos del Proyecto (Orden Secuencial Estricto)
-El proyecto sigue el ciclo de vida de la ingeniería de software y análisis de algoritmos en 4 fases:
-1. **OE1 (Modelar):** Grafo dirigido del Centro Histórico, calles dirigidas, angostura e impedancia topográfica andina ($\alpha = 2.5$).
-2. **OE2 (Diseñar e Implementar):** Arquitectura desacoplada en 4 capas y Dijkstra con inyección de tres colas de prioridad puras (Min-Heap Binario Indexado, 4-ary Heap y Fibonacci Heap).
-3. **OE3 (Verificar):** Validación analítica manual, certificado de optimalidad independiente $O(|V|+|E|)$ y suite automatizada de 219 pruebas AAA contra oráculos de referencia (NetworkX y Bellman-Ford).
-4. **OE4 (Evaluar e Investigar):** Batería experimental de escalabilidad, micro-benchmarks de CPU y análisis de jerarquía de memoria caché L1/L2 vs punteros dinámicos.
+## 1. El "Ping-Pong": Respuestas Clave a las Preguntas del Docente
+
+Si el profesor hace las preguntas de su revisión anterior, responde directamente así:
+
+### 1. ¿Cómo se toma en cuenta la topografía del Cusco?
+> *"Profesor, modelamos la red vial como un dígrafo dirigido con tres restricciones reales:  
+> 1. **Calles de un solo sentido:** La mayoría de calles del Centro Histórico son unidireccionales (ej. Espaderos va de $A \to B$, pero no permite el retorno $B \to A$).  
+> 2. **Calles angostas y peatonales:** Tienen velocidades nominales reducidas ($15\text{ km/h}$ en calles céntricas coloniales y $8\text{ km/h}$ en peatonales como Loreto, frente a $35\text{ km/h}$ en avenidas).  
+> 3. **Pendientes andinas (cuestas):** Usamos una función de impedancia con penalización por gradiente positivo:  
+>    $$\Phi = 1.0 + 2.5 \cdot \max(0, \text{pendiente}/100)$$  
+>    Subir una cuesta empinada penaliza severamente el tiempo de viaje; en bajadas la penalización es cero."*
 
 ---
 
-### C. Alcance y Delimitación
-* **Delimitación Espacial:** Centro Histórico del Cusco (6 intersecciones estratégicas: Plaza Mayor, Regocijo, Qorikancha, San Francisco, San Pedro, Limacpampa). Justificación: concentra la mayor densidad de giros obligados, vías angostas y fuertes pendientes. El sistema está desacoplado y listo para escalar a toda la ciudad mediante ingesta de OpenStreetMap vía OSMnx.
-* **Delimitación Algorítmica:** Grafos dirigidos estáticos con pesos no negativos ($w(e) \ge 0$). Bellman-Ford se incluye como referencia para verificar y comparar criterios con pesos negativos.
+### 2. ¿Qué es y de dónde sale el "Dijkstra Modificado"?
+> *"Es el algoritmo de Dijkstra optimizando **tiempo de viaje efectivo en segundos con impedancia topográfica** (`--metric time`) en vez de la distancia puramente geométrica en metros (`--metric distance`). Esto permite que el sistema elija avenidas más largas pero planas y fluidas en lugar de callejones estrechos y empinados."*
 
 ---
 
-### D. Comparativa de las 3 Alternativas y Rol de NetworkX
-* **1. Binary Min-Heap Indexado:** $O((|V|+|E|)\log |V|)$. Arreglo contiguo en memoria y diccionario inverso de posiciones `pos` $O(1)$. Estándar canónico y base de comparación.
-* **2. 4-ary Heap ($d=4$):** $O((4|V|+|E|)\log_4 |V|)$. Reduce la altura a la mitad ($\log_4 |V| = 0.5 \log_2 |V|$). Un nodo y sus 4 hijos caben contiguos en una línea de caché de CPU (64 bytes). Hace un 40% menos intercambios de memoria, superando en velocidad al binario a partir de $N \approx 500$ nodos.
-* **3. Fibonacci Heap:** $O(|E| + |V|\log |V|)$ amortizado. Óptimo asintótico teórico ($O(1)$ amortizado en `Decrease-Key`). Sin embargo, en redes viales dispersas ($|E| \approx 3.5|V|$), la sobrecarga de alocar objetos dinámicos en memoria y seguir punteros dispersos genera fallos de caché (*cache misses*), haciéndolo más lento en la práctica que los heaps basados en arreglos contiguos.
-* **¿Qué rol cumple NetworkX?**
-  **NetworkX NO se usa para resolver el problema** (las 3 colas y Dijkstra fueron programados 100% desde cero). NetworkX se utiliza únicamente como **oráculo canónico externo de prueba** (*ground truth oracle*) en la suite automatizada para certificar que nuestras implementaciones propias arrojan resultados exactos.
+### 3. ¿Por qué evaluaron 3 colas de prioridad y cuál es la mejor?
+> *"Evaluamos tres estructuras para analizar el impacto real de la jerarquía de memoria caché de la CPU:  
+> 1. **Binary Min-Heap Indexado:** Excelente en grafos pequeños ($N \le 50$) por su simplicidad en arreglo contiguo.  
+> 2. **4-ary Heap ($d=4$):** **Es el mejor en la práctica para redes viales grandes.** Reduce la altura del árbol a la mitad ($\log_4 V$) y sus 4 hijos caben exactamente en una línea de caché L1 de 64 bytes, haciendo un 40% menos intercambios de memoria.  
+> 3. **Fibonacci Heap:** Aunque en teoría es $O(|E| + |V|\log |V|)$ con $O(1)$ amortizado en `Decrease-Key`, en redes viales reales (que son dispersas, $|E| \approx 3.5|V|$) la dispersión de punteros dinámicos provoca fallos constantes de caché de CPU (*cache misses*), haciéndolo más lento en la práctica que los arreglos contiguos."*
 
 ---
 
-### E. Visualización y Herramientas Gráficas
-* **¿Con qué se grafica?**
-  * Con **Graphviz** (archivos `.dot` nativos y renderizados vectoriales) para la topología de la red vial, sentidos de giro y rutas óptimas resaltadas.
-  * Con **Matplotlib** para las métricas, diagramas de arquitectura y curvas experimentales de escalabilidad.
-  * **No se usa Plotly** por requerimiento de ligereza y determinismo vectorial en entornos académicos.
+### 4. ¿Para qué se usó NetworkX? ¿Hicieron trampa usando una librería?
+> *"No, profesor. **NetworkX no resuelve el problema**. Las tres colas de prioridad, Dijkstra y A* fueron programados **100% desde cero por nosotros**. NetworkX se utiliza únicamente como **oráculo canónico de referencia externa** en las pruebas automatizadas para certificar que nuestras implementaciones propias dan resultados matemáticamente idénticos."*
 
 ---
 
-### F. Arquitectura del Software: 4 Capas Lógicas Desacopladas
-1. **Capa 1 (Modelos Viales y Datos):** `models/cusco_network.py`, `utils/cost_model.py`, `data/processed/cusco_centro_network.json`.
-2. **Capa 2 (Estructuras de Datos):** `datastructures/base.py`, `indexed_min_heap.py`, `d_ary_heap.py`, `fibonacci_heap.py`.
-3. **Capa 3 (Algoritmos y Verificación):** `algorithms/dijkstra.py`, `algorithms/reference.py`, `verification/certificate.py`.
-4. **Capa 4 (Presentación, CLI y Pruebas):** `cli.py`, `main.py`, `visualization/generate_figures.py` (Graphviz y Matplotlib) y `tests/`.
+### 5. ¿En qué librería graficaron? ¿No va a ser Plotly?
+> *"Profesor, tal como usted indicó, **no usamos Plotly**. Graficamos con **Graphviz** generando archivos `.dot` nativos y diagramas vectoriales limpios (`results/figures/ruta_optima_cusco.dot`). En Google Colab se renderiza interactivamente como gráfico vectorial SVG con `graphviz.Source`."*
 
 ---
 
-### G. Repositorio Oficial y Versionamiento en GitHub
-* **URL Oficial:** [https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC)
-* **Estructura de Ramas:**
-  * `main`: Versión estable consolidada.
-  * `ramaFRANKI`: Arquitectura modular y prototipo base (Noe Choquenaira).
-  * `ramaAldo`: Suite de pruebas QA, Fibonacci Heap, CLI y guías de avance (Aldo Yaranga).
-  * `ramaYeni`: Análisis de stack y montículo d-ario (Yeni Porroa).
-  * `RamaRomario`: Pruebas preliminares de escalabilidad (Romario Quispe).
+### 6. ¿Qué aporta el Algoritmo $A^*$ (A-Star) al proyecto de investigación frente a Dijkstra?
+> *"Dijkstra es un algoritmo ciego: expande nodos en forma de círculo uniforme en todas las direcciones hacia todos los vértices.  
+> En cambio, **$A^*$ está diseñado para emergencias punto a punto** ($s \to t$, de la base al hospital). Usa la función $f(u) = g(u) + h(u)$ con una **heurística física admisible** ($h(u) = \text{distancia euclidiana} / V_{\max}$). Al no sobreestimar jamás el costo real, **$A^*$ poda entre el 30% y el 70% de los nodos explorados**, llegando exactamente a la misma ruta óptima pero mucho más rápido."*
 
 ---
 
-## 2. Guion de Demostración: Comandos Paso a Paso
+### 7. ¿Cuál es el orden secuencial de los objetivos?
+> *"Sigue las 4 fases de la ingeniería algorítmica:  
+> 1. **Modelar:** Red vial del Centro Histórico y función de impedancia topográfica.  
+> 2. **Diseñar e Implementar:** Arquitectura modular desacoplada en 4 capas y algoritmos con inyección de colas puras.  
+> 3. **Verificar:** Certificado analítico de optimalidad independiente y suite automatizada bajo patrón AAA.  
+> 4. **Evaluar e Investigar:** Pruebas empíricas de escalabilidad y análisis de impacto en caché L1/L2."*
 
-Ejecuta todos los comandos desde la carpeta `python/`:
+---
+
+## 2. Los Comandos Clave para la Demostración en Terminal
+
+Abre tu terminal en `F:\unsaac\alg-avanzados\proyecto\python` (o haz `cd python`):
+
 ```bash
 cd python
 ```
 
-### Paso 1: Mostrar alternativas disponibles
+### Comando 1: Ver las alternativas integradas (Avance 5)
 ```bash
 python main.py list
 ```
-> **Qué decir:** *"El sistema expone una interfaz común con tres colas de prioridad puras más el algoritmo canónico de Bellman-Ford como referencia."*
+> **Qué muestra:** Las 3 colas de prioridad puras (`binary_heap`, `4ary_heap`, `fibonacci_heap`) y Bellman-Ford como referencia.
 
 ---
 
-### Paso 2: Ejecutar Dijkstra Modificado en la Red de Cusco (Comparativa)
+### Comando 2: Demostrar Dijkstra Modificado (Tiempo vs. Distancia)
 ```bash
 python main.py compare --metric time
 ```
-> **Qué decir:** *"Procesamos la red vial con las 4 alternativas bajo la métrica tiempo (Dijkstra modificado con topografía andina). Todas arrojan distancias idénticas (veredicto EQUIVALENTES) y certificados de optimalidad válidos, mostrando las diferencias de operaciones primitivas de cada cola."*
+> **Qué muestra:** Ejecuta la red de Cusco con las alternativas. Comprueba que todas arrojan costos idénticos (veredicto: `EQUIVALENTES`), certificados válidos y compara el conteo de operaciones.
 
----
-
-### Paso 3: Demostrar cómo la topografía cambia la ruta óptima
+Para mostrar el impacto de la topografía:
 ```bash
 python main.py compare --metric distance
 ```
-> **Qué decir:** *"Al comparar contra la distancia euclidiana pura, se aprecia cómo cambian los tiempos y el orden de evaluación frente a la métrica con impedancia andina."*
 
 ---
 
-### Paso 4: Instancia Pequeña Resuelta Manualmente (Cormen CLRS Fig. 24.6)
+### Comando 3: Demostrar el Algoritmo $A^*$ y la Poda de Nodos
+```bash
+python main.py astar --target E
+```
+> **Qué muestra:** Compara Dijkstra vs. $A^*$ hacia el Mercado San Pedro. Demuestra que ambos encuentran la misma ruta óptima ($165.33\text{ s}$), pero **$A^*$ poda un 33.3% del grafo (solo expande 4 nodos frente a los 6 de Dijkstra)**.
+
+---
+
+### Comando 4: Instancia Pequeña Resuelta Manualmente (Avance 4 - Cormen CLRS)
 ```bash
 python main.py run -i data/instances/clrs_24_6.txt --trace
 ```
-> **Qué decir:** *"Demostramos el paso a paso exacto sobre el ejemplo clásico del libro de Cormen. Coincide exactamente con el orden de extracción (s, y, z, t, x) y las distancias manuales (0, 5, 7, 8, 9)."*
+> **Qué muestra:** Traza paso a paso sobre el ejemplo clásico del libro de Cormen (Fig. 24.6), coincidiendo exactamente con la resolución manual ($s, y, z, t, x$).
 
 ---
 
-### Paso 5: Demostrar Salida Verificable (Certificado de Optimalidad)
-```bash
-python main.py run -i data/instances/clrs_24_6.txt -o results/clrs.json
-python main.py verify -i data/instances/clrs_24_6.txt -r results/clrs.json
-```
-> **Qué decir:** *"Exportamos la solución a JSON y el certificador comprueba las condiciones de Bellman en $O(|V|+|E|)$ de forma independiente sin volver a ejecutar Dijkstra."*
-
----
-
-### Paso 6: ¿El docente dicta un grafo en la pizarra durante la sesión?
-```bash
-python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
-```
-*(Si es un grafo no dirigido, agrega el flag `--undirected` al final).*  
-> **Qué decir:** *"El sistema permite resolver al instante cualquier grafo ingresado en vivo por línea de comandos para las 3 alternativas simultáneamente."*
-
----
-
-### Paso 7: Demostrar Manejo de Entradas Inválidas
-```bash
-python main.py run -i data/instances/invalidas/peso_negativo.txt
-python main.py run -i data/instances/invalidas/json_mal_formado.json
-python main.py run -s NODO_INEXISTENTE
-```
-> **Qué decir:** *"El módulo de validación previa detecta de inmediato archivos con pesos negativos, formatos corruptos o vértices inexistentes, devolviendo un mensaje explicativo y código de salida 2."*
-
----
-
-### Paso 8: Generación y Visualización con Graphviz (.dot)
+### Comando 5: Generar el Grafo Vectorial con Graphviz
 ```bash
 python main.py graphviz --target E
 ```
-> **Qué decir:** *"Generamos el archivo de especificación vectorial `.dot` de Graphviz en `results/figures/ruta_optima_cusco.dot`, resaltando el camino mínimo hacia San Pedro (A -> B -> D -> E) en trazo verde grueso y estilizando los nodos."*
+> **Qué muestra:** Genera la especificación `.dot` en `results/figures/ruta_optima_cusco.dot`, resaltando el camino óptimo en trazo grueso verde.
 
 ---
 
-### Paso 9: Batería de 219 Pruebas Automatizadas con Pytest
+### Comando 6: Si el docente dicta un grafo en la pizarra en vivo
 ```bash
-python -m pytest -v
+python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
 ```
-> **Qué decir:** *"Ejecutamos la suite automatizada con 219 pruebas que cubren casos básicos, de borde, límites, adversos y de equivalencia cruzada contra NetworkX y Bellman-Ford."*
+> **Qué muestra:** Resuelve cualquier grafo ingresado en el momento con las 3 colas en simultáneo.
 
 ---
 
-### Paso 10: Menú Interactivo Guiado (Opcional)
+### Comando 7: Manejo de Entradas Inválidas (Avance 5)
 ```bash
-python main.py menu
+python main.py run -i data/instances/invalidas/peso_negativo.txt
+python main.py run -s NODO_INEXISTENTE
 ```
-> **Qué decir:** *"Disponemos de un menú de consola interactivo para navegar por todas las funciones sin necesidad de memorizar parámetros."*
+> **Qué muestra:** Detección defensiva con mensaje de error explicativo y código de salida seguro.
 
 ---
 
-## 3. Demostración en Google Colab (1 Clic)
+### Comando 8: Batería Completa de Pruebas Automatizadas (221 pruebas)
+```bash
+pytest -v
+```
+> **Qué muestra:** 221 pruebas unitarias bajo patrón AAA pasando al 100% en ~19 segundos.
 
-1. Ingresar a [Google Colab](https://colab.research.google.com/).
-2. Cargar el archivo `python/colab/rutas_minimas_cusco.ipynb`.
-3. Seleccionar **Entorno de ejecución > Ejecutar todas**.
-4. **Qué muestra:**
-   * Implementación pura de las 3 colas de prioridad.
-   * Cálculo de rutas del Centro Histórico del Cusco.
-   * **Diagrama interactivo vectorial con Graphviz** integrado nativamente en el cuaderno.
-   * Gráficos comparativos de Distancia vs. Tiempo de Emergencia.
-   * Curvas experimentales de escalabilidad asintótica.
+---
+
+## 3. Demostración en Google Colab (Para Sustentación sin Terminal)
+
+El archivo está listo en:  
+`python/colab/rutas_minimas_cusco.ipynb`
+
+### Pasos para usarlo:
+1. Entra a [colab.research.google.com](https://colab.research.google.com/).
+2. Haz clic en **Subir** (*Upload*) y sube `rutas_minimas_cusco.ipynb`.
+3. Menú **Entorno de ejecución > Ejecutar todas** (`Ctrl + F9`).
+
+### Celdas clave para mostrarle al profesor:
+* **Celda 12:** Tabla de verificación cruzada contra el oráculo NetworkX (equivalencia 100%).
+* **Celda 14:** Tabla comparativa **Dijkstra vs. $A^*$** (muestra la reducción de nodos expandidos).
+* **Celda 16:** **Renderizado interactivo de Graphviz** directo en pantalla (SVG con ruta resaltada).
+* **Celda 20:** **Batería de 7 pruebas automatizadas** (casos básicos, límites de nodo aislado $\infty$, grafo unitario $|V|=1$ y entradas inválidas).
+* **Celda 22:** **Instancia interactiva en vivo** (puedes cambiar `origen_demo` y `destino_demo` por cualquier nodo que pida el profesor).
+* **Celda 24:** Gráfico de curvas de escalabilidad experimental de las colas de prioridad.
