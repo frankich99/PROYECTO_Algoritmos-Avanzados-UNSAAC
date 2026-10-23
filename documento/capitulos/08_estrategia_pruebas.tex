@@ -57,3 +57,34 @@ Un aspecto metodológico central del proyecto consiste en la validación cruzada
     |d_{\text{binary}}[v] - d_{\text{4ary}}[v]| < \epsilon \quad \land \quad |d_{\text{binary}}[v] - d_{\text{fibonacci}}[v]| < \epsilon, \quad \forall v \in V, \quad \epsilon = 10^{-6}
 \end{equation}
 La prueba \texttt{test\_cross\_validation\_random\_synthetic\_graph} ejecuta esta verificación sobre 50 nodos y 200 aristas generadas con semilla fija (\texttt{seed=42}), garantizando reproducibilidad y confirmando que ninguna optimización de bajo nivel introdujo errores de cálculo en las distancias.
+
+\subsection{Salida Verificable y Certificado de Optimalidad de Bellman}
+\label{sec:certificado_optimalidad}
+Para redes con pesos no negativos ($w(e) \ge 0$), un vector de distancias $d$ y un árbol de predecesores $\pi$ constituyen la solución óptima si y solo si satisfacen las cuatro condiciones de Bellman, las cuales el módulo \texttt{src/verification/certificate.py} comprueba en tiempo lineal $O(|V|+|E|)$ de forma estrictamente independiente, sin re-ejecutar el algoritmo:
+\begin{enumerate}
+    \item[(a)] \textbf{Condición de Origen:} $d[s] = 0$.
+    \item[(b)] \textbf{Cota Superior Estricta (No Relajación Pendiente):} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se satisface $d[v] \le d[u] + w(u, v)$. Esta condición certifica que el vector $d$ no sobreestima el costo mínimo real $\delta(s, \cdot)$.
+    \item[(c)] \textbf{Consistencia de Predecesores:} Para todo vértice alcanzado $v \ne s$, existe un predecesor $\pi[v]$ tal que $d[v] = d[\pi[v]] + w(\pi[v], v)$, certificando que la solución no subestima el costo real.
+    \item[(d)] \textbf{Aciclicidad y Validez Topológica:} Cada camino reconstruido desde $s$ hasta $v$ emplea exclusivamente aristas existentes en $E$ y su longitud acumulada coincide con $d[v]$. Los vértices inalcanzables mantienen $d[v] = \infty$ y predecesor nulo.
+\end{enumerate}
+
+\subsection{Clasificación Formal de Diferencias entre Alternativas}
+\label{sec:clasificacion_diferencias_sec}
+Dado que el Algoritmo de Dijkstra es exacto, las distancias producidas por el Binary Heap, 4-ary Heap y Fibonacci Heap deben ser estrictamente equivalentes. No obstante, ante empates de costo mínimo o al comparar con Bellman-Ford, pueden surgir variaciones estructurales legítimas que el sistema clasifica de forma determinista (Tabla \ref{tab:clasificacion_diferencias}).
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{12}\selectfont
+    \caption{Taxonomía y clasificación de diferencias observadas entre alternativas}
+    \label{tab:clasificacion_diferencias}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{2.8cm}X@{}}
+        \toprule
+        \textbf{Diferencia Observada} & \textbf{Clasificación} & \textbf{Justificación Algorítmica} \\
+        \midrule
+        Distancia numérica distinta & Error Crítico & No debe ocurrir ($|d_1 - d_2| < 10^{-6}$). Indica violación de invariante. \\
+        Ruta distinta con igual costo & Propiedad Esperada & Múltiples caminos mínimos alternativos; el orden de inserción de cada cola desempata distinto. Ambas rutas son óptimas. \\
+        Conteo de primitivas internas & Propiedad Estructural & Refleja la arquitectura de cada montículo (Tabla \ref{tab:complejidades}). \\
+        Dijkstra bloquea y Bellman-Ford resuelve & Criterio Distinto & Dijkstra requiere precondición $w(e) \ge 0$. Bellman-Ford soporta aristas negativas siempre que no formen ciclos negativos. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}

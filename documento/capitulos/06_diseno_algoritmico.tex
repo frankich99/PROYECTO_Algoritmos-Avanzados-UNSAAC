@@ -158,3 +158,29 @@ Para orientar la toma de decisiones técnicas en la investigación y en el desar
         \bottomrule
     \end{tabularx}
 \end{table}
+
+\subsection{Correspondencia Formal entre Pseudocódigo y Código Fuente}
+\label{sec:correspondencia_codigo}
+Para asegurar la fidelidad algorítmica y la reproducibilidad técnica, cada bloque de la implementación en \texttt{src/algorithms/dijkstra.py} se mapea unívocamente con el Algoritmo \ref{alg:dijkstra_generico}. La Tabla \ref{tab:pseudo_codigo} sintetiza la correspondencia formal entre las líneas del pseudocódigo teórico y las instrucciones del código fuente Python.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{12}\selectfont
+    \caption{Correspondencia entre el Algoritmo \ref{alg:dijkstra_generico} y la implementación computacional}
+    \label{tab:pseudo_codigo}
+    \begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}p{5.4cm}X@{}}
+        \toprule
+        \textbf{Línea} & \textbf{Pseudocódigo Matemático} & \textbf{Instrucción en Código Python} \\
+        \midrule
+        1--6 & $d[v]\leftarrow\infty$, $\pi[v]\leftarrow$ NIL, $d[s]\leftarrow 0$ & \texttt{dist = \{v: float('inf')\}}, \texttt{prev = \{v: None\}}, \texttt{dist[s] = 0.0} \\
+        7 & $Q.\text{BUILD}(V, d)$ & \texttt{heap = create\_queue(...)}; \texttt{heap.insert(v, dist[v])} \\
+        8 & $S \leftarrow \emptyset$ & \texttt{visited = set()} \\
+        9--10 & \textbf{while} $Q \ne \emptyset$: $(u, d_u) \leftarrow Q.\text{EXTRACT\_MIN}()$ & \texttt{d\_u, u = heap.extract\_min()} \\
+        11--13 & \textbf{if} $d_u = \infty$ \textbf{break} & \texttt{if d\_u == float('inf'): break} \\
+        14 & $S \leftarrow S \cup \{u\}$ & \texttt{visited.add(u)} \\
+        15--18 & Relajación de $(u, v)$ con $v \notin S$ & \texttt{candidate\_d = d\_u + weight} \\
+        19--21 & $d[v]$, $\pi[v]$, $Q.\text{DECREASE\_KEY}$ & \texttt{heap.decrease\_key(v, candidate\_d)} \\
+        26 & \textbf{return} $(d, \pi)$ & \texttt{distances}, \texttt{predecessors}, \texttt{paths} y telemetría \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
