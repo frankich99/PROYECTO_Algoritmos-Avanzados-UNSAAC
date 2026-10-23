@@ -298,3 +298,83 @@ def generate_heaps_comparison_diagram(output_paths: List[str]) -> None:
         p.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(p, bbox_inches="tight")
     plt.close()
+def generate_graphviz_dot(metric: str = "time", highlight_path: List[str] = None) -> str:
+    """
+    Genera el código fuente DOT de Graphviz para la red vial del Cusco.
+    Permite visualizar la red vial dirigida con atributos topográficos reales
+    y opcionalmente resaltar un camino óptimo calculado por Dijkstra.
+    """
+    from src.models.cusco_network import ROAD_SEGMENTS, NODES_CUSCO
+    from src.utils.cost_model import CuscoCostModel
+
+    lines = [
+        "digraph CuscoRoadNetwork {",
+        '    graph [rankdir=LR, bgcolor="#f8fafc", fontname="Helvetica", pad="0.4", nodesep="0.6", ranksep="0.9"];',
+        '    node [shape=box, style="filled,rounded", fontname="Helvetica-Bold", fontsize=10, margin="0.2,0.1", penwidth=1.8];',
+        '    edge [fontname="Helvetica", fontsize=8.5, arrowsize=0.75, penwidth=1.5];',
+        ""
+    ]
+
+    opt_edges = set()
+    if highlight_path and len(highlight_path) >= 2:
+        for i in range(len(highlight_path) - 1):
+            opt_edges.add((highlight_path[i], highlight_path[i + 1]))
+
+    for node_id, name in NODES_CUSCO.items():
+        if node_id == "A":
+            fill = "#10b981"
+            fontcol = "white"
+            bordercol = "#047857"
+        elif highlight_path and node_id in highlight_path:
+            fill = "#3b82f6"
+            fontcol = "white"
+            bordercol = "#1d4ed8"
+        else:
+            fill = "#ffffff"
+            fontcol = "#0f172a"
+            bordercol = "#94a3b8"
+
+        label = f"{node_id}\\n{name}"
+        lines.append(f'    {node_id} [label="{label}", fillcolor="{fill}", fontcolor="{fontcol}", color="{bordercol}"];')
+
+    lines.append("")
+
+    for seg in ROAD_SEGMENTS:
+        cost = CuscoCostModel.calculate_cost(seg, metric=metric)
+        unit = "s" if metric == "time" else "m"
+        slope_sign = "+" if seg.gradient_pct > 0 else ""
+        edge_label = f"{int(seg.length_m)}m | {cost:.1f}{unit}\\n({seg.street_name[:18]}, {slope_sign}{seg.gradient_pct:.1f}%)"
+
+        is_opt = (seg.origin, seg.destination) in opt_edges
+        if is_opt:
+            edge_attrs = f'label="{edge_label}", color="#16a34a", fontcolor="#15803d", penwidth=3.2, weight=5'
+        else:
+            edge_attrs = f'label="{edge_label}", color="#64748b", fontcolor="#475569", penwidth=1.3'
+
+        lines.append(f"    {seg.origin} -> {seg.destination} [{edge_attrs}];")
+
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def export_graphviz_dot(output_paths: List[str], metric: str = "time", highlight_path: List[str] = None) -> str:
+    """
+    Exporta el archivo de especificación .dot para Graphviz y opcionalmente renderiza
+    si la herramienta 'dot' o el paquete python 'graphviz' está disponible.
+    """
+    dot_content = generate_graphviz_dot(metric=metric, highlight_path=highlight_path)
+    for p_str in output_paths:
+        p = Path(p_str)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(dot_content)
+
+        try:
+            import graphviz
+            src = graphviz.Source(dot_content)
+            render_base = str(p.with_suffix(''))
+            src.render(render_base, format='png', cleanup=True)
+        except Exception:
+            pass
+
+    return dot_content
