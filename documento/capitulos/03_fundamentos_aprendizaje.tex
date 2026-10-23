@@ -1,0 +1,81 @@
+\section{Fundamentos Teóricos y Aprendizaje Autónomo}
+\label{sec:fundamentos}
+
+\subsection{Conceptos y Algoritmos Requeridos}
+El desarrollo del proyecto descansa sobre tres pilares conceptuales de las ciencias de la computación: la teoría de grafos viales dirigidos, el diseño de colas de prioridad con clave disminuible y la relajación voraz (\textit{greedy}) de caminos mínimos.
+
+\subsubsection{Grafos Viales Urbanos y Propiedad de Red Plana}
+Una red vial urbana se modela formalmente como un grafo dirigido ponderado $G = (V, E, W)$, donde $V$ representa el conjunto de intersecciones viales o discontinuidades geométricas, $E \subseteq V \times V$ representa los tramos viales orientados según el sentido de circulación reglamentario, y $W: E \to \mathbb{R}^+$ asigna un costo no negativo a cada tramo. Las redes viales urbanas presentan propiedades geométricas cuasi-planas con una densidad extremadamente baja:
+\begin{equation}
+    |E| \approx k \cdot |V|, \quad \text{donde } 2.0 \le k \le 3.5
+\end{equation}
+Esta dispersión estructural condiciona de forma determinante el comportamiento asintótico de los algoritmos de optimización de rutas.
+
+\subsubsection{Algoritmo de Dijkstra e Invariante de Subestructura Óptima}
+El algoritmo de Dijkstra \parencite{dijkstra1959note} explora el espacio de búsqueda manteniendo una partición de los vértices en dos conjuntos disjuntos: el conjunto $S$ de vértices cuya distancia mínima desde el origen $s$ ya ha sido permanentemente determinada, y el conjunto $Q = V \setminus S$ de vértices tentativos gestionados en una cola de prioridad. En cada paso iterativo, el algoritmo extrae el vértice $u \in Q$ con la menor distancia tentativa acumulada $d[u]$, lo incorpora a $S$, y relaja cada arista saliente $(u, v) \in E$:
+\begin{equation}
+    \text{si } d[u] + w(u, v) < d[v] \implies d[v] \leftarrow d[u] + w(u, v), \quad \pi[v] \leftarrow u
+\end{equation}
+La actualización del valor $d[v]$ en la cola de prioridad exige ejecutar la operación \texttt{Decrease-Key}$(Q, v, d[v])$.
+
+\subsection{Fuentes Académicas Estudiadas y Criterios de Selección}
+La selección de literatura se condujo con criterios de rigor académico, priorizando artículos seminales arbitrados por pares, manuales algorítmicos estándar de la Association for Computing Machinery (ACM) e IEEE, e investigaciones sobre análisis de rendimiento bajo jerarquía de memoria (Tabla \ref{tab:criterios_fuentes}).
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Selección razonada de fuentes bibliográficas clave y criterios de pertinencia}
+    \label{tab:criterios_fuentes}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Fuente Académica} & \textbf{Tipología y Dominio} & \textbf{Criterio de Pertinencia e Impacto en el Proyecto} \\
+        \midrule
+        \textcite{dijkstra1959note} & Artículo Seminal (Numerische Mathematik) & Fundamento teórico del algoritmo SSSP con pesos no negativos y principio de relajación voraz. \\
+        \textcite{fredman1987fibonacci} & Artículo Teórico (Journal of the ACM) & Especificación formal del Fibonacci Heap con tiempos amortizados $O(1)$ para \texttt{Decrease-Key}. \\
+        \textcite{tarjan1983data} & Monografía Clásica (SIAM) & Análisis riguroso del método del potencial para el cálculo de costos amortizados en estructuras de datos. \\
+        \textcite{cherkassky1996shortest} & Estudio Empírico (Journal of Algorithms) & Evaluación experimental exhaustiva de algoritmos de caminos mínimos; evidencia de ineficiencias del Fibonacci Heap en grafos dispersos. \\
+        \textcite{lamarca1996cache} & Arquitectura y Algoritmos (ACM SODA) & Análisis del impacto de las líneas de caché L1/L2 y fallos de traducción TLB en montículos binarios y $d$-arios. \\
+        \textcite{boeing2017osmnx} & Sistemas Geoespaciales (Computers, Env. and Urban Systems) & Metodología de ingestión, validación y corrección topológica de grafos urbanos a partir de OpenStreetMap. \\
+        \textcite{cormen2022introduction} & Libro de Texto Avanzado (MIT Press) & Demostración formal de invariantes de bucle, cotas de recurrencia y pseudocódigo estructurado. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Diagnóstico Formal de Brechas de Conocimiento y Retos Técnicos}
+Al inicio del proyecto, el equipo diagnosticó cuatro brechas conceptuales y técnicas que trascendían los contenidos estándar de cursos formativos previos:
+\begin{enumerate}
+    \item \textbf{Brecha 1: Manipulación de Estructuras Arbóreas con Punteros Múltiples.} Dominio de la representación en memoria de listas circulares doblemente enlazadas con punteros padre, hijo, izquierdo y derecho (\textit{parent, child, left, right}), y ejecución correcta de cortes en cascada (\textit{cascading cuts}) sin fugas de memoria ni bucles infinitos.
+    \item \textbf{Brecha 2: Mapeo Inverso e Indexación en Colas de Prioridad.} Diseño e implementación de tablas de indexación directa ($\text{pos}[v]$) que mantengan sincronizada la posición física de un nodo en un arreglo contiguo frente a operaciones de \textit{sift-up} y \textit{sift-down}, permitiendo \texttt{Decrease-Key} en tiempo sublineal $O(\log |V|)$ sin incurrir en búsquedas lineales $O(|V|)$.
+    \item \textbf{Brecha 3: Ingestión y Topología de Grafos Geoespaciales Urbanos.} Extracción, proyección cartográfica y filtrado de componentes conexas a partir de datos vectoriales crudos de OpenStreetMap con OSMnx y GeoPandas.
+    \item \textbf{Brecha 4: Perfilado de Rendimiento a Nivel de Nanosegundos.} Metodología para medir tiempos de CPU reales aislando el ruido del recolector de basura (\textit{Garbage Collector}), efectos de calentamiento de caché (\textit{warm-up}) y lecturas directas de contadores de hardware.
+\end{enumerate}
+
+\subsection{Plan Individual y Grupal de Aprendizaje y Especialización}
+Para solventar las brechas identificadas y estructurar el desarrollo, el equipo organizó un plan de trabajo colaborativo e individualizado (Tabla \ref{tab:plan_aprendizaje}).
+
+\begin{table}[H]
+    \centering
+    \fontsize{10}{12.5}\selectfont
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Plan de aprendizaje y distribución de líneas de especialización (Grupo 5)}
+    \label{tab:plan_aprendizaje}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}p{4.5cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Integrante} & \textbf{Línea de Especialización} & \textbf{Estrategia y Recursos de Estudio} \\
+        \midrule
+        \textbf{Choquenaira Quispe, Noe Franklin} \newline \textmd{\scriptsize(Líder del Proyecto)} & Liderazgo Técnico, Arquitectura del Sistema y Modelado de Impedancia Andina & Concepción de la arquitectura desacoplada en 4 capas, formulación matemática de la impedancia topográfica $\Phi(\theta)$, estructuración geométrica del grafo vial de Cusco, integración del solver de Dijkstra y coordinación técnica del equipo. \\
+        \textbf{Porroa Sivana, Yeni Ruth} & Colas de Prioridad Contiguas Indexadas & Análisis del diseño de montículos binarios y $d$-arios ($d=4$) con tablas hash inversas y optimización de índices aritméticos en memoria contigua. \\
+        \textbf{Quispe Rimachi, Romario} & Estructuras Dinámicas Avanzadas & Estudio de Cormen (Capítulo 19) y Tarjan (1983) para la implementación de listas circulares dobles, árboles enlazados y cortes en cascada en Fibonacci Heap. \\
+        \textbf{Yaranga Achahui, Aldo} & Pruebas Automatizadas y Benchmarking & Adopción del estándar Arrange-Act-Assert con Pytest, perfilado con \texttt{time.perf\_counter\_ns} y exportación tipográfica automatizada a LaTeX. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Estrategia y Resolución de Dificultades Técnicas}
+Durante la construcción del prototipo, surgieron tres dificultades técnicas sustantivas que fueron analizadas y resueltas por el equipo:
+\begin{itemize}
+    \item \textbf{Sincronización del Mapeo Inverso en Montículos:} Al implementar el Min-Heap binario, las operaciones de intercambio (\textit{swap}) durante el flotado y hundido desincronizaban la tabla de posiciones $\text{pos}[v]$. La solución adoptada consistió en encapsular el intercambio en un método atómico \texttt{\_swap(i, j)} que actualiza de manera simultánea el arreglo del montículo y las entradas del diccionario inverso.
+    \item \textbf{Manejo de Raíces Marcadas en Fibonacci Heap:} La pérdida de un segundo hijo en nodos del Fibonacci Heap requería activar la cascada de cortes hacia los ancestros. Se implementó una rutina recursiva \texttt{\_cascading\_cut} que verifica el estado booleano de la bandera \texttt{mark}, restableciéndola a falso al promover el nodo a la lista raíz.
+    \item \textbf{Penalización Asimétrica por Pendiente:} La impedancia topográfica en calles cusqueñas no debe penalizar los tramos en descenso de la misma forma que los tramos en ascenso. El modelo se formuló mediante un operador $\max(0, \text{pendiente})$, asegurando que las bajadas no disminuyan artificialmente el tiempo de viaje por debajo de la velocidad libre de diseño de la vía.
+\end{itemize}
