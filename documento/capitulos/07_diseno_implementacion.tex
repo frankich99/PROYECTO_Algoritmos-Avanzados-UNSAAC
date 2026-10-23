@@ -87,7 +87,7 @@ Para garantizar que la ingestión de datos no dependa de estructuras en memoria 
 Para posibilitar la sustitución dinámica y transparente de colas en el solver de Dijkstra sin alterar el flujo algorítmico, cada una de las tres estructuras implementa una interfaz uniforme:
 \begin{itemize}
     \item \texttt{insert(item: str, key: float) -> None}: Inserta un identificador de vértice con su distancia tentativa asociada.
-    \item \texttt{extract\_min() -> Tuple[str, float]}: Extrae y retorna el elemento con menor clave acumulada, reestructurando el montículo según sus invariantes.
+    \item \texttt{extract\_min() -> Tuple[float, str]}: Extrae y retorna el par (clave, elemento) de menor clave acumulada, reestructurando el montículo según sus invariantes.
     \item \texttt{decrease\_key(item: str, new\_key: float) -> None}: Disminuye la clave del vértice a su nuevo valor relajado, flotando el nodo o ejecutando cortes en cascada.
     \item \texttt{is\_empty() -> bool}: Determina en $O(1)$ si existen vértices pendientes de procesamiento.
 \end{itemize}
@@ -111,14 +111,13 @@ A continuación, se presentan los códigos fuente de los algoritmos y estructura
     lastline=60
 ]{../python/src/datastructures/indexed_min_heap.py}
 
-% [PENDIENTE RAMA YENI (Yeni Porroa - 120893): Descomentar siguiente listing tras copiar d_ary_heap.py]
-% \lstinputlisting[
-%     language=Python,
-%     caption={Implementación del Montículo 4-ario contiguo (\texttt{python/src/datastructures/d\_ary\_heap.py})},
-%     label={lst:dary_heap_py},
-%     firstline=1,
-%     lastline=60
-% ]{../python/src/datastructures/d_ary_heap.py}
+\lstinputlisting[
+    language=Python,
+    caption={Implementación del Montículo 4-ario contiguo (\texttt{python/src/datastructures/d\_ary\_heap.py})},
+    label={lst:dary_heap_py},
+    firstline=1,
+    lastline=60
+]{../python/src/datastructures/d_ary_heap.py}
 
 % [PENDIENTE COMMIT 3 (Romario Quispe - 164257): Descomentar siguiente listing tras copiar fibonacci_heap.py]
 \lstinputlisting[

@@ -1,0 +1,9 @@
+# Dos caminos óptimos de igual costo hacia D (A-B-D y A-C-D cuestan 2).
+# Las alternativas deben dar la MISMA distancia; la ruta elegida puede variar
+# según cómo desempata cada cola (propiedad esperada, no es error).
+source A
+A B 1
+A C 1
+B D 1
+C D 1
+D E 3

@@ -1,0 +1,5 @@
+# Adverso: Dijkstra debe rechazarla; Bellman-Ford (referencia) sí la resuelve.
+source A
+A B 4
+A C 2
+C B -3

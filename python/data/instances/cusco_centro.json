@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "A",
+      "name": "Plaza Mayor del Cusco"
+    },
+    {
+      "id": "B",
+      "name": "Plaza Regocijo (Cusipata)"
+    },
+    {
+      "id": "C",
+      "name": "Qorikancha (Santo Domingo)"
+    },
+    {
+      "id": "D",
+      "name": "Plaza San Francisco"
+    },
+    {
+      "id": "E",
+      "name": "Mercado Central San Pedro"
+    },
+    {
+      "id": "F",
+      "name": "Plazoleta Limacpampa"
+    }
+  ],
+  "edges": [
+    {
+      "origin": "A",
+      "destination": "B",
+      "length_m": 180.0,
+      "street_type": "calle_centro",
+      "gradient_pct": 1.5,
+      "street_name": "Calle Espaderos / Portal Carnicerías",
+      "travel_time_sec": 44.82
+    },
+    {
+      "origin": "A",
+      "destination": "C",
+      "length_m": 450.0,
+      "street_type": "calle_centro",
+      "gradient_pct": -2.0,
+      "street_name": "Calle Loreto / Pampa del Castillo",
+      "travel_time_sec": 108.0
+    },
+    {
+      "origin": "B",
+      "destination": "D",
+      "length_m": 220.0,
+      "street_type": "calle_centro",
+      "gradient_pct": 3.0,
+      "street_name": "Calle Garcilaso / Calle Marqués",
+      "travel_time_sec": 56.76
+    },
+    {
+      "origin": "B",
+      "destination": "C",
+      "length_m": 400.0,
+      "street_type": "calle_centro",
+      "gradient_pct": -1.0,
+      "street_name": "Calle San Bernardo / Almagro",
+      "travel_time_sec": 96.0
+    },
+    {
+      "origin": "C",
+      "destination": "F",
+      "length_m": 350.0,
+      "street_type": "avenida",
+      "gradient_pct": 0.5,
+      "street_name": "Calle Ahuacpinta / Limacpampa Grande",
+      "travel_time_sec": 36.45
+    },
+    {
+      "origin": "C",
+      "destination": "E",
+      "length_m": 600.0,
+      "street_type": "calle_centro",
+      "gradient_pct": 2.0,
+      "street_name": "Calle Matará / Tres Cruces de Oro",
+      "travel_time_sec": 151.2
+    },
+    {
+      "origin": "D",
+      "destination": "E",
+      "length_m": 250.0,
+      "street_type": "calle_centro",
+      "gradient_pct": 2.5,
+      "street_name": "Calle Santa Clara / Arco Santa Clara",
+      "travel_time_sec": 63.75
+    },
+    {
+      "origin": "D",
+      "destination": "C",
+      "length_m": 500.0,
+      "street_type": "calle_centro",
+      "gradient_pct": -2.5,
+      "street_name": "Calle Marqués / Mantas",
+      "travel_time_sec": 120.0
+    },
+    {
+      "origin": "E",
+      "destination": "F",
+      "length_m": 700.0,
+      "street_type": "avenida",
+      "gradient_pct": -1.0,
+      "street_name": "Calle Nueva Baja / Av. Tullumayo",
+      "travel_time_sec": 72.0
+    }
+  ]
+}

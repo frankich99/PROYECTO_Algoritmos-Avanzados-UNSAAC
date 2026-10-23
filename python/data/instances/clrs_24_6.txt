@@ -1,0 +1,14 @@
+# Instancia pequeña resuelta a mano: Cormen et al., Introduction to Algorithms, Fig. 24.6
+# Formato: origen destino peso   (grafo dirigido)
+# Resultado manual desde s: s=0, y=5, z=7, t=8, x=9
+source s
+s t 10
+s y 5
+t x 1
+t y 2
+y t 3
+y x 9
+y z 2
+x z 4
+z x 6
+z s 7

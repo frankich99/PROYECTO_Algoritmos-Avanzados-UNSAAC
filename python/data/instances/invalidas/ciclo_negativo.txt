@@ -1,0 +1,5 @@
+# Adverso: ningún algoritmo debe devolver distancias (ciclo negativo B->C->B).
+source A
+A B 1
+B C -2
+C B 1

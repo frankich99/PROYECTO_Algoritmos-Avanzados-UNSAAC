@@ -1,0 +1,118 @@
+\section{Avance 4: Implementación de la Primera Alternativa}
+\label{sec:avance4}
+
+La primera alternativa implementada y validada es el algoritmo de Dijkstra con el \textit{Min-Heap} binario indexado (\texttt{IndexedMinHeap}). Ambos quedan integrados en la arquitectura de la Figura \ref{fig:arquitectura}: el sistema permite cargar o generar una instancia, ejecutar el algoritmo y obtener una salida verificable de forma independiente.
+
+\subsection{Flujo de Ejecución sobre el Sistema}
+La demostración se realiza desde el directorio \texttt{python/} con la interfaz común del sistema:
+\begin{lstlisting}[language=bash, caption={Comandos de demostración del Avance 4}]
+python main.py run --trace                                # red del Cusco, origen A
+python main.py run -i data/instances/clrs_24_6.txt --trace -o results/clrs.json
+python main.py verify -i data/instances/clrs_24_6.txt -r results/clrs.json
+python main.py generate --type random --nodes 200 --seed 7 -o results/r200.json
+python main.py run -i data/instances/invalidas/peso_negativo.txt
+\end{lstlisting}
+
+\subsection{Decisiones de Implementación y Estructuras de Datos}
+\begin{enumerate}
+    \item \textbf{Contrato abstracto de cola.} La clase \texttt{PriorityQueue} (\texttt{src/datastructures/base.py}) fija las operaciones \texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key} e \texttt{is\_empty}. El solver obtiene la estructura concreta de un registro por nombre, de modo que la segunda alternativa reutiliza el mismo código algorítmico.
+    \item \textbf{Tabla de posiciones.} El diccionario $\text{pos}: V \to \mathbb{N}$ ubica un vértice en $O(1)$. Todo intercambio pasa por \texttt{\_swap}, que actualiza el arreglo y la tabla en la misma operación.
+    \item \textbf{Construcción completa de $Q$.} Se insertan todos los vértices al inicio (línea 7 del Algoritmo \ref{alg:dijkstra_generico}), por lo que cada vértice se extrae exactamente una vez y los conteos se contrastan directamente con la traza manual.
+    \item \textbf{Validación previa.} Antes de ejecutar se verifica que el grafo no esté vacío, que los identificadores sean únicos, que los destinos existan, que los pesos sean numéricos, finitos y no negativos, y que el origen exista.
+    \item \textbf{Instrumentación opcional.} La traza (\texttt{record\_trace}) copia el estado en cada iteración, con costo $O(|V|^2)$ total; se activa para la demostración y se desactiva al medir.
+\end{enumerate}
+
+\begin{table}[H]
+    \caption{Estructuras de datos de la primera alternativa}
+    \label{tab:estructuras_avance4}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.6cm}X@{}}
+        \toprule
+        \textbf{Estructura} & \textbf{Ubicación} & \textbf{Justificación} \\
+        \midrule
+        Lista de adyacencia & Grafo & Red vial dispersa ($|E| \approx 3.5|V|$): solo se recorren vecinos reales. \\
+        Arreglo de pares (clave, vértice) & \texttt{IndexedMinHeap.heap} & Heap implícito sin punteros; hijos en $2i+1$ y $2i+2$. \\
+        Diccionario vértice $\to$ índice & \texttt{IndexedMinHeap.pos} & Localización $O(1)$ para \texttt{decrease\_key}. \\
+        Diccionarios \texttt{dist}, \texttt{prev} & Dijkstra & Distancias tentativas $d$ y predecesores $\pi$. \\
+        Conjunto \texttt{visited} & Dijkstra & Conjunto $S$ de vértices permanentes. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Correspondencia entre Pseudocódigo y Código Fuente}
+Cada línea relevante de \texttt{src/algorithms/dijkstra.py} está etiquetada con \texttt{[Lk]}, donde $k$ es la línea del Algoritmo \ref{alg:dijkstra_generico}. La Tabla \ref{tab:pseudo_codigo} resume la correspondencia.
+
+\begin{table}[H]
+    \caption{Correspondencia entre el Algoritmo \ref{alg:dijkstra_generico} y la implementación}
+    \label{tab:pseudo_codigo}
+    \begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}p{5.2cm}X@{}}
+        \toprule
+        \textbf{Línea} & \textbf{Pseudocódigo} & \textbf{Código Python} \\
+        \midrule
+        1--6 & $d[v]\leftarrow\infty$, $\pi[v]\leftarrow$ NIL, $d[s]\leftarrow 0$ & \texttt{dist}, \texttt{prev}, \texttt{dist[source] = 0.0} \\
+        7 & $Q.\text{BUILD}(V, d)$ & \texttt{heap = create\_queue(...)}; \texttt{heap.insert(v, dist[v])} \\
+        8 & $S \leftarrow \emptyset$ & \texttt{visited = set()} \\
+        9--10 & \textbf{while} $Q \ne \emptyset$: $(u, d_u) \leftarrow Q.\text{EXTRACT\_MIN}()$ & \texttt{d\_u, u = heap.extract\_min()} \\
+        11--13 & \textbf{if} $d_u = \infty$ \textbf{break} & \texttt{if d\_u == INF: break} \\
+        14 & $S \leftarrow S \cup \{u\}$ & \texttt{visited.add(u)} \\
+        15--18 & relajación de $(u, v)$ con $v \notin S$ & \texttt{candidate\_d = d\_u + weight} \\
+        19--21 & $d[v]$, $\pi[v]$, $Q.\text{DECREASE\_KEY}$ & \texttt{heap.decrease\_key(v, candidate\_d)} \\
+        26 & \textbf{return} $(d, \pi)$ & \texttt{distances}, \texttt{predecessors} y, como extensión, \texttt{paths} y \texttt{stats} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\lstinputlisting[
+    language=Python,
+    caption={Bucle principal de Dijkstra con etiquetas de línea del pseudocódigo (\texttt{python/src/algorithms/dijkstra.py})},
+    label={lst:dijkstra_loop},
+    firstline=61,
+    lastline=97
+]{../python/src/algorithms/dijkstra.py}
+
+\subsection{Salida Verificable: Certificado de Optimalidad}
+Para pesos no negativos, el par $(d, \pi)$ es una solución óptima si y solo si se cumplen cuatro condiciones, que \texttt{verify\_shortest\_paths} comprueba en $O(|V|+|E|)$ sin volver a ejecutar Dijkstra:
+\begin{enumerate}
+    \item[(a)] $d[s] = 0$;
+    \item[(b)] para toda arista $(u,v)$ con $d[u] < \infty$: $d[v] \le d[u] + W(u,v)$, es decir, no queda ninguna relajación posible;
+    \item[(c)] todo vértice alcanzado $v \ne s$ tiene un predecesor $\pi[v]$ con $d[v] = d[\pi[v]] + W(\pi[v], v)$;
+    \item[(d)] cada ruta reportada va de $s$ a $v$, usa aristas existentes y cuesta $d[v]$; los vértices inalcanzables tienen $d = \infty$ y ruta vacía.
+\end{enumerate}
+La condición (b) garantiza que $d$ no sobreestima $\delta(s,\cdot)$ y la (c), que no la subestima. El resultado puede exportarse a JSON (\texttt{-o}) y validarse después con el comando \texttt{verify}.
+
+\subsection{Validación con Instancias Resueltas Manualmente}
+\paragraph{Red del Cusco, métrica distancia.} $B=180$; $D=180+220=400$; $C=\min(450,\,180+400)=450$; $E=\min(400+250,\,450+600)=650$; $F=\min(450+350,\,650+700)=800$. Los conteos manuales (6 inserciones, 6 extracciones, 5 \texttt{decrease\_key}, 9 relajaciones) coinciden con los del programa.
+
+\paragraph{Red del Cusco, métrica tiempo.} Con $t = \frac{L}{v}\left(1 + 2.5\max(0, p/100)\right)$, $v_{\text{centro}}=15$ km/h y $v_{\text{avenida}}=35$ km/h: $t_{AB}=44.82$, $t_{AC}=108.00$, $t_{BD}=56.76$, $t_{CF}=36.45$ y $t_{DE}=63.75$ s. De ahí $D=101.58$, $E=165.33$ y $F=144.45$ s, idénticos a la salida. En esta métrica hay 8 relajaciones (no 9): el orden de extracción es A, B, D, C, F, E, así que al extraer E el vértice F ya es permanente y la arista $E\to F$ no se evalúa.
+
+\paragraph{Instancia de referencia (Cormen et al., Fig. 24.6).} Orden de extracción $s, y, z, t, x$ con distancias $0, 5, 7, 8, 9$, reproducido exactamente (\texttt{data/instances/clrs\_24\_6.txt}).
+
+\paragraph{Implementaciones de referencia.} Las distancias se contrastan con Bellman-Ford (sin colas de prioridad), con Dijkstra sobre arreglo no ordenado y con \texttt{networkx}.
+
+\subsection{Pruebas Automatizadas}
+La suite (\texttt{python -m pytest}) contiene 219 pruebas, todas aprobadas. Las correspondientes a este avance son:
+\begin{table}[H]
+    \caption{Pruebas automatizadas de la primera alternativa}
+    \label{tab:pruebas_avance4}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{1.8cm}>{\ttfamily\small\raggedright\arraybackslash}p{4.4cm}X@{}}
+        \toprule
+        \textbf{Tipo} & \textbf{Archivo} & \textbf{Casos} \\
+        \midrule
+        Básicos & test\_\allowbreak{}dijkstra\_\allowbreak{}manual.py & Cusco por distancia y por tiempo con valores esperados escritos como aritmética manual; conteos de la traza; CLRS 24.6. \\
+        Límite & test\_\allowbreak{}dijkstra\_\allowbreak{}manual.py, \allowbreak test\_\allowbreak{}priority\_\allowbreak{}queues.py & Un solo nodo; inalcanzables y aislados; origen sin salidas; aristas de peso 0 y ciclos; lazos y aristas paralelas; pesos $10^{12}$ y $10^{-9}$; cadena de 3000 nodos; cola vacía; claves iguales. \\
+        Adversos & test\_\allowbreak{}validation\_\allowbreak{}io.py, \allowbreak test\_\allowbreak{}priority\_\allowbreak{}queues.py & Pesos negativos, NaN, $\infty$ y texto; nodos inexistentes o duplicados; JSON mal formado; archivo inexistente o no UTF-8; inserción duplicada; el verificador detecta salidas manipuladas. \\
+        Estrés & test\_\allowbreak{}priority\_\allowbreak{}queues.py & 3000 operaciones aleatorias contrastadas con un modelo basado en \texttt{heapq}. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Modificaciones Respecto del Diseño Inicial}
+\begin{enumerate}
+    \item El contrato de colas pasó de ser una descripción a una clase abstracta. \texttt{extract\_min} retorna \texttt{(clave, item)}, como ya hacía el código; la Sección \ref{sec:implementacion} lo describía al revés.
+    \item Se eliminaron la selección por \texttt{if/elif} y las importaciones protegidas con \texttt{try/except ImportError}, que ocultaban la ausencia de \texttt{d\_ary\_heap.py}.
+    \item Se unificaron el formato de la traza y los nombres de los contadores; antes \texttt{python main.py} terminaba con \texttt{KeyError}.
+    \item Se agregaron la capa de lectura y validación, el certificado de optimalidad y las implementaciones de referencia.
+    \item Las inserciones duplicadas y las claves NaN se rechazan explícitamente.
+\end{enumerate}
+
+\subsection{Pendientes, Errores Conocidos y Dificultades}
+\textbf{Pendientes:} red vial real a mayor escala, Pairing Heap e interfaz gráfica. \textbf{Errores conocidos:} el cuaderno de Colab no está sincronizado con \texttt{src/}, y la tabla preliminar de la Sección \ref{sec:resultados} no es reproducible, porque el montículo 4-ario no existía en ese momento; se reemplaza por las mediciones de la Sección \ref{sec:avance5}. \textbf{Dificultades:} integrar módulos de distintos integrantes sin un contrato ejecutable, y un defecto latente en \texttt{FibonacciHeap.\_consolidate} (arreglo de grados de tamaño fijo), corregido de forma preventiva.

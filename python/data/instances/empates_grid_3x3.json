@@ -1,0 +1,139 @@
+{
+  "name": "grid_3x3_unit",
+  "directed": true,
+  "metric": "weight",
+  "nodes": [
+    "0_0",
+    "0_1",
+    "0_2",
+    "1_0",
+    "1_1",
+    "1_2",
+    "2_0",
+    "2_1",
+    "2_2"
+  ],
+  "edges": [
+    {
+      "origin": "0_0",
+      "destination": "0_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_0",
+      "destination": "1_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_1",
+      "destination": "0_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_1",
+      "destination": "0_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_1",
+      "destination": "1_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_2",
+      "destination": "0_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "0_2",
+      "destination": "1_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_0",
+      "destination": "0_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_0",
+      "destination": "1_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_0",
+      "destination": "2_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_1",
+      "destination": "0_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_1",
+      "destination": "1_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_1",
+      "destination": "1_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_1",
+      "destination": "2_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_2",
+      "destination": "0_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_2",
+      "destination": "1_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "1_2",
+      "destination": "2_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_0",
+      "destination": "1_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_0",
+      "destination": "2_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_1",
+      "destination": "1_1",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_1",
+      "destination": "2_0",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_1",
+      "destination": "2_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_2",
+      "destination": "1_2",
+      "weight": 1.0
+    },
+    {
+      "origin": "2_2",
+      "destination": "2_1",
+      "weight": 1.0
+    }
+  ],
+  "source": "0_0"
+}

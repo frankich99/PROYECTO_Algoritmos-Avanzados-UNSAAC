@@ -82,3 +82,13 @@ def load_network_json(filepath: str = "data/processed/cusco_centro_network.json"
         adj[e["origin"]].append((e["destination"], e["travel_time_sec"]))
     return nodes, adj
 
+
+
+def load_cusco_instance(metric: str = "time"):
+    """Red del Centro Histórico como GraphInstance (origen por defecto: A, Plaza Mayor)."""
+    from src.io.graph_io import GraphInstance, InvalidInstanceError
+    if metric not in ("time", "distance"):
+        raise InvalidInstanceError(f"Métrica no soportada: {metric!r} (use 'time' o 'distance').")
+    nodes, adj = get_cusco_adjacency(metric=metric)
+    return GraphInstance(nodes=nodes, adj=adj, name=f"cusco_centro_{metric}",
+                         names=dict(NODES_CUSCO), default_source="A", metric=metric)
