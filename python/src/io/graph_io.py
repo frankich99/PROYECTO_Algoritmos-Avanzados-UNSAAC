@@ -39,6 +39,8 @@ class GraphInstance:
     names: Dict[Hashable, str] = field(default_factory=dict)
     default_source: Optional[Hashable] = None
     metric: str = "weight"
+    coords: Dict[Hashable, Tuple[float, float]] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def num_nodes(self) -> int:
@@ -57,13 +59,25 @@ class GraphInstance:
             "name": self.name,
             "directed": True,
             "metric": self.metric,
-            "nodes": [{"id": n, "name": self.names[n]} if n in self.names else n for n in self.nodes],
+            "nodes": [self._node_to_dict(n) for n in self.nodes],
             "edges": [{"origin": u, "destination": v, "weight": w}
                       for u in self.nodes for v, w in self.adj[u]],
         }
         if self.default_source is not None:
             data["source"] = self.default_source
+        if self.metadata:
+            data["metadata"] = self.metadata
         return data
+
+    def _node_to_dict(self, node: Hashable) -> Any:
+        if node not in self.names and node not in self.coords:
+            return node
+        item: Dict[str, Any] = {"id": node}
+        if node in self.names:
+            item["name"] = self.names[node]
+        if node in self.coords:
+            item["x"], item["y"] = self.coords[node]
+        return item
 
     def save_json(self, path: str) -> Path:
         out = Path(path)
@@ -141,6 +155,8 @@ def build_instance(
     default_source: Optional[Hashable] = None,
     declared_nodes: Optional[List[Hashable]] = None,
     metric: str = "weight",
+    coords: Optional[Dict[Hashable, Tuple[float, float]]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> GraphInstance:
     """Construye la instancia a partir de aristas (u, v, w); los vértices se deducen si no se declaran."""
     edges = list(edges)
@@ -172,8 +188,16 @@ def build_instance(
         if undirected and u != v:
             adj[v].append((u, weight))
 
-    inst = GraphInstance(nodes=nodes, adj=adj, name=name, names=dict(names or {}),
-                         default_source=default_source, metric=metric)
+    inst = GraphInstance(
+        nodes=nodes,
+        adj=adj,
+        name=name,
+        names=dict(names or {}),
+        default_source=default_source,
+        metric=metric,
+        coords=dict(coords or {}),
+        metadata=dict(metadata or {}),
+    )
     if default_source is not None and default_source not in adj:
         raise InvalidInstanceError(f"El origen por defecto {default_source!r} no existe en el grafo.")
     return inst
@@ -227,6 +251,7 @@ def _instance_from_json(data: Any, metric: str, name: str) -> GraphInstance:
         raise InvalidInstanceError("El JSON no contiene la clave 'edges'.")
     raw_nodes = data.get("nodes")
     names: Dict[Hashable, str] = {}
+    coords: Dict[Hashable, Tuple[float, float]] = {}
     declared: Optional[List[Hashable]] = None
     if raw_nodes is not None:
         if not isinstance(raw_nodes, list):
@@ -239,6 +264,16 @@ def _instance_from_json(data: Any, metric: str, name: str) -> GraphInstance:
                 declared.append(n["id"])
                 if "name" in n:
                     names[n["id"]] = str(n["name"])
+                if "x" in n and "y" in n:
+                    try:
+                        coords[n["id"]] = (float(n["x"]), float(n["y"]))
+                    except (TypeError, ValueError):
+                        raise InvalidInstanceError(f"Vértice #{i}: coordenadas 'x'/'y' no numéricas.") from None
+                elif "lon" in n and "lat" in n:
+                    try:
+                        coords[n["id"]] = (float(n["lon"]), float(n["lat"]))
+                    except (TypeError, ValueError):
+                        raise InvalidInstanceError(f"Vértice #{i}: coordenadas 'lon'/'lat' no numéricas.") from None
             elif isinstance(n, (str, int)) and not isinstance(n, bool):
                 declared.append(n)
             else:
@@ -267,7 +302,10 @@ def _instance_from_json(data: Any, metric: str, name: str) -> GraphInstance:
                     raise InvalidInstanceError(f"Arista #{i}: atributos viales no numéricos.") from None
                 if seg.length_m < 0:
                     raise InvalidInstanceError(f"Arista #{i} ({u!r}->{v!r}): longitud negativa ({seg.length_m}).")
-                edges.append((u, v, CuscoCostModel.calculate_cost(seg, metric=metric)))
+                if metric == "time" and "travel_time_sec" in e:
+                    edges.append((u, v, e["travel_time_sec"]))
+                else:
+                    edges.append((u, v, CuscoCostModel.calculate_cost(seg, metric=metric)))
             elif "weight" in e:
                 edges.append((u, v, e["weight"]))
             elif "travel_time_sec" in e:
@@ -285,6 +323,8 @@ def _instance_from_json(data: Any, metric: str, name: str) -> GraphInstance:
         default_source=data.get("source"),
         declared_nodes=declared,
         metric=metric if road_based else str(data.get("metric", "weight")),
+        coords=coords,
+        metadata=data.get("metadata") if isinstance(data.get("metadata"), dict) else {},
     )
 
 

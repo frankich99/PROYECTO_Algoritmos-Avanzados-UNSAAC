@@ -43,6 +43,7 @@ def dijkstra_solver(
     record_trace: bool = False,
     validate: bool = True,
     build_paths: bool = True,
+    target: Optional[Hashable] = None,
 ) -> Dict[str, Any]:
     """
     Ejecuta Dijkstra desde source usando la cola indicada.
@@ -55,6 +56,8 @@ def dijkstra_solver(
     queue_type = normalize_queue_name(queue_type)
     if validate:
         validate_graph(nodes, adj, source)
+    if target is not None and target not in set(nodes):
+        raise ValueError(f"El nodo objetivo {target!r} no existe en el grafo.")
 
     t0 = time.perf_counter()
 
@@ -82,6 +85,15 @@ def dijkstra_solver(
 
         visited.add(u)                       # [L14]
         step_relaxations = []
+
+        if target is not None and u == target:
+            if record_trace:
+                history.append({
+                    "k": len(visited), "extracted": u, "dist_extracted": d_u,
+                    "permanent_set": sorted(visited, key=str), "queue_state": {},
+                    "distances": dict(dist), "predecessors": dict(prev), "relaxations": [],
+                })
+            break
 
         for v, weight in adj.get(u, []):     # [L15]
             if v in visited:                 # [L16]

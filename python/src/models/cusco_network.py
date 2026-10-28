@@ -14,7 +14,19 @@ NODES_CUSCO = {
     "F": "Plazoleta Limacpampa"
 }
 
-# Tramos viales con datos cartográficos y topográficos reales del Cusco
+# Coordenadas esquemáticas en metros para la demostración algorítmica. No se
+# presentan como levantamiento cartográfico; la red OSM usa coordenadas reales.
+COORDS_CUSCO = {
+    "A": (0.0, 0.0),
+    "B": (-120.0, -10.0),
+    "C": (180.0, -250.0),
+    "D": (-310.0, -80.0),
+    "E": (-480.0, -320.0),
+    "F": (350.0, -420.0),
+}
+
+# Instancia manual ilustrativa. Los nombres corresponden a lugares reales,
+# pero las longitudes y pendientes no sustituyen una extracción geoespacial.
 ROAD_SEGMENTS = [
     RoadSegment("A", "B", 180.0, "calle_centro", 1.5, "Calle Espaderos / Portal Carnicerías"),
     RoadSegment("A", "C", 450.0, "calle_centro", -2.0, "Calle Loreto / Pampa del Castillo"),
@@ -27,7 +39,10 @@ ROAD_SEGMENTS = [
     RoadSegment("E", "F", 700.0, "avenida", -1.0, "Calle Nueva Baja / Av. Tullumayo")
 ]
 
-def get_cusco_adjacency(metric: str = "distance") -> Tuple[List[str], Dict[str, List[Tuple[str, float]]]]:
+def get_cusco_adjacency(
+    metric: str = "distance",
+    weather_multiplier: float = 1.0,
+) -> Tuple[List[str], Dict[str, List[Tuple[str, float]]]]:
     """
     Construye la lista de adyacencia según la métrica elegida:
     - 'distance': distancias físicas en metros.
@@ -37,7 +52,11 @@ def get_cusco_adjacency(metric: str = "distance") -> Tuple[List[str], Dict[str, 
     adj: Dict[str, List[Tuple[str, float]]] = {v: [] for v in nodes}
 
     for seg in ROAD_SEGMENTS:
-        cost = CuscoCostModel.calculate_cost(seg, metric=metric)
+        cost = CuscoCostModel.calculate_cost(
+            seg,
+            metric=metric,
+            weather_multiplier=weather_multiplier,
+        )
         adj[seg.origin].append((seg.destination, cost))
 
     return nodes, adj
@@ -84,11 +103,23 @@ def load_network_json(filepath: str = "data/processed/cusco_centro_network.json"
 
 
 
-def load_cusco_instance(metric: str = "time"):
-    """Red del Centro Histórico como GraphInstance (origen por defecto: A, Plaza Mayor)."""
+def load_cusco_instance(metric: str = "time", weather_multiplier: float = 1.0):
+    """Instancia manual del Centro Histórico; útil para trazas y ejemplos."""
     from src.io.graph_io import GraphInstance, InvalidInstanceError
     if metric not in ("time", "distance"):
         raise InvalidInstanceError(f"Métrica no soportada: {metric!r} (use 'time' o 'distance').")
-    nodes, adj = get_cusco_adjacency(metric=metric)
-    return GraphInstance(nodes=nodes, adj=adj, name=f"cusco_centro_{metric}",
-                         names=dict(NODES_CUSCO), default_source="A", metric=metric)
+    nodes, adj = get_cusco_adjacency(metric=metric, weather_multiplier=weather_multiplier)
+    return GraphInstance(
+        nodes=nodes,
+        adj=adj,
+        name=f"cusco_manual_{metric}",
+        names=dict(NODES_CUSCO),
+        coords=dict(COORDS_CUSCO),
+        default_source="A",
+        metric=metric,
+        metadata={
+            "provenance": "instancia_manual_ilustrativa",
+            "coordinate_kind": "esquematica",
+            "weather_multiplier": weather_multiplier,
+        },
+    )

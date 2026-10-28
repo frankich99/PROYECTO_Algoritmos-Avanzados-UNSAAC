@@ -305,20 +305,27 @@ def cmd_astar(args) -> int:
     
     inst = load_from_args(args)
     source = resolve_source(inst, args.source)
-    target = getattr(args, "target", None)
-    if not target:
-        target = "E" if "E" in inst.nodes else inst.nodes[-1]
+    target_arg = getattr(args, "target", None)
+    if not target_arg:
+        target_arg = "E" if "E" in inst.nodes else str(inst.nodes[-1])
+    target = resolve_source(inst, target_arg)
     
     print(_describe(inst, source))
     print(f"Búsqueda Heurística A* (A-Star) hacia destino objetivo: {inst.label(target)}")
     
-    # Resolver con Dijkstra (SSSP tradicional)
-    dijk_res = dijkstra_solver(inst.nodes, inst.adj, source, queue_type=args.queue)
+    # Comparación punto a punto: ambos métodos terminan al extraer el destino.
+    dijk_res = dijkstra_solver(inst.nodes, inst.adj, source, queue_type=args.queue, target=target)
     dijk_dist = dijk_res["distances"][target]
     dijk_path = " -> ".join(dijk_res["paths"][target])
     
-    # Resolver con A* (Búsqueda focalizada con heurística admisible)
-    astar_res = a_star_solver(inst.nodes, inst.adj, source, target, queue_type=args.queue, metric=inst.metric)
+    astar_res = a_star_solver(
+        inst.nodes,
+        inst.adj,
+        source,
+        target,
+        coords=inst.coords,
+        queue_type=args.queue,
+    )
     astar_dist = astar_res["target_distance"]
     astar_path = " -> ".join(astar_res["path"])
     
@@ -326,15 +333,17 @@ def cmd_astar(args) -> int:
     print("\nComparativa Dijkstra vs A* (A-Star):")
     rows = [
         ["Algoritmo", "Nodos Expandidos", "Relajaciones", "Costo Óptimo", "Ruta Reconstruida"],
-        ["Dijkstra Canónico", str(len(inst.nodes)), str(dijk_res["stats"].get("relax_attempts", "-")), f"{dijk_dist:.2f}{u}", dijk_path],
-        ["A* Heurístico", str(astar_res["stats"]["expanded_nodes"]), str(astar_res["stats"]["relax_attempts"]), f"{astar_dist:.2f}{u}", astar_path]
+        ["Dijkstra punto a punto", str(dijk_res["stats"]["visited_count"]), str(dijk_res["stats"].get("relax_attempts", "-")), f"{dijk_dist:.2f}{u}", dijk_path],
+        [f"A* ({astar_res['heuristic']})", str(astar_res["stats"]["expanded_nodes"]), str(astar_res["stats"]["relax_attempts"]), f"{astar_dist:.2f}{u}", astar_path]
     ]
     print(pres.table(rows[0], rows[1:]))
     
-    poda_pct = (1.0 - (astar_res["stats"]["expanded_nodes"] / len(inst.nodes))) * 100.0
-    print(f"\nEficiencia de Poda A*: {poda_pct:.1f}% de nodos no necesitaron ser expandidos.")
-    print(f"Optimalidad: {'GARANTIZADA (Costos idénticos)' if abs(dijk_dist - astar_dist) < 1e-6 else 'Diferencia detectada'}")
-    return 0
+    base_expanded = max(1, dijk_res["stats"]["visited_count"])
+    reduction = (1.0 - astar_res["stats"]["expanded_nodes"] / base_expanded) * 100.0
+    equal = abs(dijk_dist - astar_dist) < 1e-6
+    print(f"\nReducción de expansiones en esta consulta: {reduction:.1f}%.")
+    print(f"Corrección observada: {'costos idénticos' if equal else 'DIFERENCIA DETECTADA'}.")
+    return 0 if equal else 1
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -1,143 +1,116 @@
 \section{Diseño e Implementación del Sistema}
 \label{sec:implementacion}
 
-\subsection{Arquitectura Modular del Software}
-El sistema computacional ha sido concebido bajo una arquitectura en capas estrictamente desacoplada, orientada a objetos y funciones puras, garantizando que el núcleo de cálculo de caminos mínimos sea completamente independiente de la representación visual, el almacenamiento en disco o la estructura concreta de cola de prioridad empleada (Figura \ref{fig:arquitectura}).
+\subsection{Arquitectura modular}
+El sistema se organiza en cuatro capas con dependencias descendentes (Figura~\ref{fig:arquitectura}). La capa de algoritmos no conoce Streamlit ni los archivos: recibe un \texttt{GraphInstance} y una cadena que identifica la cola. La capa de datos encapsula la carga, la conversión y la serialización. Esta separación permite probar el núcleo sin interfaz y sustituir la fuente de datos sin reescribir el solver.
 
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[
-        layer/.style={rectangle, very thick, minimum width=14.8cm, minimum height=2.00cm, rounded corners=6pt},
-        box/.style={rectangle, draw=black!60, fill=white, thick, minimum height=0.92cm, text width=4.30cm, align=center, rounded corners=4pt, inner ysep=4pt, inner xsep=4pt},
-        boxwide/.style={rectangle, draw=black!60, fill=white, thick, minimum height=0.92cm, text width=6.65cm, align=center, rounded corners=4pt, inner ysep=4pt, inner xsep=6pt},
-        arrow/.style={-{Latex[length=3.5mm, width=2.2mm]}, line width=1.3pt, draw=black!75}
+        layer/.style={rectangle, very thick, minimum width=15.4cm, minimum height=1.85cm, rounded corners=6pt},
+        box/.style={rectangle, draw=black!60, fill=white, thick, minimum height=0.85cm, text width=4.35cm, align=center, rounded corners=4pt, inner ysep=4pt, inner xsep=4pt},
+        arrow/.style={-{Latex[length=3.2mm, width=2.0mm]}, line width=1.2pt, draw=black!75}
     ]
-    % Capa 4
-    \node[layer, fill=purple!5, draw=purple!70] (L4) at (0, 8.70) {};
-    \node[anchor=north, yshift=-4pt, text=purple!85!black, font=\scriptsize\bfseries] at (L4.north) {4. CAPA DE VALIDACIÓN, EXPERIMENTACIÓN Y GENERACIÓN DE REPORTES};
-    \node[box] at (-4.7, 8.52) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{tests/test\_dijkstra.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Suite Automatizada AAA}}};
-    \node[box] at (0, 8.52) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{scalability\_benchmark.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Banco de Escalabilidad}}};
-    \node[box] at (4.7, 8.52) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{latex\_exporter.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Exportador de Tablas APA}}};
+    \node[layer, fill=purple!5, draw=purple!70] (L4) at (0, 8.20) {};
+    \node[anchor=north, yshift=-4pt, text=purple!85!black, font=\scriptsize\bfseries] at (L4.north) {4. VALIDACIÓN, EXPERIMENTACIÓN Y APLICACIÓN};
+    \node[box] at (-5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{tests/}}}\\[1pt]{\fontsize{7.3}{9}\selectfont 246 pruebas}};
+    \node[box] at (0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{scalability\_benchmark.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont benchmark canónico}};
+    \node[box] at (5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{app.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Streamlit integrado}};
 
-    % Capa 3
-    \node[layer, fill=green!5, draw=green!60!black] (L3) at (0, 5.80) {};
-    \node[anchor=north, yshift=-4pt, text=green!50!black, font=\scriptsize\bfseries] at (L3.north) {3. CAPA DE ALGORITMOS DE CAMINOS MÍNIMOS (SSSP)};
-    \node[boxwide] at (-3.65, 5.62) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{src/algorithms/dijkstra.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Motor Canónico de Relajación Voraz}}};
-    \node[boxwide] at (3.65, 5.62) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{dijkstra\_solver(graph, \dots)}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Inyección Abstracta de Colas de Prioridad}}};
+    \node[layer, fill=green!5, draw=green!60!black] (L3) at (0, 5.55) {};
+    \node[anchor=north, yshift=-4pt, text=green!50!black, font=\scriptsize\bfseries] at (L3.north) {3. ALGORITMOS Y VERIFICACIÓN};
+    \node[box] at (-5.0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{dijkstra.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont SSSP parametrizado}};
+    \node[box] at (0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{a\_star.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont heurística consistente}};
+    \node[box] at (5.0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{certificate.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Bellman $O(V+E)$}};
 
-    % Capa 2
     \node[layer, fill=orange!6, draw=orange!75!black] (L2) at (0, 2.90) {};
-    \node[anchor=north, yshift=-4pt, text=orange!85!black, font=\scriptsize\bfseries] at (L2.north) {2. CAPA DE ESTRUCTURAS DE DATOS Y COLAS DE PRIORIDAD};
-    \node[box] at (-4.7, 2.72) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{IndexedMinHeap}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Min-Heap Binario Indexado}}};
-    \node[box] at (0, 2.72) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{DAryHeap} ($d=4$)}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Montículo 4-ario en Caché}}};
-    \node[box] at (4.7, 2.72) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{FibonacciHeap}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Cortes en Cascada $O(1)^*$}}};
+    \node[anchor=north, yshift=-4pt, text=orange!85!black, font=\scriptsize\bfseries] at (L2.north) {2. COLAS DE PRIORIDAD};
+    \node[box] at (-5.0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{IndexedMinHeap}}}\\[1pt]{\fontsize{7.3}{9}\selectfont binario + \texttt{pos}}};
+    \node[box] at (0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{DAryHeap} ($d=4$)}}\\[1pt]{\fontsize{7.3}{9}\selectfont arreglo contiguo}};
+    \node[box] at (5.0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{FibonacciHeap}}}\\[1pt]{\fontsize{7.3}{9}\selectfont cortes en cascada}};
 
-    % Capa 1
-    \node[layer, fill=blue!5, draw=blue!70!black] (L1) at (0, 0.0) {};
-    \node[anchor=north, yshift=-4pt, text=blue!85!black, font=\scriptsize\bfseries] at (L1.north) {1. CAPA DE MODELOS TOPOGRÁFICOS, COSTOS Y SERIALIZACIÓN};
-    \node[box] at (-4.7, -0.18) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{cusco\_network.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Topología Vial $G=(V,E)$}}};
-    \node[box] at (0, -0.18) {{\fontsize{8.5}{10.5}\selectfont\textbf{\texttt{cost\_model.py}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Impedancia Andina $\Phi(\theta)$}}};
-    \node[box, fill=gray!10] at (4.7, -0.18) {{\fontsize{7.8}{9.5}\selectfont\textbf{\texttt{cusco\_centro\_network.json}}}\\[2pt]{\fontsize{7.5}{9.5}\selectfont\textmd{Red Vial Serializada (6 nodos)}}};
+    \node[layer, fill=blue!5, draw=blue!70!black] (L1) at (0, 0.25) {};
+    \node[anchor=north, yshift=-4pt, text=blue!85!black, font=\scriptsize\bfseries] at (L1.north) {1. DATOS, COSTOS Y SERVICIOS};
+    \node[box] at (-5.0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{GraphInstance} / \texttt{cost\_model}}}\\[1pt]{\fontsize{7.3}{9}\selectfont grafo y pesos}};
+    \node[box] at (0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{osm\_loader.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont OSMnx + caché}};
+    \node[box] at (5.0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{weather.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Open-Meteo + snapshot}};
 
-    % Flechas con espacio holgado y etiquetas limpias
-    \draw[arrow] (L4.south) -- (L3.north) node[midway, right=8pt, font=\scriptsize\itshape, text=black!75] {ejecuta e instrumenta};
-    \draw[arrow] (L3.south) -- (L2.north) node[midway, right=8pt, font=\scriptsize\itshape, text=black!75] {invoca operaciones de cola};
-    \draw[arrow] (L2.south) -- (L1.north) node[midway, right=8pt, font=\scriptsize\itshape, text=black!75] {consume pesos e incidencias};
+    \draw[arrow] (L4.south) -- (L3.north) node[midway, right=8pt, font=\scriptsize\itshape] {ejecuta y mide};
+    \draw[arrow] (L3.south) -- (L2.north) node[midway, right=8pt, font=\scriptsize\itshape] {usa la cola};
+    \draw[arrow] (L2.south) -- (L1.north) node[midway, right=8pt, font=\scriptsize\itshape] {consume pesos};
     \end{tikzpicture}
-    \caption{Diagrama arquitectural desacoplado del sistema en cuatro capas operativas}
+    \caption{Arquitectura del sistema en cuatro capas}
     \label{fig:arquitectura}
 \end{figure}
 
-\subsection{Descripción de Módulos del Sistema}
-El repositorio organiza su código fuente en el paquete \texttt{src/}:
+\subsection{Módulos principales}
 \begin{enumerate}
-    \item \textbf{\texttt{src/algorithms/dijkstra.py}:} Implementa el solver de caminos mínimos con inyección de dependencias. Recibe la lista de adyacencia y una cadena identificadora del tipo de cola (\texttt{binary\_heap}, \texttt{4ary\_heap}, \texttt{fibonacci\_heap}), ejecutando las relajaciones y capturando las estadísticas de operaciones para su posterior análisis.
-    \item \textbf{\texttt{src/datastructures/indexed\_min\_heap.py}:} Implementación pura del Min-Heap binario con tabla de posiciones invertida para garantizar \texttt{decrease\_key} en tiempo $O(\log |V|)$.
-    \item \textbf{\texttt{src/datastructures/d\_ary\_heap.py}:} Implementación del montículo $d$-ario parametrizado para cualquier aridad $d \ge 2$, configurado por defecto en $d=4$.
-    \item \textbf{\texttt{src/datastructures/fibonacci\_heap.py}:} Implementación del Fibonacci Heap con nodos enlazados circularmente, cálculo de rangos y corte en cascada.
-    \item \textbf{\texttt{src/models/cusco\_network.py}:} Mapeo explícito de la topología vial del Centro Histórico de Cusco, serialización y carga en formato JSON.
-    \item \textbf{\texttt{src/utils/cost\_model.py}:} Lógica de cálculo del costo generalizado e impedancia por gradiente altitudinal andino.
-    \item \textbf{\texttt{src/utils/latex\_exporter.py}:} Rutina automatizada que formatea diccionarios de traza en tablas LaTeX bajo el estándar \texttt{booktabs}.
-    \item \textbf{\texttt{src/visualization/generate\_figures.py}:} Renderizador de figuras científicas con Matplotlib y generador de especificaciones vectoriales en formato DOT para \textbf{Graphviz}.
-    \item \textbf{\texttt{src/cli.py}:} Interfaz unificada de línea de comandos (CLI) y menú interactivo por consola (comandos \texttt{run}, \texttt{compare}, \texttt{generate}, \texttt{verify}, \texttt{benchmark}, \texttt{graphviz} y \texttt{menu}).
-    \item \textbf{\texttt{src/verification/certificate.py}:} Certificador formal de optimalidad independiente que comprueba en $O(|V|+|E|)$ las condiciones de Bellman sin re-ejecutar Dijkstra.
-    \item \textbf{\texttt{src/algorithms/reference.py}:} Algoritmos canónicos de referencia (Bellman-Ford para grafos con pesos arbitrarios y Dijkstra sobre arreglo no ordenado).
+    \item \texttt{src/models/graph.py}: define \texttt{GraphInstance} (nodos, adyacencia, coordenadas, metadatos) y la carga/serialización.
+    \item \texttt{src/models/cusco\_network.py}: construye la instancia ilustrativa de seis nodos y exporta su JSON.
+    \item \texttt{src/utils/cost\_model.py}: calcula distancia o tiempo con la ecuación~\eqref{eq:costo}; valida longitud, métrica y factor climático.
+    \item \texttt{src/datastructures/}: implementa \texttt{IndexedMinHeap}, \texttt{DAryHeap} y \texttt{FibonacciHeap} con el contrato común.
+    \item \texttt{src/algorithms/dijkstra.py}: resuelve SSSP o una consulta punto a punto con \texttt{target}; registra operaciones y tiempos.
+    \item \texttt{src/algorithms/a\_star.py}: calcula $\lambda$, construye $h$, valida consistencia y ejecuta $A^*$.
+    \item \texttt{src/algorithms/reference.py}: Bellman-Ford y Dijkstra con arreglo no ordenado como referencias.
+    \item \texttt{src/verification/certificate.py}: comprueba las condiciones de Bellman y compara alternativas.
+    \item \texttt{src/io/osm\_loader.py}: descarga, proyecta, convierte y cachea la red OSM; \texttt{load\_snapshot} funciona sin red.
+    \item \texttt{src/services/weather.py}: consulta Open-Meteo, guarda un \textit{snapshot} y aplica un factor uniforme.
+    \item \texttt{src/benchmarks/scalability\_benchmark.py}: genera instancias, ejecuta el protocolo canónico y escribe \texttt{benchmark\_results.json}.
+    \item \texttt{src/benchmarks/applied\_analysis.py}: ejecuta la consulta OSM, $A^*$ y la sensibilidad climática.
+    \item \texttt{app.py}: aplicación Streamlit con las vistas Comparación, Ruta OSM, Traza manual y Procedencia.
+    \item \texttt{src/cli.py} y \texttt{main.py}: interfaz de comandos y pipeline de demostración.
 \end{enumerate}
 
-\subsection{Visualización de Grafos Viales con Graphviz (.dot)}
-Atendiendo a las recomendaciones de diseño y legibilidad del revisor, el sistema integra generación nativa de especificaciones en lenguaje DOT de \textbf{Graphviz} (archivos \texttt{red\_vial\_cusco.dot} y \texttt{ruta\_optima\_cusco.dot}). 
-
-Se seleccionó Graphviz frente a librerías interactivas pesadas (como Plotly) debido a sus ventajas fundamentales:
-\begin{itemize}
-    \item \textbf{Rigor Estándar en Teoría de Grafos:} Graphviz es el estándar canónico en ciencias de la computación para el trazado jerárquico y ortogonal determinista de grafos dirigidos.
-    \item \textbf{Salida Vectorial Ligera:} Produce diagramas SVG/PDF sin dependencias pesadas de navegadores web ni tiempos de compilación elevados.
-    \item \textbf{Trazabilidad y Resaltado de Rutas:} Permite estilizar nodos con sus nombres toponímicos completos y resaltar el camino mínimo de emergencia (en verde esmeralda con mayor grosor de línea, \texttt{penwidth=3.2}) mientras atenúa las aristas no seleccionadas.
-    \item \textbf{Integración Nativa en la Nube:} En entornos interactivos como Google Colab, se renderiza directamente con \texttt{graphviz.Source} sin instalaciones adicionales.
-\end{itemize}
-
-\subsection{Rol de NetworkX como Oráculo de Verificación Canónica}
-Es fundamental precisar que la librería \texttt{NetworkX} \textbf{no} se utiliza para resolver los caminos mínimos en el sistema en producción (todas las estructuras de datos y el algoritmo de Dijkstra fueron programados de manera pura y desde cero por el equipo). Su rol en la arquitectura es exclusivamente el de \textbf{oráculo externo de prueba} (\textit{ground truth oracle}) dentro de la suite automatizada de pruebas unitarias con Pytest (Sección \ref{sec:pruebas}), garantizando matemáticamente que los vectores de distancias calculados por nuestras tres colas de prioridad coinciden con la referencia canónica en decenas de instancias aleatorias y reales.
-
-\subsection{Formatos de Datos y Serialización JSON}
-Para garantizar que la ingestión de datos no dependa de estructuras en memoria volátiles ni rutas locales rígidas, la red vial del Cusco se serializa formalmente en formato JSON bajo la ruta estándar \texttt{data/processed/cusco\_centro\_network.json}:
-\begin{lstlisting}[language=Python, caption={Extracto del esquema JSON para la red vial del Centro Histórico de Cusco}]
-{
-  "nodes": [
-    {"id": "A", "name": "Plaza Mayor del Cusco"},
-    {"id": "B", "name": "Plaza Regocijo (Cusipata)"}
-  ],
-  "edges": [
-    {
-      "origin": "A",
-      "destination": "B",
-      "length_m": 180.0,
-      "street_type": "calle_centro",
-      "gradient_pct": 1.5,
-      "street_name": "Calle Espaderos / Portal Carnicerias",
-      "travel_time_sec": 44.75
-    }
-  ]
-}
-\end{lstlisting}
-
-\subsection{Contratos de Interfaz de las Estructuras de Datos}
-Para posibilitar la sustitución dinámica y transparente de colas en el solver de Dijkstra sin alterar el flujo algorítmico, cada una de las tres estructuras implementa una interfaz uniforme:
-\begin{itemize}
-    \item \texttt{insert(item: str, key: float) -> None}: Inserta un identificador de vértice con su distancia tentativa asociada.
-    \item \texttt{extract\_min() -> Tuple[float, str]}: Extrae y retorna el par (clave, elemento) de menor clave acumulada, reestructurando el montículo según sus invariantes.
-    \item \texttt{decrease\_key(item: str, new\_key: float) -> None}: Disminuye la clave del vértice a su nuevo valor relajado, flotando el nodo o ejecutando cortes en cascada.
-    \item \texttt{is\_empty() -> bool}: Determina en $O(1)$ si existen vértices pendientes de procesamiento.
-\end{itemize}
-
-\subsection{Módulos Reutilizados e Integración de Componentes}
-\label{sec:integracion_modulos}
-La función \texttt{solve(instancia, origen, método)} implementada en el módulo \texttt{src/algorithms/registry.py} constituye el punto unificado de invocación para la totalidad de algoritmos del sistema. La interfaz de línea de comandos (CLI) y los módulos de experimentación reutilizan los componentes de forma transversal (Tabla \ref{tab:modulos_reutilizados}).
+\subsection{Formatos de datos}
+Todos los formatos son JSON versionado y legible. La Tabla~\ref{tab:formatos} resume los archivos principales.
 
 \begin{table}[H]
-    \caption{Módulos reutilizados e integrados en la arquitectura del sistema}
-    \label{tab:modulos_reutilizados}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\ttfamily\small\raggedright\arraybackslash}p{4.6cm}X@{}}
+    \centering
+    \fontsize{9}{11}\selectfont
+    \caption{Archivos de datos y su función}
+    \label{tab:formatos}
+    \begin{tabularx}{\textwidth}{@{}>{\ttfamily\raggedright\arraybackslash}p{5.1cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Función} & \textbf{Módulo} & \textbf{Descripción Técnica} \\
+        \textbf{Archivo} & \textbf{Contenido} \\
         \midrule
-        Lectura & src/io/\allowbreak graph\_io.py & Deserialización de JSON vial con impedancia andina, JSON estándar, lista de aristas y cadenas en línea (\texttt{--inline}). \\
-        Validación & src/io/\allowbreak graph\_io.py & Comprobación estricta de precondiciones y captura de excepciones defensivas. \\
-        Generación & src/generators/\allowbreak instance\_generator.py & Creación determinista de grafos viales sintéticos con semilla fija para pruebas de escalabilidad. \\
-        Ejecución & src/algorithms/\allowbreak registry.py & Inyección desacoplada de la estructura de cola de prioridad seleccionada. \\
-        Verificación & src/verification/\allowbreak certificate.py & Validación analítica de optimalidad de Bellman y clasificación de diferencias en (|V|+|E|)$. \\
-        Telemetría & src/utils/\allowbreak measurement.py & Protocolo de medición de tiempo de CPU de alta resolución con etapas de calentamiento (\textit{warmup}). \\
-        Presentación & src/utils/\allowbreak presentation.py & Formateo tabular de rutas en consola y exportación de trazas JSON. \\
+        \url{data/instances/cusco_centro.json} & Instancia ilustrativa: nodos, aristas, longitud, pendiente, tipo de vía y tiempo. \\
+        \url{data/processed/cusco_osm_drive.json} & Snapshot OSM: nodos con longitud/latitud, aristas dirigidas, longitud y tiempo, metadatos de extracción. \\
+        \url{data/processed/benchmark_results.json} & Protocolo, ambiente, muestras, medianas, IQR y operaciones por escala. \\
+        \url{data/processed/applied_results.json} & Consulta OSM, tiempos por cola, $A^*$ y sensibilidad climática. \\
+        \url{data/processed/weather_cusco.json} & Snapshot meteorológico con hora, variables y fuente. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\subsection{Manejo Defensivo de Entradas y Códigos de Salida Seguros}
-\label{sec:manejo_entradas_invalidas}
-Todas las alternativas algorítmicas comparten el mismo módulo de validación previa en \texttt{src/io/graph\_io.py}. Una entrada no conforme se rechaza de forma homogénea e inmediata antes de invocar el algoritmo, protegiendo al sistema de estados inconsistentes.
+El esquema de la instancia ilustrativa es:
+\begin{lstlisting}[language=Python, caption={Extracto del JSON de una arista}]
+{
+  "origin": "A", "destination": "B",
+  "length_m": 180.0, "street_type": "calle_centro",
+  "gradient_pct": 1.5, "street_name": "Calle Espaderos",
+  "travel_time_sec": 44.82
+}
+\end{lstlisting}
 
-La interfaz de comandos comunica el estado de ejecución mediante códigos de salida formales:
+\subsection{Contratos e inyección de colas}
+Las tres colas implementan:
 \begin{itemize}
-    \item \textbf{Código 0 (Éxito):} Ejecución algorítmica completada y validada satisfactoriamente.
-    \item \textbf{Código 1 (Fallo de Verificación):} El certificador de optimalidad detectó divergencias numéricas o violación de las condiciones de Bellman.
-    \item \textbf{Código 2 (Entrada Inválida):} Se detectó y bloqueó una anomalía en la entrada: archivos inexistentes, codificación no UTF-8, JSON mal formado, campos incompletos, pesos negativos o no numéricos (NaN, $\infty$), identificadores de vértice duplicados o nodos origen inexistentes.
+    \item \texttt{insert(item, key)}: inserta un vértice con su clave tentativa.
+    \item \texttt{extract\_min()}: devuelve \texttt{(key, item)} y reestructura la cola.
+    \item \texttt{decrease\_key(item, new\_key)}: actualiza una clave que solo puede disminuir.
+    \item \texttt{is\_empty()}: indica si quedan elementos.
+    \item \texttt{op\_stats()}: devuelve inserciones, extracciones, decrementos y comparaciones.
+\end{itemize}
+El solver recibe \texttt{queue\_type} y llama a \texttt{create\_queue}; no importa clases concretas. La misma inyección se usa en el benchmark y en la aplicación.
+
+\subsection{Manejo defensivo de entradas}
+La validación se concentra en \texttt{src/io/graph\_io.py}: rechaza JSON mal formado, campos faltantes, identificadores duplicados, pesos negativos, NaN o infinito, y un origen inexistente. La CLI distingue tres códigos de salida: 0 (éxito), 1 (fallo de verificación) y 2 (entrada inválida). La aplicación muestra el error sin ejecutar el algoritmo. Las pruebas de \texttt{test\_validation\_io.py} cubren estos casos.
+
+\subsection{Decisiones técnicas}
+\begin{itemize}
+    \item \textbf{Sin \texttt{heapq}.} Las colas evaluadas se implementaron desde cero para que la comparación mida el diseño del proyecto y no una biblioteca en C.
+    \item \textbf{Coordenadas opcionales.} Si una instancia no tiene coordenadas, $A^*$ usa $h=0$; no se aplican coordenadas de Cusco a grafos arbitrarios.
+    \item \textbf{Snapshot antes que red.} La red OSM y el clima se guardan en disco; si la API falla, el sistema usa el archivo y lo indica en la interfaz.
+    \item \textbf{Separación de resultados.} El benchmark principal no mezcla clima; la sensibilidad climática se reporta aparte para no atribuir al clima una diferencia entre colas.
+    \item \textbf{Reproducibilidad.} Semillas fijas, versiones en \texttt{requirements.txt}, rutas relativas al paquete y comandos documentados en el Anexo~B.
 \end{itemize}

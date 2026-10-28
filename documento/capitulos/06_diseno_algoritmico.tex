@@ -1,186 +1,131 @@
-\section{Diseño Algorítmico y Estructuras de Colas de Prioridad}
+\section{Diseño Algorítmico y Estructuras de Cola}
 \label{sec:diseno_algoritmico}
 
-\subsection{Algoritmo de Dijkstra con Cola de Prioridad Abstracta}
-El algoritmo de Dijkstra calcula las rutas mínimas sobre grafos con pesos no negativos operando sobre una cola de prioridad genérica $Q$. El procedimiento formal estructurado se describe en el Algoritmo \ref{alg:dijkstra_generico}.
+\subsection{Algoritmo de Dijkstra parametrizado}
+El Algoritmo~\ref{alg:dijkstra_generico} describe el núcleo común. La única dependencia de la cola es el contrato \texttt{insert}, \texttt{extract\_min} y \texttt{decrease\_key}; el resto del algoritmo no cambia.
 
 \begin{algorithm}[H]
-\caption{Algoritmo de Dijkstra con Cola de Prioridad Parametrizada}
+\caption{Dijkstra con cola de prioridad parametrizada}
 \label{alg:dijkstra_generico}
 \begin{algorithmic}[1]
-\REQUIRE Grafo dirigido $G = (V, E, W)$, Vértice origen $s \in V$, Estructura de cola $Q$
-\ENSURE Distancias mínimas $d: V \to \mathbb{R}^+ \cup \{\infty\}$, Predecesores $\pi: V \to V \cup \{\text{NIL}\}$
-\STATE \textbf{Inicialización:}
-\FORALL{$v \in V$}
-    \STATE $d[v] \leftarrow \infty$
-    \STATE $\pi[v] \leftarrow \text{NIL}$
+\REQUIRE $G=(V,E,w)$, origen $s\in V$, cola $Q$
+\ENSURE $d:V\to\mathbb{R}_{\ge0}\cup\{\infty\}$, $\pi:V\to V\cup\{\text{NIL}\}$
+\FORALL{$v\in V$}
+    \STATE $d[v]\leftarrow\infty$; $\pi[v]\leftarrow\text{NIL}$
 \ENDFOR
-\STATE $d[s] \leftarrow 0.0$
-\STATE $Q.\text{BUILD}(V, d)$ \COMMENT{O inserción iterativa de cada $v \in V$ con clave $d[v]$}
-\STATE $S \leftarrow \emptyset$
-\WHILE{\textbf{not} $Q.\text{IS\_EMPTY}()$}
-    \STATE $(u, d_u) \leftarrow Q.\text{EXTRACT\_MIN}()$
-    \IF{$d_u = \infty$}
-        \STATE \textbf{break} \COMMENT{Vértices restantes inalcanzables desde $s$}
+\STATE $d[s]\leftarrow 0$; $Q.\text{insert}(s,0)$; $S\leftarrow\emptyset$
+\WHILE{\textbf{not} $Q.\text{is\_empty}()$}
+    \STATE $(d_u,u)\leftarrow Q.\text{extract\_min}()$
+    \IF{$d_u=\infty$}
+        \STATE \textbf{break}
     \ENDIF
-    \STATE $S \leftarrow S \cup \{u\}$
-    \FORALL{$(u, v) \in E$}
-        \IF{$v \notin S$}
-            \STATE $\text{candidate\_dist} \leftarrow d_u + W(u, v)$
-            \IF{$\text{candidate\_dist} < d[v]$}
-                \STATE $d[v] \leftarrow \text{candidate\_dist}$
-                \STATE $\pi[v] \leftarrow u$
-                \STATE $Q.\text{DECREASE\_KEY}(v, d[v])$ \COMMENT{Actualización de prioridad en $Q$}
+    \STATE $S\leftarrow S\cup\{u\}$
+    \FORALL{$(u,v)\in E$}
+        \IF{$v\notin S$ \textbf{and} $d_u+w(u,v)<d[v]$}
+            \STATE $d[v]\leftarrow d_u+w(u,v)$; $\pi[v]\leftarrow u$
+            \IF{$v\in Q$}
+                \STATE $Q.\text{decrease\_key}(v,d[v])$
+            \ELSE
+                \STATE $Q.\text{insert}(v,d[v])$
             \ENDIF
         \ENDIF
     \ENDFOR
 \ENDWHILE
-\RETURN $(d, \pi)$
+\RETURN $(d,\pi)$
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Invariantes de Bucle y Prueba de Corrección}
-La corrección del algoritmo descansa en el siguiente invariante formal de bucle:
+\subsection{Invariante y corrección}
+\paragraph{Invariante.} Al inicio de cada iteración del ciclo, para todo $u\in S$, $d[u]=\delta(s,u)$; para todo $v\in Q$, $d[v]$ es el costo mínimo de un camino de $s$ a $v$ con vértices intermedios en $S$.
 
-\paragraph*{Invariante:} Al inicio de cada iteración del bucle \texttt{while} (línea 9), para todo vértice $u \in S$, el valor $d[u]$ es exactamente la distancia mínima desde el origen $s$ a $u$, esto es, $d[u] = \delta(s, u)$. Además, para cada vértice tentativo $v \in Q = V \setminus S$, el valor $d[v]$ representa la longitud del camino más corto desde $s$ hasta $v$ cuyos vértices intermedios pertenecen exclusivamente al conjunto de permanentes $S$.
-
-\paragraph*{Demostración por Inducción Matemática:}
-\begin{itemize}
-    \item \textbf{Base ($|S|=0$):} Antes de la primera iteración, $S = \emptyset$. Para el origen $s$, $d[s] = 0 = \delta(s, s)$ puesto que los pesos son no negativos ($w(e) \ge 0$). Para todo $v \ne s$, $d[v] = \infty$, lo cual satisface la cota superior vacía.
-    \item \textbf{Paso Inductivo:} Supóngase que el invariante se cumple para un conjunto $S$ de tamaño $k$. El algoritmo selecciona $u \in Q$ tal que $d[u] = \min_{z \in Q} d[z]$. Si existiese un camino más corto $P$ desde $s$ a $u$, dicho camino debe abandonar $S$ por primera vez a través de una arista $(x, y)$ con $x \in S$ y $y \in Q$. La longitud de este camino sería:
-    \begin{equation}
-        w(P) \ge \delta(s, x) + w(x, y) = d[y] \ge d[u]
-    \end{equation}
-    dado que los pesos son no negativos y $u$ minimiza la distancia tentativa en $Q$. Por lo tanto, no puede existir un camino más corto que $d[u]$, implicando $d[u] = \delta(s, u)$.
-    \item \textbf{Terminación:} Cuando $Q$ queda vacía o los nodos restantes tienen distancia $\infty$, $S = V$ (para la componente conexa alcanzable), garantizando que $d[v] = \delta(s, v)$ para todo $v \in V$.
-\end{itemize}
-
-\subsection{Estructuras de Datos de Cola de Prioridad Evaluadas}
-
-\subsubsection{Min-Heap Binario Indexado (\texttt{IndexedMinHeap})}
-En un montículo binario estándar implementado sobre un arreglo contiguo, la operación \texttt{Decrease-Key}$(v, \text{nueva\_clave})$ requiere localizar previamente el nodo $v$, lo cual demanda una búsqueda lineal $O(|V|)$ inaceptable para grafos grandes.
-
-Nuestra implementación desacoplada resuelve este cuello de botella mediante una tabla hash inversa de posiciones $\text{pos}: V \to \mathbb{Z}^+$. Cuando dos elementos en las posiciones $i$ y $j$ del arreglo se intercambian durante las rutinas de flotado (\texttt{\_sift\_up}) o hundido (\texttt{\_sift\_down}), sus entradas en $\text{pos}$ se actualizan de forma atómica en $O(1)$:
+\paragraph{Demostración.} La base es $S=\emptyset$, $d[s]=0$. Supóngase el invariante para $|S|=k$ y sea $u$ el mínimo extraído. Si existiera un camino $P$ de $s$ a $u$ con $w(P)<d[u]$, sea $(x,y)$ la primera arista de $P$ que sale de $S$. Entonces $x\in S$, $y\in Q$ y
 \begin{equation}
-    \text{heap}[i], \text{heap}[j] \leftarrow \text{heap}[j], \text{heap}[i]; \quad \text{pos}[\text{heap}[i].\text{id}] \leftarrow i; \quad \text{pos}[\text{heap}[j].\text{id}] \leftarrow j
+    w(P)\ge \delta(s,x)+w(x,y)=d[y]\ge d[u],
 \end{equation}
-Con este mecanismo, \texttt{Decrease-Key} ubica el índice en $O(1)$ y ejecuta a lo sumo $\lfloor \log_2 |V| \rfloor$ intercambios hacia la raíz, logrando una complejidad estricta de $O(\log |V|)$.
+pues los pesos son no negativos y $u$ minimiza $Q$. Contradicción. Por tanto $d[u]=\delta(s,u)$. Al terminar, $Q=\emptyset$ o solo quedan vértices inalcanzables, y el invariante cubre toda la componente alcanzable.
 
-\subsubsection{4-ary Heap Contiguo (\texttt{DAryHeap})}
-El $d$-ary Heap generaliza el montículo binario permitiendo que cada nodo posea $d$ hijos. Para un índice de nodo $i$ (indexación base cero):
+\subsection{Heap binario indexado}
+El heap binario se almacena en un arreglo contiguo. Para que \texttt{decrease\_key} no requiera una búsqueda lineal, se mantiene un mapa $\text{pos}[v]$ con la posición actual de $v$. Cada intercambio actualiza el arreglo y el mapa:
 \begin{equation}
-    \text{padre}(i) = \left\lfloor \frac{i - 1}{d} \right\rfloor, \quad \text{hijo}_k(i) = d \cdot i + k \quad (\text{con } 1 \le k \le d)
+    \text{heap}[i]\leftrightarrow\text{heap}[j],\qquad
+    \text{pos}[\text{heap}[i]]\leftarrow i,\qquad
+    \text{pos}[\text{heap}[j]]\leftarrow j.
+    \label{eq:swap}
 \end{equation}
-Al fijar $d=4$, la altura máxima del árbol se reduce a $\lceil \log_4 |V| \rceil = \frac{1}{2} \lceil \log_2 |V| \rceil$. Aunque la operación \texttt{\_sift\_down} debe inspeccionar 4 hijos para hallar el menor (requiriendo 3 comparaciones por nivel), la operación crítica \texttt{Decrease-Key} ejecuta el flotado ascendente \texttt{\_sift\_up} con una única comparación por nivel:
+Así, \texttt{decrease\_key} localiza el nodo en $O(1)$ y sube a lo sumo $\lfloor\log_2 |V|\rfloor$ niveles. El costo espacial es $O(|V|)$.
+
+\subsection{Heap 4-ario indexado}
+El heap 4-ario reduce la altura a $\lceil\log_4|V|\rceil$. La aritmética de índices es la de la ecuación~\eqref{eq:aritmetica_4ary}. La operación \texttt{sift-down} examina cuatro hijos por nivel; la operación \texttt{sift-up} hace una comparación por nivel. Con $d=4$ fijo, el costo total de Dijkstra es
 \begin{equation}
-    T_{\text{Decrease-Key}} = O(\log_4 |V|) = O\left(\frac{\log_2 |V|}{2}\right)
+    O\bigl((|E|+4|V|)\log_4|V|\bigr)=O\bigl((|E|+|V|)\log|V|\bigr),
 \end{equation}
-Adicionalmente, los 4 hijos de cualquier nodo residen en posiciones contiguas del arreglo, lo que maximiza la probabilidad de que se alojen dentro de la misma línea de memoria caché L1/L2 (típicamente de 64 bytes), reduciendo drásticamente los fallos de caché frente a árboles dinámicos con punteros dispersos \parencite{lamarca1996cache}.
+con una constante que depende de $d$. La ventaja potencial no es asintótica, sino de localidad: los cuatro hijos de un nodo ocupan posiciones contiguas y suelen caber en una misma línea de caché \parencite{lamarca1996cache}. Esa ventaja puede desaparecer si el tamaño es pequeño o si el costo de comparar cuatro hijos domina.
 
-\subsubsection{Fibonacci Heap (\texttt{FibonacciHeap})}
-El Fibonacci Heap \parencite{fredman1987fibonacci} es una colección de árboles de orden min-heap enraizados en una lista circular doblemente enlazada. A diferencia de los montículos basados en arreglos, no impone una forma rígida de árbol completo. Sus propiedades matemáticas distintivas son:
-\begin{enumerate}
-    \item \textbf{Inserción Perezosa ($O(1)$ peor caso):} Los nuevos nodos se incorporan a la lista de raíces sin consolidar.
-    \item \textbf{Disminución de Clave ($O(1)$ amortizado):} Si al decrecer la clave de $x$ se viola la propiedad de montículo frente a su padre $y = p[x]$, el subárbol enraizado en $x$ se corta inmediatamente y se transfiere a la lista de raíces. Si el padre $y$ ya había perdido previamente un hijo ($\text{mark}[y] = \text{true}$), se desencadena un corte en cascada (\textit{cascading cut}) recursivo hacia los ancestros.
-    \item \textbf{Extracción del Mínimo ($O(\log |V|)$ amortizado):} Se extrae la raíz mínima y todos sus hijos se promueven a la lista raíz. A continuación, se ejecuta una rutina de consolidación vinculando raíces de igual grado mediante un arreglo auxiliar de punteros de tamaño $O(\log |V|)$.
-\end{enumerate}
+\subsection{Fibonacci heap}
+El Fibonacci heap mantiene una lista circular de árboles. \texttt{insert} añade un nodo a la lista en $O(1)$; \texttt{decrease\_key} corta el nodo si viola la propiedad de montículo y propaga el corte en cascada si el padre ya estaba marcado; \texttt{extract\_min} promueve los hijos y consolida raíces de igual grado. Sus cotas amortizadas son $O(1)$ para \texttt{insert} y \texttt{decrease\_key}, y $O(\log |V|)$ para \texttt{extract\_min}. El costo total es $O(|E|+|V|\log|V|)$ \parencite{fredman1987fibonacci}. La cota es mejor en el peor caso asintótico, pero no dice nada sobre las constantes de asignación de objetos, indirección de punteros y fallos de caché.
 
-\subsubsection{Pairing Heap (Perspectiva Teórica)}
-El Pairing Heap es un árbol autoajustable multi-camino que simplifica radicalmente la estructura del Fibonacci Heap al no requerir el almacenamiento de grados ni banderas de corte, logrando tiempos empíricos comparables y $O(\log |V|)$ amortizado para \texttt{Decrease-Key}.
-
-\subsection{Matriz Comparativa de Complejidad Asintótica}
-La Tabla \ref{tab:complejidades} resume formalmente las cotas asintóticas temporales y el costo total de ejecución del Algoritmo de Dijkstra según la cola de prioridad empleada.
-
+\subsection{Complejidades comparadas}
 \begin{table}[H]
     \centering
-    \fontsize{10}{12.5}\selectfont
-    \renewcommand{\arraystretch}{1.25}
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.18}
     \setlength{\tabcolsep}{3.5pt}
-    \caption{Matriz comparativa de complejidades temporales y espaciales de colas de prioridad en Dijkstra}
+    \caption{Cotas temporales y espaciales de las colas evaluadas}
     \label{tab:complejidades}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries}l ccccc >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries}l cccc >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Estructura} & \textbf{Insert} & \textbf{Extract-Min} & \textbf{Dec-Key} & \textbf{Espacio} & \textbf{Costo Total Dijkstra} & \textbf{Régimen Óptimo en Red Vial} \\
+        \textbf{Estructura} & \textbf{Insert} & \textbf{Extract-Min} & \textbf{Decrease-Key} & \textbf{Espacio} & \textbf{Costo total en Dijkstra} \\
         \midrule
-        Arreglo No Ord. & $O(1)$ & $O(|V|)$ & $O(1)$ & $O(|V|)$ & $O(|V|^2)$ & Grafos densos ($|E| \approx |V|^2$). \\
-        Binary Min-Heap & $O(\log |V|)$ & $O(\log |V|)$ & $O(\log |V|)$ & $O(|V|)$ & $O((|V|+|E|)\log |V|)$ & Grafos dispersos estándar. \\
-        Montículo 4-ario & $O(\log_4 |V|)$ & $O(4\log_4 |V|)$ & $O(\log_4 |V|)$ & $O(|V|)$ & $O((4|V|+|E|)\log_4 |V|)$ & Alta localidad en línea de caché. \\
-        Fibonacci Heap & $O(1)$ & $O(\log |V|)^*$ & $O(1)^*$ & $O(|V|)$ & $O(|E| + |V|\log |V|)$ & Óptimo teórico ($|E| \gg |V|$). \\
-        Pairing Heap & $O(1)$ & $O(\log |V|)^*$ & $o(\log |V|)^*$ & $O(|V|)$ & $O(|E| + |V|\log |V|)$ & Menor sobrecarga de enlaces. \\
+        Arreglo no ordenado & $O(1)$ & $O(|V|)$ & $O(1)$ & $O(|V|)$ & $O(|V|^2+|E|)$ \\
+        Heap binario & $O(\log |V|)$ & $O(\log |V|)$ & $O(\log |V|)$ & $O(|V|)$ & $O((|V|+|E|)\log |V|)$ \\
+        Heap 4-ario & $O(\log_4 |V|)$ & $O(4\log_4 |V|)$ & $O(\log_4 |V|)$ & $O(|V|)$ & $O((|E|+4|V|)\log_4 |V|)$ \\
+        Fibonacci & $O(1)$ & $O(\log |V|)^*$ & $O(1)^*$ & $O(|V|)$ & $O(|E|+|V|\log |V|)$ \\
         \bottomrule
     \end{tabularx}
-    \vspace{0.15cm}
-    \raggedright \fontsize{9}{11}\selectfont \textit{Nota.} El asterisco ($^*$) denota costo amortizado según el método del potencial. Para montículos $d$-arios ($d=4$), la cota es $O((d \cdot |V| + |E|)\log_d |V|)$.
+    \par\vspace{0.1cm}
+    \raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} $^*$Cota amortizada. Para $d$ fijo, $\log_d |V|=O(\log |V|)$; la diferencia práctica está en las constantes y en la localidad de memoria.
 \end{table}
-\subsection{Comparativa de Objetivos, Desempeño Real y Criterios de Selección}
-\label{sec:comparativa_profunda_colas}
-Para orientar la toma de decisiones técnicas en la investigación y en el desarrollo del proyecto semestral, se sintetizan a continuación los objetivos de diseño, los resultados empíricos y los criterios de uso de las estructuras analizadas:
 
-\subsubsection{¿Qué persigue y qué logra cada estructura?}
-\begin{enumerate}
-    \item \textbf{Binary Min-Heap Indexado:}
-    \begin{itemize}
-        \item \textit{Objetivo de diseño:} Proveer una implementación canónica y balanceada basada en un arreglo contiguo en memoria, con bajo consumo espacial (sin punteros explícitos) y búsqueda inmediata en $O(1)$ para la disminución de clave mediante la tabla hash inversa $\text{pos}[v]$.
-        \item \textit{Comportamiento real:} En grafos viales pequeños ($|V| \le 250$), es sumamente competitivo debido a su baja sobrecarga constante. Sin embargo, su árbol posee una profundidad de $\lceil \log_2 |V| \rceil$ niveles, lo cual genera un número elevado de intercambios de memoria y actualizaciones de la tabla hash.
-    \end{itemize}
-    \item \textbf{4-ary Heap Contiguo ($d=4$):}
-    \begin{itemize}
-        \item \textit{Objetivo de diseño:} Explotar la arquitectura de la memoria caché de los procesadores modernos (líneas de caché L1/L2 de 64 bytes) y aplanar la estructura del árbol a la mitad de niveles ($\log_4 |V| = 0.5 \log_2 |V|$).
-        \item \textit{Comportamiento real:} Aunque realiza más comparaciones por nivel durante \texttt{\_sift\_down} (al evaluar 4 hijos contiguos), reduce en aproximadamente un $40\%$ el número total de intercambios (\textit{swaps}) y escrituras en memoria. A partir de $N \ge 500$ nodos, se consolida como la alternativa más rápida en tiempo de CPU para redes viales.
-    \end{itemize}
-    \item \textbf{Fibonacci Heap:}
-    \begin{itemize}
-        \item \textit{Objetivo de diseño:} Alcanzar la cota asintótica óptima teórica conocida $O(|E| + |V|\log |V|)$ mediante la postergación perezosa (\textit{lazy}) de la reestructuración arbórea, permitiendo \texttt{Decrease-Key} en $O(1)$ amortizado.
-        \item \textit{Comportamiento real:} Logra reducir efectivamente entre un 25\% y un 35\% el número de comparaciones de clave frente a los heaps de arreglo. No obstante, en redes viales urbanas (que son sumamente dispersas con $|E| \approx 3.5|V|$), la cantidad de operaciones \texttt{Decrease-Key} es del mismo orden que $|V|$. Por ende, el beneficio asintótico no compensa el elevado costo de alocar múltiples objetos en el montículo dinámico y recorrer listas circulares doblemente enlazadas, sufriendo frecuentes fallos de caché.
-    \end{itemize}
-\end{enumerate}
+\subsection{Criterios de selección}
+La Tabla~\ref{tab:guia_seleccion} resume la recomendación. No se declara un ganador universal: se indica el escenario en el que cada alternativa es razonable y la evidencia que lo respalda.
 
-\subsubsection{Guía Práctica de Selección para el Investigador y Desarrollador}
 \begin{table}[H]
     \centering
-    \fontsize{9.5}{12}\selectfont
-    \renewcommand{\arraystretch}{1.25}
-    \caption{Guía de selección práctica de algoritmos y estructuras en redes de transporte}
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Guía de selección según el escenario}
     \label{tab:guia_seleccion}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Algoritmo / Estructura} & \textbf{Escenario de Aplicación Recomendado} & \textbf{Justificación Técnica y Acción a Realizar} \\
+        \textbf{Alternativa} & \textbf{Escenario recomendado} & \textbf{Justificación} \\
         \midrule
-        \textbf{Dijkstra + DAryHeap (d=4)} \newline \textit{(Recomendado General)} & Cálculo SSSP en redes viales urbanas medianas y grandes ($N \ge 500$). & Estructura óptima en tiempo real. Utilizar cuando se requiere calcular caminos mínimos hacia todos los destinos sobre la malla vial metropolitana. \\
-        \addlinespace
-        \textbf{Dijkstra + Binary Heap} & Redes viales pequeñas ($N < 500$), microcontroladores o memoria restringida. & Implementación sencilla y robusta. Utilizar para prototipado rápido o cuando el costo de memoria por nodo debe ser estrictamente mínimo. \\
-        \addlinespace
-        \textbf{Dijkstra + Fibonacci Heap} & Grafos muy densos ($|E| \gg |V|$, ej. redes de telecomunicaciones completas). & Utilizar únicamente cuando la razón $|E|/|V| \ge 20$, donde el costo constante amortizado $O(1)$ en \texttt{Decrease-Key} supera el sobrecosto de punteros. \\
-        \addlinespace
-        \textbf{Algoritmo $A^*$ (A-Star)} \newline \textit{(Recomendado Emergencias)} & Ruteo punto a punto ($s \to t$) para despacho de ambulancias hacia un hospital. & Utilizar cuando el destino es específico. Emplear la heurística admisible euclidiana $D/V_{\max}$, podando hasta el 70\% del grafo frente a Dijkstra. \\
-        \addlinespace
-        \textbf{Bellman-Ford} & Validación de consistencia y detección de ciclos negativos. & Emplear como oráculo independiente de verificación en suites de pruebas o cuando el modelo admita costos negativos (ej. incentivos de peaje). \\
+        Dijkstra + heap binario & Valor por defecto en redes pequeñas o medianas y cuando se prioriza simplicidad y robustez. & Menor constante de implementación; ganó la consulta OSM y 3 de 10 escalas sintéticas. \\
+        Dijkstra + heap 4-ario & Candidato en escalas densas o medianas, después de medir en el entorno objetivo. & Menor mediana en 7 de 10 escalas, con ventaja mediana de 4--5\%, pero IQR solapados. \\
+        Dijkstra + Fibonacci & Estudio teórico o escenarios con muchísimas \texttt{decrease\_key} y bajo costo de asignación. & Nunca obtuvo la menor mediana en este estudio; 1.12--1.59 veces más lento que el binario. \\
+        $A^*$ con heurística consistente & Consultas punto a punto con coordenadas y destino conocido. & Reduce expansiones sin perder optimalidad; la magnitud depende de la fuerza de $h$. \\
+        Bellman-Ford & Oráculo de validación o grafos con pesos negativos sin ciclos negativos. & $O(|V||E|)$; no compite en tiempo, pero valida la solución. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\subsection{Correspondencia Formal entre Pseudocódigo y Código Fuente}
-\label{sec:correspondencia_codigo}
-Para asegurar la fidelidad algorítmica y la reproducibilidad técnica, cada bloque de la implementación en \texttt{src/algorithms/dijkstra.py} se mapea unívocamente con el Algoritmo \ref{alg:dijkstra_generico}. La Tabla \ref{tab:pseudo_codigo} sintetiza la correspondencia formal entre las líneas del pseudocódigo teórico y las instrucciones del código fuente Python.
+\subsection{Correspondencia entre pseudocódigo y código}
+La Tabla~\ref{tab:pseudo_codigo} vincula las etapas del Algoritmo~\ref{alg:dijkstra_generico} con la implementación en \texttt{python/src/algorithms/dijkstra.py}. La función \texttt{dijkstra\_solver} recibe la instancia, el origen, el tipo de cola y un destino opcional; \texttt{reconstruct\_path} reconstruye la ruta desde $\pi$.
 
 \begin{table}[H]
     \centering
-    \fontsize{9.5}{12}\selectfont
-    \caption{Correspondencia entre el Algoritmo \ref{alg:dijkstra_generico} y la implementación computacional}
+    \fontsize{9}{11}\selectfont
+    \caption{Correspondencia entre pseudocódigo y código}
     \label{tab:pseudo_codigo}
-    \begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}p{5.4cm}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{5.0cm} X@{}}
         \toprule
-        \textbf{Línea} & \textbf{Pseudocódigo Matemático} & \textbf{Instrucción en Código Python} \\
+        \textbf{Etapa} & \textbf{Pseudocódigo} & \textbf{Implementación} \\
         \midrule
-        1--6 & $d[v]\leftarrow\infty$, $\pi[v]\leftarrow$ NIL, $d[s]\leftarrow 0$ & \texttt{dist = \{v: float('inf')\}}, \texttt{prev = \{v: None\}}, \texttt{dist[s] = 0.0} \\
-        7 & $Q.\text{BUILD}(V, d)$ & \texttt{heap = create\_queue(...)}; \texttt{heap.insert(v, dist[v])} \\
-        8 & $S \leftarrow \emptyset$ & \texttt{visited = set()} \\
-        9--10 & \textbf{while} $Q \ne \emptyset$: $(u, d_u) \leftarrow Q.\text{EXTRACT\_MIN}()$ & \texttt{d\_u, u = heap.extract\_min()} \\
-        11--13 & \textbf{if} $d_u = \infty$ \textbf{break} & \texttt{if d\_u == float('inf'): break} \\
-        14 & $S \leftarrow S \cup \{u\}$ & \texttt{visited.add(u)} \\
-        15--18 & Relajación de $(u, v)$ con $v \notin S$ & \texttt{candidate\_d = d\_u + weight} \\
-        19--21 & $d[v]$, $\pi[v]$, $Q.\text{DECREASE\_KEY}$ & \texttt{heap.decrease\_key(v, candidate\_d)} \\
-        26 & \textbf{return} $(d, \pi)$ & \texttt{distances}, \texttt{predecessors}, \texttt{paths} y telemetría \\
+        Inicialización & $d[v]\leftarrow\infty$, $\pi[v]\leftarrow\text{NIL}$, $d[s]\leftarrow0$ & \texttt{dist}, \texttt{prev} y \texttt{dist[s]=0.0}. \\
+        Construcción de $Q$ & insertar cada vértice con $d[v]$ & \texttt{create\_queue(queue\_type)} e inserción inicial. \\
+        Extracción & $(d_u,u)\leftarrow Q.\text{extract\_min}()$ & \texttt{d\_u, u = heap.extract\_min()}. \\
+        Relajación & $d[u]+w(u,v)<d[v]$ & \texttt{candidate = d\_u + weight}. \\
+        Actualización & \texttt{decrease\_key} o \texttt{insert} & \texttt{heap.decrease\_key(...)} si el vértice ya está en $Q$; si no, \texttt{insert}. \\
+        Salida & $(d,\pi)$ & \texttt{distances}, \texttt{predecessors}, \texttt{paths} y telemetría. \\
         \bottomrule
     \end{tabularx}
 \end{table}

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "fetched_at_utc": "2026-10-28T17:33:13.541220+00:00",
+  "observation": {
+    "observed_at": "2026-10-28T12:30",
+    "latitude": -13.462214,
+    "longitude": -71.96707,
+    "temperature_c": 17.0,
+    "precipitation_mm": 0.1,
+    "visibility_m": 8920.0,
+    "wind_speed_kmh": 12.4,
+    "wind_gusts_kmh": 40.7,
+    "weather_code": 51,
+    "source": "Open-Meteo (datos de modelo)",
+    "cached": false
+  },
+  "raw_response": {
+    "latitude": -13.462214,
+    "longitude": -71.96707,
+    "generationtime_ms": 25.090456008911133,
+    "utc_offset_seconds": -18000,
+    "timezone": "America/Lima",
+    "timezone_abbreviation": "GMT-5",
+    "elevation": 3410.0,
+    "current_units": {
+      "time": "iso8601",
+      "interval": "seconds",
+      "temperature_2m": "°C",
+      "precipitation": "mm",
+      "visibility": "m",
+      "wind_speed_10m": "km/h",
+      "wind_gusts_10m": "km/h",
+      "weather_code": "wmo code"
+    },
+    "current": {
+      "time": "2026-10-28T12:30",
+      "interval": 900,
+      "temperature_2m": 17.0,
+      "precipitation": 0.1,
+      "visibility": 8920.0,
+      "wind_speed_10m": 12.4,
+      "wind_gusts_10m": 40.7,
+      "weather_code": 51
+    }
+  }
+}

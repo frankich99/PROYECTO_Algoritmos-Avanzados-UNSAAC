@@ -41,7 +41,7 @@ ficha_aprendizaje_grupo5.tex
 guia_ficha_aprendizaje.tex
 .vscode/
 python/results/
-python/data/processed/benchmark_results.json
+python/cache/
 
 # Agent internal tooling
 .agents/

@@ -1,52 +1,117 @@
 \section{Metodología Experimental y Diseño del Banco de Pruebas}
 \label{sec:metodologia}
 
-\subsection{Preguntas de Investigación Científica}
-El diseño experimental del banco de pruebas responde a tres interrogantes computacionales clave:
+\subsection{Preguntas de investigación}
+El experimento responde tres preguntas:
 \begin{enumerate}
-    \item \textbf{PI1:} ¿Compensa la cota teórica asintótica $O(1)$ amortizada en \texttt{Decrease-Key} del Fibonacci Heap su alta sobrecarga de gestión de punteros en mallas viales urbanas donde $|E| \approx 3|V|$?
-    \item \textbf{PI2:} ¿En qué magnitud reduce el 4-ary Heap el tiempo total de pared frente al Binary Heap al disminuir la altura del árbol a la mitad y alinear 4 hijos en un único bloque de caché de CPU?
-    \item \textbf{PI3:} ¿Cuál es la penalización en memoria residente (\textit{Resident Set Size}, RSS) que imponen los punteros dinámicos frente a las estructuras contiguas indexadas?
+    \item \textbf{PI1.} ¿Qué cola minimiza el tiempo de pared de Dijkstra en redes viales sintéticas dispersas y densas, y cómo cambia la respuesta con la escala?
+    \item \textbf{PI2.} ¿La ventaja asintótica del Fibonacci heap se traduce en un menor tiempo de ejecución en una implementación de Python?
+    \item \textbf{PI3.} ¿El comportamiento observado en el banco sintético se reproduce en una consulta sobre una red vial real, y qué aportan la extensión $A^*$ y el factor climático?
 \end{enumerate}
+No se plantea una hipótesis de superioridad universal. La literatura experimental muestra que el resultado depende de la densidad, del tamaño y de la implementación \parencite{cherkassky1996shortest,lamarca1996cache}; el objetivo es medir esa dependencia en el entorno local.
 
-\subsection{Formulación de Hipótesis Técnicas}
+\subsection{Hipótesis de trabajo}
 \begin{itemize}
-    \item \textbf{Hipótesis 1 (Densidad Vial y Sobrecarga del Fibonacci Heap):} En redes viales urbanas planas o cuasi-planas como la del Cusco, donde la razón de aristas por vértice es baja ($|E|/|V| \le 3.5$), el número de operaciones \texttt{Decrease-Key} no es suficientemente masivo para amortizar la sobrecarga de alocación de memoria dinámica y los frecuentes fallos de caché derivados de la manipulación de punteros. Por ende, el Min-Heap Binario Indexado y el 4-ary Heap superarán al Fibonacci Heap en tiempo real de ejecución (\textit{wall-clock time}).
-    \item \textbf{Hipótesis 2 (Ventaja de Localidad Espacial del 4-ary Heap):} A medida que la escala de la red crece ($|V| \ge 10,000$), el 4-ary Heap exhibirá un rendimiento superior al Binary Min-Heap tradicional debido a la reducción en un 50\% de la profundidad de flotado y a la lectura contigua de los 4 hijos en una única línea de caché L1/L2 (64 bytes).
-    \item \textbf{Hipótesis 3 (Eficiencia en Huella de Memoria):} Las colas basadas en arreglos contiguos con mapeo directo mantendrán un consumo de memoria hasta un 65\% menor en comparación con el Fibonacci Heap, cuyos nodos requieren 5 punteros (\texttt{parent, child, left, right}) más un entero (\texttt{degree}) y un booleano (\texttt{mark}).
+    \item \textbf{H1.} En redes dispersas, los heaps contiguos (binario y 4-ario) superarán al Fibonacci heap por menor sobrecarga de asignación y mejor localidad de memoria.
+    \item \textbf{H2.} Al aumentar la densidad, el mayor número de operaciones \texttt{decrease\_key} favorecerá relativamente al heap 4-ario y al Fibonacci heap.
+    \item \textbf{H3.} $A^*$ con una heurística consistente reducirá el número de expansiones sin alterar el costo óptimo.
+    \item \textbf{H4.} Un factor climático uniforme incrementará el tiempo estimado, pero no cambiará la ruta óptima, porque multiplica todos los pesos por la misma constante.
 \end{itemize}
+H1 y H2 son hipótesis empíricas y pueden refutarse. H3 y H4 son propiedades que se verifican, no se presumen: la consistencia de $h$ se comprueba antes de ejecutar $A^*$ y la invariancia de la ruta se comprueba comparando las secuencias.
 
-\subsection{Variables Experimentales}
+\subsection{Diseño factorial}
+El benchmark canónico es un diseño factorial con tres factores:
 \begin{itemize}
-    \item \textbf{Variables Independientes:}
-    \begin{itemize}
-        \item Estructura de cola de prioridad: Min-Heap Binario Indexado, 4-ary Heap ($d=4$), Fibonacci Heap.
-        \item Escala del grafo vial: Número de vértices $|V|$ (desde 6 hasta 50,000) y número de aristas dirigidas $|E|$.
-        \item Métrica de costo asignada: Distancia física euclidiana/manhattan ($m$) vs. Tiempo de viaje con impedancia topográfica andina ($s$).
-    \end{itemize}
-    \item \textbf{Variables Dependientes:}
-    \begin{itemize}
-        \item Tiempo de CPU neto y tiempo de pared (\textit{wall-clock time}) medido en microsegundos ($\mu s$).
-        \item Conteo de operaciones elementales: extracciones de mínimo (\texttt{Extract-Min}), decrementos de clave (\texttt{Decrease-Key}) e inserciones (\texttt{Insert}).
-        \item Memoria pico residente consumida medida en kilobytes mediante el módulo \texttt{tracemalloc}.
-    \end{itemize}
+    \item \textbf{Cola} (3 niveles): heap binario indexado, heap 4-ario indexado y Fibonacci heap.
+    \item \textbf{Densidad} (2 niveles): dispersa, $|E|=4|V|$; densa, $|E|=0.08\,|V|(|V|-1)$.
+    \item \textbf{Escala} (5 niveles por perfil): $|V|\in\{100,500,1000,2500,5000\}$ para el perfil disperso y $|V|\in\{50,100,200,400,800\}$ para el denso.
 \end{itemize}
+Cada combinación de densidad y escala usa tres instancias independientes. Cada instancia se resuelve con las tres colas y se mide 15 veces por cola, con dos ejecuciones de calentamiento. En total se obtienen
+\begin{equation}
+    2\ \text{perfiles}\times 5\ \text{escalas}\times 3\ \text{instancias}\times 3\ \text{colas}\times 15\ \text{repeticiones}=1350
+    \label{eq:muestras}
+\end{equation}
+muestras cronometradas, además de 180 ejecuciones de calentamiento. La unidad experimental es la ejecución completa de Dijkstra desde el nodo \texttt{N0}; no se mide una operación aislada de la cola.
 
-\subsection{Métricas de Evaluación e Instrumentación de Precisión}
-Para asegurar que las mediciones no se vean contaminadas por factores ajenos al algoritmo, se implementó el siguiente protocolo de instrumentación técnica:
+\subsection{Generación de instancias}
+Las instancias se generan con \texttt{benchmark\_network} y semilla fija. Para cada escala $n$ y cada índice $j\in\{0,1,2\}$, la semilla es
+\begin{equation}
+    s(n,j)=\begin{cases}
+        12345+31n+j, & \text{perfil disperso},\\
+        22345+31n+j, & \text{perfil denso}.
+    \end{cases}
+    \label{eq:semillas}
+\end{equation}
+El generador construye primero una cadena dirigida $N_0\to N_1\to\cdots\to N_{n-1}$, que garantiza que todos los vértices sean alcanzables desde el origen, y luego añade aristas dirigidas aleatorias hasta alcanzar el número objetivo. Los pesos son uniformes en $[1,1000]$ con tres decimales. La cadena evita el caso trivial de una componente desconectada y hace que el número de extracciones sea $|V|$ en todas las instancias.
+
+El perfil denso usa $0.08\,|V|(|V|-1)$ aristas, es decir, el 8\,\% de las aristas posibles. No se usa el grafo completo porque su costo de memoria y de generación crece cuadráticamente y no representa una red vial. El perfil disperso usa $4|V|$, una razón cercana a la observada en la red OSM ($|E|/|V|=2.40$).
+
+\subsection{Protocolo de medición}
+Cada medición sigue estos pasos:
 \begin{enumerate}
-    \item \textbf{Medición en Nanosegundos:} Uso exclusivo del temporizador de mayor resolución del sistema operativo: \texttt{time.perf\_counter\_ns()}.
-    \item \textbf{Aislamiento del Recolector de Basura (GC):} Desactivación explícita de la recolección automática (\texttt{gc.disable()}) durante la ventana de ejecución algorítmica y recolección forzada (\texttt{gc.collect()}) entre réplicas experimentales.
-    \item \textbf{Fase de Calentamiento (\textit{Warm-up}):} Ejecución de 5 iteraciones previas no contabilizadas para estabilizar el caché de instrucciones de la CPU y la memoria virtual.
-    \item \textbf{Tratamiento Estadístico de Réplicas:} Cada experimento se ejecuta en 30 réplicas independientes, reportando la media recortada al 10\% y la desviación estándar para descartar anomalías provocadas por interrupciones del sistema operativo.
+    \item Se construye la instancia y se ejecutan las tres colas una vez para verificar que las distancias coinciden con NetworkX y que el certificado de optimalidad se cumple.
+    \item Se baraja el orden de las colas con una semilla derivada de la instancia, para evitar que el orden de ejecución favorezca sistemáticamente a una estructura.
+    \item Para cada cola se ejecutan dos calentamientos sin cronometrar.
+    \item Se realizan 15 repeticiones. Antes de cada una se llama a \texttt{gc.collect()} y se desactiva el recolector; al terminar se restaura su estado. El tiempo se mide con \texttt{time.perf\_counter\_ns}.
+    \item Se registran mediana, cuartiles, IQR, MAD, mínimo, máximo, media, desviación estándar y coeficiente de variación.
 \end{enumerate}
+La desactivación del recolector reduce la probabilidad de que una pausa de recolección caiga dentro de una muestra. No elimina el ruido del sistema operativo, pero lo hace más comparable entre colas. No se fija la afinidad de CPU ni se desactiva el \textit{turbo boost}; ambas son fuentes de variación que se declaran en la Sección~\ref{sec:discusion}.
 
-\subsection{Entorno de Ejecución y Protocolo Reproducible}
-Todos los experimentos se ejecutan en un entorno de hardware homogéneo documentado:
+\paragraph{Estadística principal.} Se reporta la mediana y el IQR. La media y la desviación estándar se conservan en el JSON, pero no se usan para declarar ganadores porque son sensibles a valores atípicos. Un menor IQR indica mayor estabilidad, no necesariamente menor tiempo. Cuando los IQR se solapan, la diferencia entre medianas no se interpreta como una ventaja concluyente.
+
+\paragraph{Métricas de operaciones.} Además del tiempo, se cuentan inserciones, extracciones, \texttt{decrease\_key}, intentos de relajación y comparaciones. Estos contadores explican el comportamiento temporal, pero no sustituyen la medición: dos colas pueden hacer el mismo número de comparaciones y diferir por asignación de memoria o indirección.
+
+\paragraph{Ausencia de métricas de memoria.} No se midió el consumo de memoria residente ni el número de asignaciones. Por tanto, el informe no reporta RSS, \textit{peak memory} ni comparaciones de espacio. Las cotas espaciales de la Tabla~\ref{tab:complejidades} son teóricas, no mediciones.
+
+\subsection{Caso aplicado sobre OpenStreetMap}
+La red aplicada se obtuvo con OSMnx 2.1.1 alrededor del centro de Cusco ($-13.5165,-71.9788$), con radio de 1.5 km y tipo \texttt{drive}. El \textit{snapshot} contiene 891 vértices y 2139 aristas dirigidas. La consulta se selecciona de forma determinista: el origen es el vértice más cercano al centro de extracción y el destino es el vértice alcanzable con mayor tiempo base. Esta regla evita elegir el par a mano después de ver los resultados.
+
+Para la consulta se ejecutan las tres colas con 30 repeticiones y tres calentamientos. El tiempo se mide con el mismo protocolo, pero el número de repeticiones es mayor porque la consulta es única y el costo de cada ejecución es pequeño. La corrección se verifica con el certificado y con la igualdad de distancias entre colas. La ruta se reconstruye y se compara con la obtenida por $A^*$.
+
+\paragraph{Extensión $A^*$.} Se usa la heurística escalada de la ecuación~\eqref{eq:heuristica_escalada}. Antes de ejecutar, se comprueba la consistencia en todas las aristas. Se comparan el costo óptimo y el número de expansiones de $A^*$ y de Dijkstra punto a punto. La reducción de expansiones se reporta como un porcentaje; no se afirma una poda del 60--70\,\% porque esa cifra no se midió.
+
+\paragraph{Sensibilidad climática.} El factor climático se calcula con el \textit{snapshot} de Open-Meteo y la función de la Sección~\ref{sec:implementacion}. Se aplica un multiplicador uniforme a todos los pesos y se comparan el tiempo total y la secuencia de la ruta. El clima no se mezcla con el benchmark principal: se reporta como un escenario separado para no atribuir a la meteorología una diferencia entre colas.
+
+\subsection{Entorno de ejecución}
+La Tabla~\ref{tab:entorno} resume el entorno. Los tiempos absolutos incluyen la sobrecarga del intérprete de Python y no son extrapolables a C++ o Rust. La comparación es válida entre las tres colas porque todas se ejecutan en el mismo proceso, con la misma instancia y el mismo intérprete.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{11.5}\selectfont
+    \caption{Entorno de ejecución del benchmark}
+    \label{tab:entorno}
+    \begin{tabular}{@{}ll@{}}
+        \toprule
+        \textbf{Componente} & \textbf{Valor} \\
+        \midrule
+        Sistema operativo & Windows 11 (10.0.26300) \\
+        Procesador & AMD Ryzen 5 5600H, 6 núcleos, 12 hilos, 3.3 GHz \\
+        Memoria & 24 GB \\
+        Python & 3.12.8 \\
+        pytest & 9.1.1 \\
+        NetworkX & 3.7 \\
+        OSMnx & 2.1.1 \\
+        Streamlit & 1.64.0 \\
+        Plotly & 7.1.0 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Reproducibilidad}
+El protocolo canónico, el caso aplicado, las tablas y las figuras se regeneran con un único script:
+\begin{lstlisting}[language=bash, caption={Regeneración completa desde la raíz}]
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
+\end{lstlisting}
+El script ejecuta 15 repeticiones por instancia, tres instancias por escala y semilla 12345; reutiliza los \textit{snapshots} OSM y meteorológico versionados y escribe \texttt{benchmark\_results.json}, \texttt{applied\_results.json}, las tablas de \texttt{documento/tablas/} y las figuras de \texttt{documento/figuras/}. Para regenerar solo tablas y figuras a partir de los JSON existentes:
+\begin{lstlisting}[language=bash, caption={Regeneración de tablas y figuras sin repetir la medición}]
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
+\end{lstlisting}
+El subcomando \texttt{python main.py benchmark} conserva un modo exploratorio con escalas arbitrarias; no reemplaza al protocolo canónico. Las semillas, el número de repeticiones y el entorno quedan registrados en el JSON para que la comparación pueda repetirse o auditarse.
+
+\subsection{Amenazas a la validez}
 \begin{itemize}
-    \item \textbf{Procesador:} Intel Core i7 / AMD Ryzen a 3.2 GHz con 8 núcleos físicos.
-    \item \textbf{Jerarquía de Caché:} L1 Data Cache de 32 KB por núcleo, L2 de 512 KB, L3 compartida de 16 MB.
-    \item \textbf{Memoria RAM:} 16 GB DDR4 a 3200 MHz.
-    \item \textbf{Sistema Operativo:} Windows 11 Pro de 64 bits / Linux Ubuntu 22.04 LTS.
-    \item \textbf{Plataforma de Software:} Python 3.12.2, compilado sin optimizaciones intrusivas en el bytecode.
+    \item \textbf{Validez interna.} El ruido del sistema operativo, el \textit{turbo boost} y la migración de hilos pueden alterar muestras individuales. Se mitiga con calentamiento, GC desactivado, orden aleatorio y mediana/IQR, pero no se elimina.
+    \item \textbf{Validez externa.} Los resultados corresponden a Python 3.12 en un Ryzen 5 5600H. Otra implementación, otro lenguaje u otra CPU pueden cambiar las constantes y el orden.
+    \item \textbf{Validez de constructo.} El tiempo de pared incluye la reconstrucción de rutas y la telemetría del solver. Se desactivan la validación y la construcción de caminos durante el benchmark para reducir ese efecto, pero el costo de la cola no se mide de forma aislada.
+    \item \textbf{Validez de conclusión.} Con 45 muestras por celda (tres instancias $\times$ 15 repeticiones) y distribuciones no normales, no se aplican pruebas de significancia. La conclusión se basa en medianas, IQR y consistencia entre escalas, no en un valor $p$.
 \end{itemize}

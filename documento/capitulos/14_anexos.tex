@@ -2,137 +2,142 @@
 \addcontentsline{toc}{section}{Anexos}
 \label{sec:anexos}
 
-\subsection*{Anexo A: Manual de Instalación y Configuración del Entorno Reproducible}
-\addcontentsline{toc}{subsection}{Anexo A: Manual de Instalación y Configuración}
+\subsection*{Anexo A: Instalación y configuración}
+\addcontentsline{toc}{subsection}{Anexo A: Instalación y configuración}
 \label{anexo:instalacion}
-La instalación y despliegue del sistema se diseñaron con portabilidad total, garantizando que el entorno no dependa de rutas absolutas locales ni configuraciones propietarias:
-
-\paragraph{1. Requisitos Previos del Sistema:}
-\begin{itemize}
-    \item Intérprete Python 3.10 o superior (verificado en Python 3.12 de 64 bits).
-    \item Administrador de paquetes \texttt{pip} y herramienta de control de versiones \texttt{git}.
-    \item Distribución LaTeX moderna (MiKTeX 24+ o TeX Live) para la compilación del informe.
-\end{itemize}
-
-\paragraph{2. Clonación del Repositorio y Configuración del Entorno Virtual:}
-\begin{lstlisting}[language=bash, caption={Clonación y activación del entorno virtual}]
+El proyecto se ejecutó con Python 3.12.8 en Windows 11. Los comandos siguientes reproducen el entorno desde la raíz del repositorio:
+\begin{lstlisting}[language=bash, caption={Clonación, entorno virtual e instalación}]
 git clone https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC.git
 cd PROYECTO_Algoritmos-Avanzados-UNSAAC
-
-# Crear y activar entorno virtual en Windows (PowerShell):
 python -m venv .venv
-.venv\Scripts\Activate.ps1
-
-# Instalación de dependencias:
-pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r python/requirements.txt
 \end{lstlisting}
+Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{streamlit}, \texttt{plotly}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
 
-\subsection*{Anexo B: Manual de Uso y Ejecución del Prototipo y Suite de Pruebas}
-\addcontentsline{toc}{subsection}{Anexo B: Manual de Uso y Ejecución}
+\subsection*{Anexo B: Uso del prototipo}
+\addcontentsline{toc}{subsection}{Anexo B: Uso del prototipo}
 \label{anexo:uso}
 
-\paragraph{1. Demostración Directa del Prototipo en Consola:}
-Para ejecutar el algoritmo de Dijkstra sobre la red del Centro Histórico, serializar el grafo en formato JSON y calcular las métricas:
-\begin{lstlisting}[language=bash, caption={Ejecución del pipeline principal}]
-cd python
-python main.py
-\end{lstlisting}
-El script imprime en consola las distancias óptimas, tiempos con impedancia andina y verifica que las tres colas de prioridad convergen exactamente a la misma solución.
-
-\paragraph{2. Ejecución de la Suite de Pruebas Automatizadas:}
-Para verificar los 221 casos de prueba distribuidos en 11 suites unitarias (básicos, límites, adversos y de equivalencia cruzada):
-\begin{lstlisting}[language=bash, caption={Comandos de ejecución de pruebas unitarias}]
-python -m unittest discover -s tests -v
+\paragraph{Suite de pruebas.} Desde la raíz:
+\begin{lstlisting}[language=bash, caption={Ejecución de las 246 pruebas}]
+.\.venv\Scripts\python.exe -m pytest python/tests -q
 \end{lstlisting}
 
-\paragraph{3. Compilación del Informe en LaTeX:}
-\begin{lstlisting}[language=bash, caption={Compilación del documento PDF}]
-cd documento
+\paragraph{Interfaz de comandos.} Desde \texttt{python/}:
+\begin{lstlisting}[language=bash, caption={Comandos principales de la CLI}]
+..\.venv\Scripts\python.exe main.py list
+..\.venv\Scripts\python.exe main.py run --queue all --trace
+..\.venv\Scripts\python.exe main.py compare
+..\.venv\Scripts\python.exe main.py astar --input data/processed/cusco_osm_drive.json
+\end{lstlisting}
+
+\paragraph{Aplicación web.} Desde \texttt{python/}:
+\begin{lstlisting}[language=bash, caption={Ejecución de la aplicación Streamlit}]
+..\.venv\Scripts\python.exe -m streamlit run app.py
+\end{lstlisting}
+La aplicación abre cuatro vistas: Comparación, Ruta OSM, Traza manual y Procedencia. Si no hay red, usa los \textit{snapshots} locales y lo indica en pantalla.
+
+\paragraph{Reproducción del benchmark y las figuras.} Desde la raíz:
+\begin{lstlisting}[language=bash, caption={Regeneración de resultados, tablas y figuras}]
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
+\end{lstlisting}
+El script escribe \texttt{python/data/processed/benchmark\_results.json}, \texttt{applied\_results.json}, las tablas de \texttt{documento/tablas/} y las figuras de \texttt{documento/figuras/}. No sobrescribe la red OSM ni el clima si los \textit{snapshots} ya existen.
+
+\paragraph{Compilación del informe.} Desde \texttt{documento/}:
+\begin{lstlisting}[language=bash, caption={Compilación con pdflatex y biber}]
 .\compilar.ps1
 \end{lstlisting}
 
-\newpage
-\subsection*{Anexo C: Bitácora de Aprendizaje Autónomo y Resolución de Dificultades}
-\addcontentsline{toc}{subsection}{Anexo C: Bitácora de Aprendizaje Autónomo}
+\subsection*{Anexo C: Bitácora de aprendizaje autónomo}
+\addcontentsline{toc}{subsection}{Anexo C: Bitácora de aprendizaje}
 \label{anexo:bitacora}
-La Tabla \ref{tab:bitacora_detallada} resume las actividades de autoaprendizaje, fuentes consultadas y dificultades resueltas por cada integrante del Grupo 5.
+La Tabla~\ref{tab:bitacora_detallada} resume las dificultades técnicas y su resolución. Las fechas corresponden a las sesiones de trabajo del grupo.
 
 \begin{table}[H]
     \centering
-    \fontsize{8.5}{10.5}\selectfont
+    \fontsize{8.3}{10.2}\selectfont
     \renewcommand{\arraystretch}{1.06}
-    \setlength{\tabcolsep}{3.2pt}
-    \caption{Bitácora de autoaprendizaje individual y resolución de dificultades}
+    \setlength{\tabcolsep}{3.0pt}
+    \caption{Bitácora de aprendizaje y resolución de dificultades}
     \label{tab:bitacora_detallada}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.5cm} >{\centering\arraybackslash}p{1.7cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.3cm} >{\centering\arraybackslash}p{1.5cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Integrante} & \textbf{Fecha} & \textbf{Fuente Consultada} & \textbf{Dificultad Encontrada} & \textbf{Resolución Autónoma} \\
+        \textbf{Integrante} & \textbf{Fecha} & \textbf{Fuente} & \textbf{Dificultad} & \textbf{Resolución} \\
         \midrule
-        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 18/09/2026 & Arquitectura de software y Cormen et al. (Cap. 24). & Desacoplamiento del solver SSSP para inyección intercambiable de colas de prioridad. & Diseñó la arquitectura modular en 4 capas y el contrato de interfaz abstracto en \texttt{dijkstra.py}. \\
-        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 21/09/2026 & Cartografía municipal y modelos de impedancia vial andina. & Preservación de subestructura óptima ante pendientes severas y sentidos viales asimétricos. & Formuló la función de costo $\Phi(\theta) = 1 + \alpha \max(0, \theta)^2$, garantizó pesos no negativos $w'(u,v) \ge 0$ y serializó la red en JSON. \\
-        Choquenaira, Noe \newline \textmd{\scriptsize(Líder de Proyecto)} & 02/10/2026 & Validación cruzada algorítmica y oráculo diferencial. & Divergencias de latencia y conteo de primitivas entre estructuras en grafos densos. & Diseñó el instrumental de telemetría de operaciones y coordinó la integración de resultados experimentales. \\
+        Choquenaira, Noe & 18/09/2026 & Arquitectura modular y Cormen et al. (cap.~24). & Desacoplar el solver de la cola y de la interfaz. & Definió las cuatro capas y el contrato \texttt{insert/extract\_min/decrease\_key}. \\
+        Choquenaira, Noe & 21/09/2026 & Modelos de impedancia vial. & Traducir pendiente y tipo de vía a un peso no negativo. & Formuló $w=(L/v)(1+2.5\max(0,\theta))m_{\text{clima}}$ y separó el clima del benchmark. \\
+        Choquenaira, Noe & 02/10/2026 & Heurísticas admisibles. & Evitar que $A^*$ aplicara coordenadas de Cusco a grafos arbitrarios. & Introdujo $\lambda=\min w/\lVert\Delta x\rVert$, la verificación de consistencia y $h=0$ sin coordenadas. \\
         \midrule
-        Porroa, Yeni Ruth & 20/09/2026 & Sedgewick \& Wayne sobre colas indexadas. & Búsqueda lineal en \texttt{decrease\_key} degradaba Dijkstra a $O(|V|^2)$. & Diseñó tabla de mapeo inverso de posiciones ($\text{pos}[v]$) sincronizada en $O(1)$. \\
-        Porroa, Yeni Ruth & 25/09/2026 & LaMarca \& Ladner (1996) sobre memoria caché. & Aritmética de índices para montículos $d$-arios contiguos base cero. & Formuló e implementó las relaciones $\lfloor (i-1)/d \rfloor$ y $d \cdot i + k$, optimizando el montículo 4-ario. \\
+        Porroa, Yeni & 20/09/2026 & Sedgewick y Wayne, colas indexadas. & La búsqueda lineal en \texttt{decrease\_key} degradaba el costo. & Implementó la tabla inversa $\text{pos}[v]$ sincronizada en cada intercambio. \\
+        Porroa, Yeni & 25/09/2026 & LaMarca y Ladner (1996). & Aritmética de índices del heap 4-ario. & Implementó $\lfloor(i-1)/4\rfloor$ y $4i+k$, y comparó la localidad con el binario. \\
         \midrule
-        Quispe, Romario & 24/09/2026 & Cormen et al. (Cap. 19) sobre Fibonacci Heaps. & Enlaces circulares dobles al extraer la raíz mínima. & Diseñó rutinas atómicas \texttt{\_remove\_node} y \texttt{\_add\_root} validadas con punteros circulares. \\
-        Quispe, Romario & 28/09/2026 & Tarjan (1983) sobre potencial amortizado. & Bucles infinitos por banderas \texttt{mark} inconsistentes. & Implementó la regla estricta: desmarcar nodo al ascender a raíz e interrumpir cascada si padre no estaba marcado. \\
+        Quispe, Romario & 24/09/2026 & Cormen et al. (cap.~19). & Enlaces circulares al extraer la raíz mínima. & Implementó \texttt{\_remove\_node} y \texttt{\_add\_root} con listas dobles. \\
+        Quispe, Romario & 28/09/2026 & Tarjan (1983), análisis amortizado. & Cortes en cascada con banderas \texttt{mark} inconsistentes. & Fijó la regla de desmarcar al ascender a raíz e interrumpir la cascada si el padre no estaba marcado. \\
+        Quispe, Romario & 05/10/2026 & Protocolos de medición. & Promedios inestables y ruido del recolector. & Adoptó \texttt{perf\_counter\_ns}, calentamiento, GC desactivado y mediana/IQR. \\
         \midrule
-        Yaranga, Aldo & 29/09/2026 & Estándar Arrange-Act-Assert en Pytest. & Bucles por nodos inalcanzables en componentes disconexas. & Agregó corte temprano cuando la distancia tentativa es $\infty$ y estructuró 11 pruebas unitarias. \\
-        Yaranga, Aldo & 03/10/2026 & Formato APA 7ma edición y paquetes \texttt{booktabs}. & Tablas anchas desbordaban márgenes estándar. & Automatizó la exportación en Python formateando tablas con columnas dinámicas \texttt{tabularx}. \\
+        Yaranga, Aldo & 29/09/2026 & Patrón AAA y pytest. & Nodos inalcanzables y bucles en componentes disconexas. & Agregó corte temprano con distancia $\infty$ y pruebas de borde. \\
+        Yaranga, Aldo & 03/10/2026 & APA 7 y \texttt{booktabs}. & Tablas anchas fuera de margen. & Usó \texttt{tabularx}, tamaños relativos y exportadores LaTeX. \\
+        Yaranga, Aldo & 12/10/2026 & Streamlit y Plotly. & Reejecución del script y estado duplicado. & Separó funciones puras, cacheó datos y verificó escritorio/móvil. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\newpage
-\subsection*{Anexo D: Matriz de Trazabilidad de Objetivos y Componentes}
-\addcontentsline{toc}{subsection}{Anexo D: Matriz de Trazabilidad de Objetivos}
+\subsection*{Anexo D: Matriz de trazabilidad}
+\addcontentsline{toc}{subsection}{Anexo D: Matriz de trazabilidad}
 \label{anexo:trazabilidad}
-La Tabla \ref{tab:matriz_trazabilidad} sintetiza la correspondencia entre los objetivos metodológicos y su desarrollo en las secciones del documento.
+La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia verificable.
 
 \begin{table}[H]
     \centering
-    \fontsize{10}{12.5}\selectfont
-    \renewcommand{\arraystretch}{1.18}
-    \setlength{\tabcolsep}{4.5pt}
-    \caption{Matriz de correspondencia entre objetivos y secciones del informe}
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Trazabilidad entre objetivos, componentes y evidencia}
     \label{tab:matriz_trazabilidad}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{4.5cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Componente} & \textbf{Objetivo Técnico} & \textbf{Sección y Evidencia en el Documento} \\
+        \textbf{Objetivo} & \textbf{Componente} & \textbf{Evidencia} \\
         \midrule
-        \multirow{4}{*}{\textbf{Formulación Inicial}} 
-        & Contexto y delimitación del problema & \S\ref{sec:introduccion}: Despacho de emergencias en el Centro Histórico del Cusco. \\
-        & Formulación matemática rigurosa & \S\ref{sec:formulacion}: Grafo $G=(V,E,W)$, variables de decisión y restricciones. \\
-        & Función objetivo e impedancia andina & \S\ref{sec:formulacion}: Costo con penalización por gradiente ($\alpha = 2.5$). \\
-        & Instancia pequeña resuelta manualmente & \S\ref{sec:formulacion}: Traza analítica paso a paso ($k=0\dots6$) sobre 6 nodos y 9 aristas. \\
-        \midrule
-        \multirow{4}{*}{\textbf{Diseño Algorítmico}} 
-        & Pseudocódigos formales con Decrease-Key & \S\ref{sec:diseno_algoritmico}: Algoritmo estructurado y prueba por inducción matemática. \\
-        & Análisis asintótico comparativo & \S\ref{sec:diseno_algoritmico}: Cotas temporales y espaciales de Binary, 4-ary y Fibonacci Heap. \\
-        & Matriz de selección del stack & \S\ref{sec:stack}: Evaluación multicriterio objetiva (Python 3.12 y LaTeX). \\
-        & Plan de validación y suite de pruebas & \S\ref{sec:pruebas}: 11 suites unitarias bajo patrón AAA y oráculo diferencial. \\
-        \midrule
-        \multirow{3}{*}{\textbf{Prototipo Integrado}} 
-        & Repositorio activo y modular & \S\ref{sec:implementacion}: Arquitectura desacoplada, paquetes en \texttt{python/src/} y JSON. \\
-        & Validación de salida sobre el sistema & \S\ref{sec:resultados}: Distancias, tiempos y conteo de primitivas verificado. \\
-        & Demostración interactiva reproducible & \S\ref{sec:resultados} y Anexo B: Protocolo de ejecución interactiva en consola y Colab. \\
-        \midrule
-        \multirow{3}{*}{\textbf{Evaluación y Cierre}} 
-        & Benchmarks masivos y poda ^*$ & \S\ref{sec:resultados}: Escalabilidad hasta 5,000 nodos y reducción de expansiones. \\
-        & Discusión y contraste empírico & \S\ref{sec:discusion}: Impacto de jerarquía de memoria caché y límites asintóticos. \\
-        & Conclusiones y síntesis de hallazgos & \S\ref{sec:conclusiones}: Logro de objetivos, lecciones aprendidas y trabajo futuro. \\
+        OE1 & Modelo de grafo y costo temporal & Sección~\ref{sec:formulacion}; ecuación~\eqref{eq:costo}; instancia ilustrativa y red OSM. \\
+        OE2 & Tres colas y Dijkstra parametrizado & Sección~\ref{sec:diseno_algoritmico}; \texttt{src/datastructures/}; 61 pruebas de contrato. \\
+        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 246 pruebas; certificado $O(|V|+|E|)$; NetworkX y Bellman-Ford. \\
+        OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
+        AG\_C06.01 & Aprendizaje autónomo & Sección~\ref{sec:fundamentos}; Anexo~C. \\
+        AG\_C06.02 & Selección de stack & Sección~\ref{sec:stack}; Tabla~\ref{tab:matriz_multicriterio}. \\
+        AG\_C06.03 & Experimentación y pensamiento crítico & Sección~\ref{sec:metodologia}; Sección~\ref{sec:discusion}; conclusión condicionada. \\
+        Aplicación & Streamlit integrado & Sección~\ref{sec:implementacion}; \texttt{app.py}; pruebas de humo. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\vspace{0.4cm}
-\subsection*{Anexo E: Evidencias de Seguimiento y Actas de Acuerdos de Equipo}
-\addcontentsline{toc}{subsection}{Anexo E: Evidencias de Seguimiento}
+\subsection*{Anexo E: Matriz de contribuciones}
+\addcontentsline{toc}{subsection}{Anexo E: Matriz de contribuciones}
+\label{anexo:contribuciones}
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Contribuciones por integrante y evidencia en el repositorio}
+    \label{tab:contribuciones}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Integrante} & \textbf{Componentes principales} & \textbf{Evidencia} \\
+        \midrule
+        Choquenaira, Noe & Arquitectura, modelo de costo, $A^*$, coordinación & \texttt{dijkstra.py}, \texttt{a\_star.py}, \texttt{cost\_model.py}, informe. \\
+        Porroa, Yeni & Heap binario y 4-ario indexados & \texttt{indexed\_min\_heap.py}, \texttt{d\_ary\_heap.py}, pruebas de colas. \\
+        Quispe, Romario & Fibonacci heap, benchmark y OSM & \texttt{fibonacci\_heap.py}, \texttt{scalability\_benchmark.py}, \texttt{osm\_loader.py}. \\
+        Yaranga, Aldo & Pruebas, CLI, Streamlit y documentación & \texttt{tests/}, \texttt{cli.py}, \texttt{app.py}, exportadores LaTeX. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Anexo F: Evidencias de seguimiento}
+\addcontentsline{toc}{subsection}{Anexo F: Evidencias de seguimiento}
 \label{anexo:seguimiento}
 \begin{itemize}
-    \item \textbf{Sesión de Coordinación 1 (18/09/2026):} Asignación formal de la línea de investigación (Grupo 5: Rutas mínimas con distintas colas de prioridad en redes viales del Cusco). Diagnóstico inicial de brechas técnicas, diseño de la arquitectura en 4 capas y adopción del stack tecnológico Python 3.12 y LaTeX.
-    \item \textbf{Sesión de Coordinación 2 (24/09/2026):} Definición matemática del modelo de impedancia andina $\Phi(\theta)$, validación geométrica de la red del Centro Histórico de Cusco (6 nodos, 9 aristas) y verificación de los primeros avances en montículos contiguos (Binary y 4-ary).
-    \item \textbf{Sesión de Coordinación 3 (29/09/2026):} Integración del solver desacoplado de Dijkstra con Fibonacci Heap. Ejecución de la suite de pruebas unitarias bajo estándar AAA en Pytest y resolución de invariantes de cortes en cascada.
-    \item \textbf{Sesión de Coordinación 4 (04/10/2026):} Ejecución del banco de escalabilidad computacional, consolidación del informe científico formal bajo norma APA 7ma edición y verificación de compilación reproducible del documento final.
+    \item \textbf{Sesión 1 (18/09/2026).} Definición del problema, arquitectura en cuatro capas y adopción de Python 3.12 y LaTeX.
+    \item \textbf{Sesión 2 (24/09/2026).} Modelo de costo, instancia ilustrativa de seis nodos y primeras versiones de los heaps contiguos.
+    \item \textbf{Sesión 3 (29/09/2026).} Integración del Fibonacci heap, suite AAA y certificado de optimalidad.
+    \item \textbf{Sesión 4 (05/10/2026).} Protocolo canónico, red OSM, aplicación Streamlit y revisión de resultados.
+    \item \textbf{Sesión 5 (28/10/2026).} Cierre del informe, verificación de tablas y figuras, y compilación del PDF.
 \end{itemize}

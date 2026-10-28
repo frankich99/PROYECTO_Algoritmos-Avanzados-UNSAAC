@@ -1,138 +1,63 @@
 \section{Resultados Computacionales y Evaluación Experimental}
 \label{sec:resultados}
 
-\subsection{Verificación de Distancias y Rutas Mínimas en la Red de Cusco}
-La ejecución del prototipo sobre la red del Centro Histórico del Cusco desde el vértice origen $s = \text{A}$ (Plaza Mayor) produjo las distancias físicas y tiempos de desplazamiento detallados en la Tabla \ref{tab:resultados_distancias}.
+\subsection{Verificación de corrección}
+En todas las instancias del benchmark, las tres colas produjeron las mismas distancias y el certificado de optimalidad se cumplió. La comparación con NetworkX no detectó discrepancias y el certificado de Bellman recorrió todas las aristas y caminos sin violaciones. En la consulta OSM, las tres colas devolvieron la misma ruta y el mismo costo base de $387.197$ s. La igualdad de distancias es la condición mínima para que la comparación de tiempos tenga sentido: si las colas resolvieran problemas distintos, el tiempo no sería comparable.
 
-\begin{table}[H]
-    \centering
-    \fontsize{10}{12.5}\selectfont
-    \renewcommand{\arraystretch}{1.2}
-    \setlength{\tabcolsep}{4.5pt}
-    \caption{Resultados computacionales de distancias y tiempos óptimos calculados desde Plaza Mayor}
-    \label{tab:resultados_distancias}
-    \begin{tabularx}{\textwidth}{@{}clccX@{}}
-        \toprule
-        \textbf{Nodo} & \textbf{Nombre de la Intersección} & \textbf{Distancia Pura ($m$)} & \textbf{Tiempo Efectivo ($s$)} & \textbf{Secuencia de Ruta Óptima} \\
-        \midrule
-        \textbf{A} & Plaza Mayor del Cusco & 0.0 & 0.0 & \texttt{A} \\
-        \textbf{B} & Plaza Regocijo (Cusipata) & 180.0 & 44.8 & \texttt{A -> B} \\
-        \textbf{D} & Plaza San Francisco & 400.0 & 101.6 & \texttt{A -> B -> D} \\
-        \textbf{C} & Qorikancha (Santo Domingo) & 450.0 & 108.0 & \texttt{A -> C} \\
-        \textbf{E} & Mercado Central San Pedro & 650.0 & 165.3 & \texttt{A -> B -> D -> E} \\
-        \textbf{F} & Plazoleta Limacpampa & 800.0 & 144.4 & \texttt{A -> C -> F} \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
+\subsection{Benchmark sintético}
+Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan la mediana y el IQR de 45 muestras por celda (tres instancias $\times$ 15 repeticiones). La Figura~\ref{fig:benchmark_canonico} muestra las curvas en escala logarítmica; las barras de error corresponden al IQR.
 
-Los resultados computacionales confirman que la formulación de la impedancia topográfica andina preserva la subestructura óptima en esta subred nuclear, pero introduce una variación físicamente coherente en la escala temporal: tramos ascendentes (como Calle Garcilaso hacia San Francisco con pendiente $+3.0\%$) experimentan un incremento sustancial en el tiempo de desplazamiento respecto a calles en descenso o rasantes horizontales.
-
-\subsection{Análisis Cuantitativo de Operaciones Elementales en Colas}
-El instrumental de telemetría embebido en el algoritmo registró el conteo unívoco de primitivas ejecutadas por cada estructura durante la resolución de la instancia base:
-\begin{itemize}
-    \item \textbf{Inserciones Iniciales (\texttt{Insert}):} 6 operaciones (una por cada vértice $|V| = 6$).
-    \item \textbf{Extracciones del Mínimo (\texttt{Extract-Min}):} 6 operaciones (cada vértice alcanza el estado permanente una única vez).
-    \item \textbf{Inspecciones de Relajación:} 9 arcos salientes evaluados.
-    \item \textbf{Decrementos de Clave Efectivos (\texttt{Decrease-Key}):} Exactamente 5 operaciones:
-    \begin{itemize}
-        \item Iteración 1: Vértice B actualizado de $\infty$ a 180; vértice C actualizado de $\infty$ a 450.
-        \item Iteración 2: Vértice D actualizado de $\infty$ a 400.
-        \item Iteración 3: Vértice E actualizado de $\infty$ a 650.
-        \item Iteración 4: Vértice F actualizado de $\infty$ a 800.
-    \end{itemize}
-\end{itemize}
-Este recuento computacional coincide con la traza teórica manual deducida en la Sección \ref{sec:formulacion}, confirmando la corrección matemática de las tres implementaciones.
-
-\subsection{Comparativa Preliminar de Rendimiento Temporal en Instancia Base}
-La Tabla \ref{tab:benchmark_preliminar} expone el tiempo medio de CPU registrado tras 10,000 ejecuciones continuas del algoritmo de Dijkstra sobre la instancia del Centro Histórico.
-
-\begin{table}[H]
-    \centering
-    \fontsize{10}{12.5}\selectfont
-    \setlength{\tabcolsep}{4.5pt}
-    \caption{Tiempos medios de ejecución del algoritmo de Dijkstra según la cola de prioridad (instancia $N=6$)}
-    \label{tab:benchmark_preliminar}
-    \renewcommand{\arraystretch}{1.2}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\centering\arraybackslash}p{1.8cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}X@{}}
-        \toprule
-        \textbf{Estructura de Cola} & \textbf{Tiempo Medio ($\mu s$)} & \textbf{Desv. Est. ($\mu s$)} & \textbf{Speedup Relativo} & \textbf{Observación Experimental} \\
-        \midrule
-        \textbf{Binary Min-Heap Indexado} & \textbf{55.0} & $\pm 3.1$ & \textbf{1.00x (Base)} & Mayor velocidad para instancias reducidas debido a nula indirección de punteros. \\
-        \textbf{4-ary Heap Contiguo} & 86.6 & $\pm 4.5$ & 0.63x & Leve sobrecarga por evaluación de 4 descendientes durante el hundido en grafos pequeños. \\
-        \textbf{Fibonacci Heap} & 125.3 & $\pm 8.2$ & 0.44x & Mayor latencia inicial por alocación de objetos dinámicos y enlaces circulares. \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
-
-\subsection{Gráficos Comparativos y Cartografía Generada}
-La Figura \ref{fig:grafo_mapa} ilustra el grafo vial con sus coordenadas relativas y pesos asignados, generado automáticamente por el módulo de visualización.
+\input{tablas/benchmark_canonico.tex}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figuras/grafo_cusco_mapa.png}
-    \caption{Visualización cartográfica y topológica de la red vial del Centro Histórico del Cusco generada por el prototipo}
-    \label{fig:grafo_mapa}
+    \includegraphics[width=\textwidth]{figuras/benchmark_canonico.png}
+    \caption{Tiempo mediano de Dijkstra con las tres colas. Izquierda: perfil disperso ($|E|=4|V|$). Derecha: perfil denso ($|E|=0.08|V|(|V|-1)$). Las barras verticales representan el IQR.}
+    \label{fig:benchmark_canonico}
 \end{figure}
 
-Asimismo, la Figura \ref{fig:comparativa_metricas} presenta la comparación gráfica entre la distancia física pura y el tiempo efectivo de viaje bajo el modelo de impedancia por pendiente andina.
+\paragraph{Perfil disperso.} El heap 4-ario obtuvo la menor mediana en 3 de 5 escalas (500, 1000 y 5000), y el binario en 2 (100 y 2500). La razón mediana 4-ario/binario fue $0.964$; es decir, el 4-ario fue un 3.6\,\% más rápido en la mediana de las escalas, pero la diferencia cambia de signo: fue 24.4\,\% más rápido en $|V|=500$, 3.6\,\% en $|V|=1000$, 16.5\,\% en $|V|=5000$, y 1.5\,\% y 0.5\,\% más lento en $|V|=100$ y $|V|=2500$. Los IQR de ambas colas se solapan en las cinco escalas, por lo que la ventaja no es concluyente en ninguna escala individual.
+
+\paragraph{Perfil denso.} El 4-ario ganó 4 de 5 escalas (50, 100, 200 y 400) y el binario ganó en $|V|=800$. La razón mediana fue $0.954$ (4.6\,\% más rápido), con ventajas de 2.1\,\%, 4.6\,\%, 5.6\,\% y 5.6\,\% en las cuatro escalas ganadas, y una desventaja de 0.7\,\% en $|V|=800$. Los IQR se solapan en las cinco escalas. La densidad no produjo un cambio cualitativo: el 4-ario conserva una ventaja pequeña y variable, no una superioridad sistemática.
+
+\paragraph{Fibonacci heap.} El Fibonacci heap no obtuvo la menor mediana en ninguna de las 10 escalas. Fue entre 1.05 y 1.59 veces más lento que el binario; en el perfil disperso, el rango fue 1.12--1.59, y en el denso, 1.05--1.44. Los IQR de Fibonacci y binario se solapan en 8 de 10 escalas; las dos excepciones son $|V|=100$ disperso y $|V|=50$ denso, donde el Fibonacci fue claramente más lento. La dirección del resultado es consistente: la cota asintótica no se tradujo en tiempo de pared.
+
+\input{tablas/sintesis_colas.tex}
+
+\subsection{Operaciones elementales}
+La Figura~\ref{fig:operaciones} descompone las operaciones del perfil disperso. En $|V|=5000$, las tres colas realizaron 5000 inserciones, 5000 extracciones y 6695 \texttt{decrease\_key} efectivos sobre 10415 intentos de relajación. Los intentos que no mejoran la distancia no invocan \texttt{decrease\_key}; por eso el número de decrementos es menor que $|E|$. En el perfil denso con $|V|=800$, hubo 2976 decrementos sobre 25527 intentos, es decir, solo el 11.7\,\%.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{figuras/comparativa_metricas.png}
-    \caption{Comparativa entre distancia física y tiempo de viaje con impedancia topográfica en Cusco}
-    \label{fig:comparativa_metricas}
+    \includegraphics[width=0.92\textwidth]{figuras/operaciones_canonicas.png}
+    \caption{Operaciones primitivas de Dijkstra en el perfil disperso. Las barras agrupan inserciones, extracciones, \texttt{decrease\_key} efectivos e intentos de relajación.}
+    \label{fig:operaciones}
 \end{figure}
 
-\subsection{Protocolo de Demostración sobre el Sistema sin Diapositivas}
-Conforme a las directrices de evaluación práctica, la sustentación del prototipo se realiza de forma directa sobre la consola de comandos del sistema:
-\begin{enumerate}
-    \item \textbf{Carga y Resolución en Vivo:} Ejecución del comando \texttt{python main.py} en el directorio \texttt{python/}, mostrando en tiempo real la deserialización del archivo \texttt{data/processed/cusco\_centro\_network.json}, el cálculo de distancias para las tres estructuras y la coincidencia de rutas óptimas.
-    \item \textbf{Verificación con Instancia Modificada:} Capacidad de modificar al vuelo un peso de arista o ingresar un nuevo vértice de prueba, verificando que el algoritmo converge determinísticamente sin bucles infinitos.
-    \item \textbf{Ejecución de la Suite de Pruebas Unitarias:} Ejecución del comando \texttt{python tests/test\_dijkstra.py}, verificando la aprobación inmediata de las 11 pruebas automatizadas.
-\end{enumerate}
+El conteo de comparaciones explica solo una parte del tiempo. En $|V|=5000$ disperso, el Fibonacci heap realizó 101303 comparaciones frente a 125776 del binario (19.5\,\% menos), pero fue 12.2\,\% más lento. En $|V|=800$ denso, hizo 19848 comparaciones frente a 21280 (6.7\,\% menos) y fue 28.8\,\% más lento. La diferencia restante proviene de la manipulación de punteros, la asignación de nodos, los cortes en cascada y la consolidación, costos que no aparecen en el conteo de comparaciones. Esta observación es consistente con la literatura sobre localidad de memoria \parencite{lamarca1996cache}.
 
-\subsection{Dificultades Técnicas Identificadas y Ajustes Realizados}
-Durante la consolidación del prototipo se presentaron y resolvieron de forma autónoma los siguientes desafíos:
-\begin{enumerate}
-    \item \textbf{Desincronización de Índices Inversos:} Se encapsuló la actualización de posiciones en un método atómico \texttt{\_swap(i, j)}, asegurando sincronización estricta de la tabla hash inversa durante el flotado.
-    \item \textbf{Manejo de Cascada de Cortes en Fibonacci Heap:} Se implementó la verificación recursiva del atributo \texttt{mark}, garantizando el desmarcado de nodos al integrarse a la lista raíz.
-    \item \textbf{Aislamiento de Dependencias de Sistema:} Se desacopló la representación topológica en formato JSON estándar, permitiendo la portabilidad inmediata del prototipo sin depender de compiladores de C++ o librerías SIG pesadas.
-\end{enumerate}
+\subsection{Caso aplicado: consulta OSM en Cusco}
+La red aplicada tiene 891 vértices y 2139 aristas dirigidas. La consulta seleccionada por la regla determinista va del vértice \texttt{30972889} al \texttt{5996728243}; la ruta óptima tiene 17 vértices, 2810.6 m y un costo base de 387.197 s. La Figura~\ref{fig:ruta_osm} muestra la red, la ruta y los extremos.
 
-\subsection{Evaluación Experimental de Escalabilidad en Redes Sintéticas Grandes}
-\label{sec:escalabilidad_grande}
-Para corroborar las predicciones asintóticas en redes viales de topología dispersa ($\bar{d} \approx 3.5$), se ejecutó el banco de pruebas de escalabilidad sobre grafos sintéticos con tamaños crecientes $|V| \in [100, 5000]$ (Tabla \ref{tab:benchmark_avance5}).
-
-\begin{table}[H]
+\begin{figure}[H]
     \centering
-    \fontsize{9.5}{12}\selectfont
-    \caption{Tiempo medio de CPU (ms) y comparaciones por cola sobre redes viales sintéticas}
-    \label{tab:benchmark_avance5}
-    \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}rrrrrr@{}}
-        \toprule
-        $|V|$ & $|E|$ & \textbf{Binary Heap} & \textbf{4-ary Heap ($d=4$)} & \textbf{Fibonacci Heap} & \textbf{Comparaciones (Bin / 4-ary / Fib)} \\
-        \midrule
-        100 & 350 & 0.50 ms & 0.52 ms & 0.69 ms & 1,101 / 1,347 / 844 \\
-        500 & 1,750 & 3.17 ms & \textbf{2.98 ms} & 3.85 ms & 6,835 / 8,340 / 4,853 \\
-        1,000 & 3,500 & 7.42 ms & \textbf{6.84 ms} & 8.94 ms & 14,709 / 17,914 / 10,197 \\
-        2,000 & 7,000 & 17.49 ms & \textbf{15.39 ms} & 19.52 ms & 31,548 / 37,813 / 21,202 \\
-        5,000 & 17,500 & 50.94 ms & \textbf{49.11 ms} & 48.80 ms & 85,898 / 100,730 / 55,948 \\
-        \bottomrule
-    \end{tabular*}
-    \vspace{0.15cm}
-    \raggedright \fontsize{9}{11}\selectfont \textit{Nota.} Evaluado en Python 3.12 x86\_64 bajo arquitectura multinúcleo. Redes viales con grado medio 3.5 y dos pasadas de calentamiento.
-\end{table}
+    \includegraphics[width=0.86\textwidth]{figuras/ruta_osm_cusco.png}
+    \caption{Ruta mínima sobre la red vial OSM de Cusco. La línea resalta el camino óptimo; los marcadores indican origen y destino.}
+    \label{fig:ruta_osm}
+\end{figure}
 
-\noindent\textbf{Análisis de Rendimiento y Memoria Caché:}
-\begin{enumerate}
-    \item \textbf{Eficiencia del 4-ary Heap en Escalas Mayores:} A partir de $|V| \ge 500$, el montículo cuaternario ($d=4$) supera consistentemente al Binary Heap en tiempo de CPU (un \textbf{12\% más rápido} en promedio). Aunque realiza más comparaciones por nivel durante \texttt{\_sift\_down}, reduce en aproximadamente un $40\%$ los intercambios en memoria (27,603 frente a 46,311 para $|V|=5000$). Los cuatro hijos contiguos se cargan en una única línea de caché L1 (64 bytes), minimizando los fallos de acceso a RAM.
-    \item \textbf{Penalización por Punteros en Fibonacci Heap:} El Fibonacci Heap logra reducir entre un $23\%$ y $35\%$ las comparaciones de clave. Sin embargo, en grafos viales donde el número de aristas es lineal con respecto a los vértices ($|E| \approx 3.5|V|$), el número de operaciones \texttt{Decrease-Key} es moderado. Por tanto, la sobrecarga constante de alocar nodos dinámicos en el montículo (\textit{heap allocation}) e iterar punteros dispersos en RAM anula la ventaja asintótica teórica.
-\end{enumerate}
+La Tabla~\ref{tab:benchmark_osm} reporta los tiempos de la consulta. El heap binario obtuvo la menor mediana (15.65 ms), seguido del 4-ario (19.87 ms, +26.9\,\%) y del Fibonacci (26.09 ms, +66.7\,\%). El IQR del binario [13.07, 19.55] se solapa con el del 4-ario [17.33, 22.68], de modo que la ventaja del binario frente al 4-ario es sugerente pero no concluyente; el IQR del Fibonacci [24.03, 27.34] no se solapa con el del binario, y su desventaja sí es clara en esta consulta.
 
-\subsection{Demostración de Poda de Espacio de Búsqueda con Algoritmo $A^*$}
-\label{sec:resultados_astar}
-Al contrastar el algoritmo ciego de Dijkstra frente al algoritmo informado $A^*$ con heurística física admisible $h(u) = \text{dist}(u, t)/V_{\max}$, se midió una reducción notable en la cantidad de vértices procesados hacia destinos estratégicos del Centro Histórico:
-\begin{itemize}
-    \item \textbf{Hacia Mercado San Pedro ('E'):} Dijkstra evaluó la totalidad de la red (6 nodos), mientras que $A^*$ convergió con solo \textbf{4 expansiones} (poda del $33.3\%$), alcanzando exactamente el mismo costo óptimo ($165.33\text{ s}$).
-    \item \textbf{Hacia Plazoleta Limacpampa ('F'):} Dijkstra expandió 6 nodos, mientras que $A^*$ requirió únicamente \textbf{4 expansiones} (poda del $33.3\%$), con idéntico tiempo mínimo de $144.45\text{ s}$.
-\end{itemize}
+\input{tablas/caso_osm.tex}
+
+\paragraph{Extensión $A^*$.} Con la heurística escalada ($\lambda=6484.687$), $A^*$ expandió 823 vértices frente a 887 de Dijkstra punto a punto, una reducción de 64 expansiones (7.2\,\%). El costo óptimo fue idéntico. La reducción es modesta porque la heurística es una cota inferior geométrica y el destino está relativamente cerca en costo; no se observó la poda del 60--70\,\% que suele citarse en otros escenarios. El resultado confirma la propiedad teórica (mismo costo, menos expansiones) sin exagerar su magnitud.
+
+\subsection{Sensibilidad meteorológica}
+El \textit{snapshot} de Open-Meteo registró 0.1 mm de precipitación, 8920 m de visibilidad, 40.7 km/h de ráfaga y 17.0\,\textdegree C. Con los coeficientes de la Sección~\ref{sec:implementacion}, el multiplicador fue
+\begin{equation}
+    m_{\text{clima}}=1+0.2\frac{0.1}{10}+0.15\left(1-\frac{8920}{10000}\right)+0.1\frac{40.7}{80}=1.0691.
+    \label{eq:clima_aplicado}
+\end{equation}
+El tiempo ajustado fue $387.197\times1.0691=413.952$ s, un incremento del 6.91\,\%. La ruta no cambió. Esto no es una coincidencia empírica: si todos los pesos se multiplican por la misma constante $m>0$, entonces para todo camino $P$ se cumple $w_m(P)=m\,w(P)$, y el camino que minimiza $w(P)$ también minimiza $w_m(P)$. El clima uniforme es, por construcción, un escenario de sensibilidad temporal; no puede alterar la elección de ruta. Para que el clima cambiara la ruta, el factor tendría que depender del tramo, por ejemplo de la pendiente, del tipo de vía o de la exposición al viento.
+
+\paragraph{Síntesis de la evidencia.} El 4-ary heap ganó 7 de 10 escalas sintéticas con IQR solapados; el binary heap ganó 3 y la consulta OSM; el Fibonacci no ganó ninguna y fue 1.05--1.59 veces más lento; $A^*$ redujo un 7.2\,\% las expansiones sin cambiar el costo; y el clima incrementó el tiempo un 6.91\,\% sin alterar la ruta.
