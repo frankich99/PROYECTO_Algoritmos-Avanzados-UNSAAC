@@ -112,5 +112,5 @@ def test_graphviz_export(tmp_path, capsys):
 def test_astar_cli(capsys):
     assert cli(["astar", "-t", "E"]) == 0
     out = capsys.readouterr().out
-    assert "A* Heurístico" in out
-    assert "Optimalidad: GARANTIZADA" in out
+    assert "A* (scaled_euclidean)" in out
+    assert "Corrección observada: costos idénticos" in out

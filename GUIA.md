@@ -1,163 +1,237 @@
-# GUÍA RÁPIDA DE SUSTENTACIÓN: AVANCES 4 Y 5
-**Proyecto:** Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco  
-**Curso:** Algoritmos Avanzados (UNSAAC - 2026-II) · **Grupo 5**  
-**Docente Revisor:** Ing. Héctor Eduardo Ugarte Rojas  
-**Ubicación del archivo:** `F:\unsaac\alg-avanzados\proyecto\GUIA.md`  
+# Guía de sustentación
+
+**Proyecto:** Rutas mínimas con colas de prioridad en redes viales urbanas del Cusco  
+**Curso:** Algoritmos Avanzados (UNSAAC, 2026-II) · **Grupo 5**  
+**Docente:** Ing. Héctor Eduardo Ugarte Rojas
+
+Esta guía resume qué afirmar, qué no afirmar y qué comandos ejecutar. Las cifras provienen de los JSON versionados en `python/data/processed/` y del informe `documento/main.pdf` (50 páginas totales, 38 de cuerpo).
 
 ---
 
-## 0. Resumen Ejecutivo: ¿Está Completo o es Mucha Información?
+## 1. El argumento en cinco minutos
 
-* **El Informe Académico (`documento/main.pdf` - 57 páginas):** Es formal, exhaustivo y riguroso. Cubre toda la matemática, formulación teórica de $A^*$, análisis de jerarquía de memoria caché, pseudocódigo y pruebas. **Está completo y no le falta nada.**
-* **Esta Guía (`GUIA.md`):** Es tu **"machete" de bolsillo** de 5 a 10 minutos de lectura. Contiene exclusivamente **qué decir con tus propias palabras** y **qué comandos correr** para no enredarte con teoría pesada durante la sustentación.
-* **El Código (`python/`):** Está **100% verificado, sin fallos y con 221 pruebas automatizadas pasando exitosamente**.
-
----
-
-## 1. El "Ping-Pong": Respuestas Clave a las Preguntas del Docente
-
-Si el profesor hace las preguntas de su revisión anterior, responde directamente así:
-
-### 1. ¿Cómo se toma en cuenta la topografía del Cusco?
-> *"Profesor, modelamos la red vial como un dígrafo dirigido con tres restricciones reales:  
-> 1. **Calles de un solo sentido:** La mayoría de calles del Centro Histórico son unidireccionales (ej. Espaderos va de $A \to B$, pero no permite el retorno $B \to A$).  
-> 2. **Calles angostas y peatonales:** Tienen velocidades nominales reducidas ($15\text{ km/h}$ en calles céntricas coloniales y $8\text{ km/h}$ en peatonales como Loreto, frente a $35\text{ km/h}$ en avenidas).  
-> 3. **Pendientes andinas (cuestas):** Usamos una función de impedancia con penalización por gradiente positivo:  
->    $$\Phi = 1.0 + 2.5 \cdot \max(0, \text{pendiente}/100)$$  
->    Subir una cuesta empinada penaliza severamente el tiempo de viaje; en bajadas la penalización es cero."*
+1. **Problema.** Se resuelve el camino mínimo desde un origen en un dígrafo dirigido con pesos no negativos que representa una red vial.
+2. **Modelo.** Para la métrica de tiempo:
+   $$w(u,v)=\frac{L(u,v)}{v_{\text{nom}}(u,v)}\left(1+2.5\max(0,\theta(u,v))\right)m_{\text{clima}},$$
+   con $L$ en metros, $v_{\text{nom}}$ en m/s, $\theta$ la pendiente como fracción y $m_{\text{clima}}\ge 1$ un factor uniforme. Para distancia, $w=L$. No es una calibración de tránsito: pendiente y clima son escenarios explícitos.
+3. **Comparación.** Se usa el mismo solver Dijkstra y la misma instancia con tres colas: binary heap indexado, 4-ary heap indexado ($d=4$) y Fibonacci heap.
+4. **Corrección.** Las tres colas deben producir las mismas distancias. Se verifica contra Bellman-Ford, contra NetworkX y con un certificado de optimalidad $O(|V|+|E|)$.
+5. **Experimento.** Perfiles sintéticos reproducibles: disperso ($|E|=4|V|$) y denso ($|E|=0.08|V|(|V|-1)$), cinco escalas por perfil, tres instancias por escala, 15 repeticiones, semilla 12345. Caso aplicado: una consulta sobre la red OSM de Cusco (891 vértices, 2139 aristas).
+6. **Resultado.** El 4-ario obtiene la menor mediana en 7 de 10 escalas sintéticas; el binario, en 3, y también en la consulta OSM. Fibonacci no gana ninguna. Los IQR se solapan en las 10 escalas, así que no se declara un vencedor universal.
+7. **$A^*$.** Extensión punto a punto con heurística euclidiana escalada y consistente. En OSM reduce las expansiones de 887 a 823 ($-7.2\%$); en la instancia manual, de 6 a 5 ($-16.7\%$). El costo óptimo no cambia.
+8. **Clima.** El snapshot de Open-Meteo produce $m_{\text{clima}}=1.0691$ y un tiempo ajustado de $413.952$ s ($+6.91\%$). La ruta no cambia porque el factor es uniforme.
 
 ---
 
-### 2. ¿Qué es y de dónde sale el "Dijkstra Modificado"?
-> *"Es el algoritmo de Dijkstra optimizando **tiempo de viaje efectivo en segundos con impedancia topográfica** (`--metric time`) en vez de la distancia puramente geométrica en metros (`--metric distance`). Esto permite que el sistema elija avenidas más largas pero planas y fluidas en lugar de callejones estrechos y empinados."*
+## 2. Preguntas del docente y respuestas breves
+
+### ¿Cómo se incorpora la topografía?
+
+Con la pendiente $\theta$ en el peso de tiempo. Solo se penaliza el ascenso: $\max(0,\theta)$. Un 8\,\% de pendiente se escribe $0.08$. La red manual usa nombres reales, pero longitudes, pendientes y topología son esquemáticas; no son levantamiento de campo.
+
+### ¿Qué es el «Dijkstra modificado»?
+
+No es otro algoritmo. Es Dijkstra con pesos de tiempo en lugar de distancias. La modularidad permite inyectar la cola sin reescribir el solver. `--metric distance` usa $w=L$; `--metric time` usa la fórmula anterior.
+
+### ¿Por qué tres colas y cuál es mejor?
+
+Para separar el efecto de la estructura del efecto del algoritmo. Resultados medidos:
+
+| Cola | Victorias sintéticas | Consulta OSM (mediana) | Lectura |
+| :--- | :---: | :---: | :--- |
+| Binary heap | 3 de 10 | **15.65 ms** | Menor tiempo en OSM; opción por defecto. |
+| 4-ary heap | **7 de 10** | 19.87 ms (+26.9\,\%) | Ventaja mediana de 3.6--4.6\,\% en sintéticos, con IQR solapados. |
+| Fibonacci heap | 0 de 10 | 26.09 ms (+66.7\,\%) | 1.05--1.59 veces más lento que el binario. |
+
+La respuesta correcta no es «el 4-ario siempre gana». Es: **depende de la escala, la densidad y el entorno**. En esta implementación de Python, el Fibonacci no traduce su cota asintótica en ventaja práctica.
+
+### ¿Usaron NetworkX para resolver el problema?
+
+No. Dijkstra, las tres colas, $A^*$ y el certificado son código propio. NetworkX y Bellman-Ford se usan solo como oráculos externos de verificación.
+
+### ¿Plotly o Graphviz?
+
+Plotly se usa en la aplicación Streamlit para los gráficos interactivos. Graphviz se usa para exportar la especificación `.dot` de la ruta. No se descartó Plotly.
+
+### ¿Cuánto poda $A^*$?
+
+Lo medido: 887 $\to$ 823 expansiones en OSM ($-7.2\%$) y 6 $\to$ 5 en la instancia manual ($-16.7\%$). No se afirma un rango universal del 30--70\,\%: no fue medido y dependería de la heurística y del grafo.
+
+### ¿Cómo se valida que la ruta es óptima?
+
+Con dos comprobaciones independientes: comparación de distancias contra NetworkX y certificado de Bellman, que recorre todas las aristas y verifica $d[v]\le d[u]+w(u,v)$ para todo camino. Si una arista viola la desigualdad, el certificado falla.
+
+### ¿El clima puede cambiar la ruta?
+
+No con un factor uniforme. Si $w_m(P)=m\,w(P)$ para todo camino $P$ y $m>0$, el camino que minimiza $w$ también minimiza $w_m$. El clima es un análisis de sensibilidad temporal. Para que cambiara la ruta, el factor tendría que depender del tramo.
+
+### ¿Midieron memoria?
+
+No. No se reportan métricas de memoria residente ni de asignaciones. Las cotas espaciales del informe son teóricas.
+
+### ¿La instancia de seis nodos es real?
+
+Los nombres son reales; longitudes, pendientes y topología son ilustrativas. La red real es el snapshot OSM de 891 vértices y 2139 aristas.
 
 ---
 
-### 3. ¿Por qué evaluaron 3 colas de prioridad y cuál es la mejor?
-> *"Evaluamos tres estructuras para analizar el impacto real de la jerarquía de memoria caché de la CPU:  
-> 1. **Binary Min-Heap Indexado:** Excelente en grafos pequeños ($N \le 50$) por su simplicidad en arreglo contiguo.  
-> 2. **4-ary Heap ($d=4$):** **Es el mejor en la práctica para redes viales grandes.** Reduce la altura del árbol a la mitad ($\log_4 V$) y sus 4 hijos caben exactamente en una línea de caché L1 de 64 bytes, haciendo un 40% menos intercambios de memoria.  
-> 3. **Fibonacci Heap:** Aunque en teoría es $O(|E| + |V|\log |V|)$ con $O(1)$ amortizado en `Decrease-Key`, en redes viales reales (que son dispersas, $|E| \approx 3.5|V|$) la dispersión de punteros dinámicos provoca fallos constantes de caché de CPU (*cache misses*), haciéndolo más lento en la práctica que los arreglos contiguos."*
+## 3. Comandos para la demostración
 
----
+Abrir la terminal en `F:\unsaac\alg-avanzados\proyecto\python`:
 
-### 4. ¿Para qué se usó NetworkX? ¿Hicieron trampa usando una librería?
-> *"No, profesor. **NetworkX no resuelve el problema**. Las tres colas de prioridad, Dijkstra y A* fueron programados **100% desde cero por nosotros**. NetworkX se utiliza únicamente como **oráculo canónico de referencia externa** en las pruebas automatizadas para certificar que nuestras implementaciones propias dan resultados matemáticamente idénticos."*
+```powershell
+cd F:\unsaac\alg-avanzados\proyecto\python
+```
 
----
+El Python del proyecto está en el `.venv` de la raíz. Desde `python/`, se invoca con `..\.venv\Scripts\python.exe`.
 
-### 5. ¿En qué librería graficaron? ¿No va a ser Plotly?
-> *"Profesor, tal como usted indicó, **no usamos Plotly**. Graficamos con **Graphviz** generando archivos `.dot` nativos y diagramas vectoriales limpios (`results/figures/ruta_optima_cusco.dot`). En Google Colab se renderiza interactivamente como gráfico vectorial SVG con `graphviz.Source`."*
+### 3.1 Alternativas disponibles
 
----
+```powershell
+..\.venv\Scripts\python.exe main.py list
+```
 
-### 6. ¿Qué aporta el Algoritmo $A^*$ (A-Star) al proyecto de investigación frente a Dijkstra?
-> *"Dijkstra es un algoritmo ciego: expande nodos en forma de círculo uniforme en todas las direcciones hacia todos los vértices.  
-> En cambio, **$A^*$ está diseñado para emergencias punto a punto** ($s \to t$, de la base al hospital). Usa la función $f(u) = g(u) + h(u)$ con una **heurística física admisible** ($h(u) = \text{distancia euclidiana} / V_{\max}$). Al no sobreestimar jamás el costo real, **$A^*$ poda entre el 30% y el 70% de los nodos explorados**, llegando exactamente a la misma ruta óptima pero mucho más rápido."*
+Muestra `binary_heap`, `4ary_heap`, `fibonacci_heap`, `bellman_ford` y `all`.
 
----
+### 3.2 Dijkstra con las tres colas
 
-### 7. ¿Cuál es el orden secuencial de los objetivos?
-> *"Sigue las 4 fases de la ingeniería algorítmica:  
-> 1. **Modelar:** Red vial del Centro Histórico y función de impedancia topográfica.  
-> 2. **Diseñar e Implementar:** Arquitectura modular desacoplada en 4 capas y algoritmos con inyección de colas puras.  
-> 3. **Verificar:** Certificado analítico de optimalidad independiente y suite automatizada bajo patrón AAA.  
-> 4. **Evaluar e Investigar:** Pruebas empíricas de escalabilidad y análisis de impacto en caché L1/L2."*
+```powershell
+..\.venv\Scripts\python.exe main.py compare --metric time
+..\.venv\Scripts\python.exe main.py compare --metric distance
+```
 
----
+Verifica que las distancias sean equivalentes, que los certificados sean válidos y compara los contadores de operaciones. No confundir los contadores de la estructura con el tiempo de pared: la comparación de rendimiento usa el benchmark canónico.
 
-## 2. Los Comandos Clave para la Demostración en Terminal
+### 3.3 $A^*$ frente a Dijkstra
 
-Abre tu terminal en `F:\unsaac\alg-avanzados\proyecto\python` (o haz `cd python`):
+```powershell
+..\.venv\Scripts\python.exe main.py astar --target E
+```
 
-```bash
+Salida esperada: Dijkstra expande 6 nodos y $A^*$ 5, ambos con costo $165.33$ s y la ruta `A -> B -> D -> E`. La reducción es $16.7\%$.
+
+### 3.4 Traza manual (Cormen, Fig. 24.6)
+
+```powershell
+..\.venv\Scripts\python.exe main.py run -i data/instances/clrs_24_6.txt --trace
+```
+
+Muestra la extracción de nodos, las relajaciones y la verificación final. Es la traza que se puede seguir en la pizarra.
+
+### 3.5 Grafo dictado en vivo
+
+```powershell
+..\.venv\Scripts\python.exe main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
+```
+
+Resuelve el grafo con las tres colas en simultáneo.
+
+### 3.6 Entrada inválida
+
+```powershell
+..\.venv\Scripts\python.exe main.py run -i data/instances/invalidas/peso_negativo.txt
+```
+
+Debe imprimir un error explicativo y salir con código `2`. No debe producir una ruta.
+
+### 3.7 Graphviz
+
+```powershell
+..\.venv\Scripts\python.exe main.py graphviz --target E
+```
+
+Genera `results/figures/ruta_optima_cusco.dot` con la ruta resaltada.
+
+### 3.8 Suite de pruebas
+
+Desde la raíz del repositorio:
+
+```powershell
+cd F:\unsaac\alg-avanzados\proyecto
+.\.venv\Scripts\python.exe -m pytest python/tests -q
+```
+
+Resultado de una ejecución completa: **246 passed in 45.86s**.
+
+### 3.9 Reproducción canónica
+
+```powershell
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
+```
+
+Regenera `benchmark_results.json`, `applied_results.json`, las tablas de `documento/tablas/` y las figuras de `documento/figuras/`. Reutiliza los snapshots OSM y meteorológico; no necesita Internet si ya existen.
+
+Para reescribir solo tablas y figuras:
+
+```powershell
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
+```
+
+### 3.10 Aplicación Streamlit
+
+```powershell
 cd python
+..\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-### Comando 1: Ver las alternativas integradas (Avance 5)
-```bash
-python main.py list
+Abrir la URL que imprime Streamlit (por defecto `http://localhost:8501`).
+
+### 3.11 Informe
+
+```powershell
+cd documento
+.\compilar.ps1
 ```
-> **Qué muestra:** Las 3 colas de prioridad puras (`binary_heap`, `4ary_heap`, `fibonacci_heap`) y Bellman-Ford como referencia.
+
+Genera `documento/main.pdf`.
 
 ---
 
-### Comando 2: Demostrar Dijkstra Modificado (Tiempo vs. Distancia)
-```bash
-python main.py compare --metric time
-```
-> **Qué muestra:** Ejecuta la red de Cusco con las alternativas. Comprueba que todas arrojan costos idénticos (veredicto: `EQUIVALENTES`), certificados válidos y compara el conteo de operaciones.
+## 4. Recorrido de la aplicación
 
-Para mostrar el impacto de la topografía:
-```bash
-python main.py compare --metric distance
-```
+| Vista | Qué mostrar |
+| :--- | :--- |
+| **Comparación** | Curvas de mediana e IQR por perfil, tabla de escalas y síntesis de victorias. Señalar que los IQR se solapan. |
+| **Ruta OSM** | Elegir origen y destino, ejecutar Dijkstra o $A^*$, comparar costo base y costo con clima. La ruta se dibuja desde el snapshot local. |
+| **Traza manual** | Ejecutar paso a paso la instancia de seis nodos y mostrar extracción, relajación y cola. |
+| **Procedencia** | Protocolo, fuentes, snapshots y actualización opcional de Open-Meteo. |
 
----
-
-### Comando 3: Demostrar el Algoritmo $A^*$ y la Poda de Nodos
-```bash
-python main.py astar --target E
-```
-> **Qué muestra:** Compara Dijkstra vs. $A^*$ hacia el Mercado San Pedro. Demuestra que ambos encuentran la misma ruta óptima ($165.33\text{ s}$), pero **$A^*$ poda un 33.3% del grafo (solo expande 4 nodos frente a los 6 de Dijkstra)**.
+La aplicación funciona sin Internet porque lee los snapshots locales. La actualización meteorológica es opcional y no borra el snapshot anterior si falla.
 
 ---
 
-### Comando 4: Instancia Pequeña Resuelta Manualmente (Avance 4 - Cormen CLRS)
-```bash
-python main.py run -i data/instances/clrs_24_6.txt --trace
-```
-> **Qué muestra:** Traza paso a paso sobre el ejemplo clásico del libro de Cormen (Fig. 24.6), coincidiendo exactamente con la resolución manual ($s, y, z, t, x$).
+## 5. Cifras para memorizar
+
+| Dato | Valor |
+| :--- | :--- |
+| Red OSM | 891 vértices, 2139 aristas dirigidas |
+| Consulta OSM | 17 vértices, 2810.6 m, costo base 387.197 s |
+| Tiempos OSM | Binary 15.65 ms · 4-ary 19.87 ms · Fibonacci 26.09 ms |
+| Victorias sintéticas | 4-ary 7/10 · Binary 3/10 · Fibonacci 0/10 |
+| Razón mediana 4-ary/Binary | 0.964 disperso · 0.954 denso · 0.959 global |
+| Razón mediana Fibonacci/Binary | 1.345 disperso · 1.374 denso · 1.360 global |
+| Rango Fibonacci/Binary | 1.05--1.59 veces más lento |
+| Solapamiento de IQR | 10/10 escalas (4-ary vs Binary) |
+| $A^*$ en OSM | 887 $\to$ 823 expansiones ($-7.2\%$) |
+| $A^*$ manual | 6 $\to$ 5 expansiones ($-16.7\%$) |
+| Clima | $m=1.0691$; 413.952 s; $+6.91\%$; ruta sin cambios |
+| Pruebas | 246 passed in 45.86s |
 
 ---
 
-### Comando 5: Generar el Grafo Vectorial con Graphviz
-```bash
-python main.py graphviz --target E
-```
-> **Qué muestra:** Genera la especificación `.dot` en `results/figures/ruta_optima_cusco.dot`, resaltando el camino óptimo en trazo grueso verde.
+## 6. Afirmaciones que no se deben hacer
+
+* «El 4-ary es siempre el mejor.» Falso: gana 7/10 medianas sintéticas, pero pierde la consulta OSM y los IQR se solapan.
+* «$A^*$ poda entre 30\,\% y 70\,\% de los nodos.» No fue medido. Los valores medidos son 7.2\,\% y 16.7\,\%.
+* «Usamos SENAMHI.» No hay API pública documentada de SENAMHI en este proyecto. La fuente es Open-Meteo, que entrega datos de modelo.
+* «El clima puede cambiar la ruta.» Con un factor uniforme, no.
+* «Medimos memoria.» No se midió.
+* «La instancia de seis nodos es un levantamiento real.» Es ilustrativa.
+* «No usamos Plotly.» Se usa en Streamlit.
+* «El notebook de Colab genera los resultados canónicos.» Es didáctico; la fuente canónica es `python/scripts/reproduce_canonical.py` y los JSON versionados.
 
 ---
 
-### Comando 6: Si el docente dicta un grafo en la pizarra en vivo
-```bash
-python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
-```
-> **Qué muestra:** Resuelve cualquier grafo ingresado en el momento con las 3 colas en simultáneo.
+## 7. Cierre en una frase
 
----
-
-### Comando 7: Manejo de Entradas Inválidas (Avance 5)
-```bash
-python main.py run -i data/instances/invalidas/peso_negativo.txt
-python main.py run -s NODO_INEXISTENTE
-```
-> **Qué muestra:** Detección defensiva con mensaje de error explicativo y código de salida seguro.
-
----
-
-### Comando 8: Batería Completa de Pruebas Automatizadas (221 pruebas)
-```bash
-pytest -v
-```
-> **Qué muestra:** 221 pruebas unitarias bajo patrón AAA pasando al 100% en ~19 segundos.
-
----
-
-## 3. Demostración en Google Colab (Para Sustentación sin Terminal)
-
-El archivo está listo en:  
-`python/colab/rutas_minimas_cusco.ipynb`
-
-### Pasos para usarlo:
-1. Entra a [colab.research.google.com](https://colab.research.google.com/).
-2. Haz clic en **Subir** (*Upload*) y sube `rutas_minimas_cusco.ipynb`.
-3. Menú **Entorno de ejecución > Ejecutar todas** (`Ctrl + F9`).
-
-### Celdas clave para mostrarle al profesor:
-* **Celda 12:** Tabla de verificación cruzada contra el oráculo NetworkX (equivalencia 100%).
-* **Celda 14:** Tabla comparativa **Dijkstra vs. $A^*$** (muestra la reducción de nodos expandidos).
-* **Celda 16:** **Renderizado interactivo de Graphviz** directo en pantalla (SVG con ruta resaltada).
-* **Celda 20:** **Batería de 7 pruebas automatizadas** (casos básicos, límites de nodo aislado $\infty$, grafo unitario $|V|=1$ y entradas inválidas).
-* **Celda 22:** **Instancia interactiva en vivo** (puedes cambiar `origen_demo` y `destino_demo` por cualquier nodo que pida el profesor).
-* **Celda 24:** Gráfico de curvas de escalabilidad experimental de las colas de prioridad.
+La elección de cola de prioridad no se decide por su cota asintótica aislada: en esta implementación, el heap binario es la opción por defecto, el 4-ario es competitivo en redes sintéticas y el Fibonacci, pese a su $O(E+V\log V)$, resulta más lento por el costo constante de sus operaciones en Python.

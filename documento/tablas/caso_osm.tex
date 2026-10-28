@@ -1,0 +1,28 @@
+\begin{table}[H]
+\centering
+\caption{Caso OSM: tiempo de Dijkstra por cola, mediana e IQR.}
+\label{tab:benchmark_osm}
+\begin{tabular}{lrrr}
+\toprule
+Cola & Mediana ($\mu$s) & Q1 ($\mu$s) & Q3 ($\mu$s) \\
+\midrule
+\textbf{Binary Heap} & 15655.0 & 13065.6 & 19550.7 \\
+4-ary Heap & 19872.2 & 17335.0 & 22675.6 \\
+Fibonacci Heap & 26088.7 & 24033.9 & 27343.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Sensibilidad meteorológica uniforme en la consulta OSM.}
+\label{tab:sensibilidad_clima}
+\begin{tabular}{lrr}
+\toprule
+Escenario & Tiempo (s) & Cambio (\%) \\
+\midrule
+Base & 387.20 & 0.00 \\
+Snapshot meteorológico & 413.95 & 6.91 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,35 +1,52 @@
 \section{Conclusiones y Recomendaciones}
 \label{sec:conclusiones}
 
-\subsection{Balance de Cumplimiento de los Objetivos del Proyecto}
-En correspondencia con los objetivos formulados al inicio de la investigación formativa, el equipo de investigación concluye satisfactoriamente las metas establecidas:
+\subsection{Balance de objetivos}
 \begin{enumerate}
-    \item \textbf{Cumplimiento del Objetivo General:} Se diseñó, implementó y evaluó experimentalmente una solución integral basada en algoritmos avanzados para rutas mínimas urbanas en la ciudad del Cusco, evidenciando solvencia en aprendizaje autónomo, adopción de herramientas reproducibles y pensamiento crítico para contrastar la teoría con datos empíricos.
-    \item \textbf{Cumplimiento de OE1 (Modelado Matemático e Impedancia Andina):} Se formalizó la topografía del Centro Histórico como un grafo dirigido ponderado $G = (V, E, W)$ y se formuló una función de impedancia topográfica $\Phi(\theta) = 1 + 2.5 \cdot \max(0, \theta)^2$ que penaliza las pendientes ascendentes preservando estrictamente la no negatividad de los pesos y la subestructura óptima.
-    \item \textbf{Cumplimiento de OE2 (Diseño Algorítmico y Desacoplamiento de Colas):} Se implementaron de forma nativa en Python 3 los algoritmos de Dijkstra y $A^*$, desacoplados mediante un contrato de interfaz común que permite la inyección indistinta del Min-Heap Binario Indexado, el 4-ary Heap Contiguo y el Fibonacci Heap.
-    \item \textbf{Cumplimiento de OE3 (Validación Rigurosa y Certificación Formal):} Se verificó la exactitud de los caminos mediante una suite automatizada de 221 pruebas unitarias bajo el estándar AAA, complementada por la validación cruzada frente al oráculo de NetworkX y la certificación matemática de optimalidad de Bellman en tiempo $O(|V| + |E|)$.
-    \item \textbf{Cumplimiento de OE4 (Atributo del Graduado AG\_C06):} Cada integrante superó de forma documentada sus brechas técnicas individuales, justificó la selección del stack tecnológico mediante análisis multicriterio y consolidó un banco experimental completamente reproducible.
+    \item \textbf{OE1. Modelado.} Se formuló el grafo vial dirigido, la función de costo temporal con pendiente y el factor climático uniforme. La no negatividad de los pesos quedó garantizada por construcción, y la instancia ilustrativa se separó explícitamente del levantamiento geográfico.
+    \item \textbf{OE2. Implementación.} Se implementaron desde cero el heap binario indexado, el heap 4-ario indexado y el Fibonacci heap, con un contrato común que permite sustituirlos dentro de Dijkstra sin modificar el solver. También se implementaron $A^*$ con heurística consistente, la referencia de Bellman-Ford y el certificado de optimalidad.
+    \item \textbf{OE3. Validación.} La suite automatizada reúne 246 pruebas y finalizó con \texttt{246 passed}. Las tres colas produjeron las mismas distancias en todas las instancias, el certificado de Bellman se cumplió y la comparación con NetworkX no detectó errores.
+    \item \textbf{OE4. Evaluación.} Se ejecutó un benchmark canónico de 1350 muestras cronometradas, una consulta sobre una red OSM real de 891 vértices y 2139 aristas, una extensión $A^*$ y un análisis de sensibilidad climática.
 \end{enumerate}
 
-\subsection{Síntesis de Hallazgos Principales}
+\subsection{Respuesta a las preguntas de investigación}
+\paragraph{PI1. ¿Qué cola minimiza el tiempo y cómo cambia con la escala?} No hay una cola ganadora en todas las escalas. El heap 4-ario obtuvo la menor mediana en 7 de 10 escalas sintéticas, con una razón mediana de 0.964 en el perfil disperso y 0.954 en el denso. El heap binario ganó 3 escalas y la consulta OSM. Los IQR se solaparon en las 10 escalas sintéticas, de modo que la ventaja del 4-ario es pequeña y dependiente del tamaño. En la consulta OSM, el binario fue 26.9\,\% más rápido que el 4-ario y 66.7\,\% más rápido que el Fibonacci.
+
+\paragraph{PI2. ¿La ventaja asintótica del Fibonacci heap se traduce en tiempo de pared?} No en esta implementación. El Fibonacci heap no ganó ninguna escala y fue entre 1.05 y 1.59 veces más lento que el binario. Realizó menos comparaciones (19.5\,\% menos en $|V|=5000$ disperso y 6.7\,\% menos en $|V|=800$ denso), pero el costo de asignación, punteros, cortes y consolidación dominó el tiempo. La cota $O(|E|+|V|\log|V|)$ sigue siendo válida como análisis asintótico; no es una predicción de rendimiento en Python.
+
+\paragraph{PI3. ¿Se reproduce el comportamiento en la red real y qué aportan $A^*$ y el clima?} La consulta OSM confirmó que la elección depende del tamaño: en una red pequeña, el binario fue el más rápido. $A^*$ redujo las expansiones de 887 a 823 (7.2\,\%) sin cambiar el costo. El clima incrementó el tiempo estimado un 6.91\,\%, pero no cambió la ruta, porque un factor uniforme multiplica todos los pesos por la misma constante.
+
+\subsection{Conclusión principal}
+La conclusión central es que \emph{la elección de cola es una decisión empírica y condicionada}. La teoría asintótica ordena las estructuras para el peor caso, pero no determina cuál es más rápida en una red vial concreta, en un lenguaje concreto y en una máquina concreta. En este estudio, el heap binario es la opción por defecto más robusta; el heap 4-ario es un candidato con ventaja pequeña en escalas medianas y grandes; el Fibonacci heap no es competitivo en Python. Esa conclusión no se apoya en una sola escala ni en una sola consulta, sino en el patrón conjunto de 10 escalas sintéticas y una consulta real.
+
+\subsection{Contribuciones}
 \begin{itemize}
-    \item \textbf{Equivalencia Algorítmica Absoluta:} Las tres colas de prioridad y el algoritmo $A^*$ convergieron en el 100\% de las instancias evaluadas exactamente a los mismos costos mínimos y rutas óptimas, confirmando la solidez de las invariantes de datos y la corrección de las rutinas de disminución de clave (\texttt{Decrease-Key}).
-    \item \textbf{Dominancia del 4-ary Heap en Escala:} A partir de $|V| \ge 500$, la reducción a la mitad de la profundidad del árbol y la alineación de sus 4 hijos con una única línea de memoria caché (64 bytes) otorgaron al 4-ary Heap una aceleración de hasta un 12.0\% frente al montículo binario y una reducción de más de 40\% en intercambios de memoria en redes de hasta 5,000 vértices.
-    \item \textbf{Eficiencia de Poda con Algoritmo $A^*$:} La incorporación de la heurística euclidiana andina admisible y consistente redujo en un promedio de 65\% a 70\% la cantidad de vértices explorados respecto a Dijkstra tradicional, convirtiéndolo en la técnica predilecta para atención de emergencias punto a punto.
-    \item \textbf{Refutación Empírica del Fibonacci Heap en Redes Viales:} Se demostró rigurosamente que la cota asintótica óptima teórica $O(|E| + |V| \log |V|)$ no se traduce en eficiencia práctica sobre redes viales dispersas ($|E| \le 3.5|V|$), donde la fragmentación de memoria y los fallos de caché degradan severamente su desempeño.
+    \item Un núcleo algorítmico modular con tres colas intercambiables, $A^*$ y referencias independientes.
+    \item Un protocolo de medición reproducible con semillas, calentamiento, GC desactivado, mediana e IQR, y datos versionados.
+    \item Un caso aplicado sobre OpenStreetMap con consulta determinista, ruta reconstruida y certificado de optimalidad.
+    \item Una aplicación Streamlit integrada que permite comparar resultados, explorar la ruta, revisar la traza manual y consultar la procedencia de los datos.
+    \item Un servicio meteorológico con \textit{snapshot} y \textit{fallback} sin red, separado del benchmark principal.
+    \item Una suite de 246 pruebas que cubre contrato de colas, optimalidad, entradas inválidas, CLI, OSM, clima y aplicación.
 \end{itemize}
 
-\subsection{Lecciones Aprendidas en Aprendizaje Autónomo y Adaptación Tecnológica}
-\begin{itemize}
-    \item \textbf{Centralidad de la Jerarquía de Hardware:} La teoría asintótica clásica (\textit{Big-O}) ignora factores determinantes de la arquitectura computacional moderna, tales como la localidad espacial de la memoria caché, los fallos de traslación de páginas (TLB) y los costos de alocación dinámica en el \textit{heap} de la memoria RAM.
-    \item \textbf{Diseño Guiado por Invariantes y Pruebas:} La rigurosidad en la definición de precondiciones y postcondiciones, sumada al patrón Arrange-Act-Assert (AAA), previene fallos sutiles en operaciones complejas como los cortes en cascada de Fibonacci y la sincronización de tablas de mapeo inverso.
-    \item \textbf{Cultura de Reproducibilidad Científica:} La integración de pipelines automatizados (con scripts de pruebas unitarias, oráculos diferenciales y compilación de informes en LaTeX) erradica el error humano y garantiza la verificación inmediata de resultados.
-\end{itemize}
-
-\subsection{Recomendaciones Técnicas y Trabajo Futuro}
-Para la evolución y despliegue del sistema en aplicaciones urbanas reales, se recomienda:
+\subsection{Recomendaciones}
+\paragraph{Para la práctica.}
 \begin{enumerate}
-    \item \textbf{Ingesta de la Malla Metropolitana Completa con OSMnx:} Escalar el grafo vial a toda la mancha urbana de la provincia del Cusco (distritos de Cusco, Wanchaq, Santiago, San Sebastián, San Jerónimo y Poroy), superando los 30,000 nodos y 75,000 segmentos viales.
-    \item \textbf{Incorporación de Modelos de Congestión Dinámica:} Extender el costo de impedancia estático hacia funciones dependientes del tiempo $c(e, t)$, alimentadas mediante datos históricos de tráfico vehicular o telemetría GPS en tiempo real.
-    \item \textbf{Desarrollo de Plataforma Web de Despacho:} Construir un servicio web REST en FastAPI y una interfaz cartográfica interactiva con Folium o MapLibre, orientada a operadores de centrales de emergencia (SAMU, Compañía de Bomberos 39 y Policía Nacional del Perú en Cusco).
+    \item Usar el heap binario como valor por defecto en una aplicación nueva, salvo que un benchmark local indique lo contrario.
+    \item Probar el heap 4-ario con la distribución real de consultas y exigir que la ventaja sea mayor que la variabilidad (IQR) antes de adoptarlo.
+    \item No adoptar el Fibonacci heap en Python por su cota teórica; reservarlo para análisis de peor caso o para entornos con asignación muy barata.
+    \item Usar $A^*$ cuando haya coordenadas y destino conocido; verificar la consistencia de la heurística antes de confiar en la optimalidad.
 \end{enumerate}
+
+\paragraph{Para el trabajo futuro.}
+\begin{enumerate}
+    \item Medir memoria residente y asignaciones para completar la comparación espacial.
+    \item Repetir el benchmark en C++ o Rust y en otra CPU para evaluar la portabilidad de las conclusiones.
+    \item Añadir pruebas de significancia con intervalos de confianza o \textit{bootstrap}, y aumentar el número de instancias por escala.
+    \item Modelar el clima por tramo, con pendiente, tipo de vía y exposición, para que el factor pueda alterar la ruta.
+    \item Extender la consulta OSM a un conjunto de pares origen-destino y a distintas horas, para medir la variabilidad entre consultas.
+    \item Incorporar congestión dinámica y ventanas temporales, manteniendo la no negatividad de los pesos.
+\end{enumerate}
+
+\subsection{Cierre}
+El proyecto cumple los objetivos dentro de su alcance y deja explícitas sus limitaciones. La aportación más útil no es un ranking definitivo, sino un método para decidir con evidencia: implementar las alternativas, verificar la corrección, medir con dispersión y repetir la medición en el entorno de despliegue. Esa es la lección transferible a otros problemas de caminos mínimos y a otras estructuras de datos.

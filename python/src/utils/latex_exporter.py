@@ -190,7 +190,7 @@ def export_preliminary_benchmark_table(
         r"    \end{tabularx}",
         r"    \vspace{0.15cm}",
         r"    \raggedright",
-        r"    \textit{Nota.} N=6, 10000 repeticiones.",
+        r"    \textit{Nota.} Tiempos medidos en el entorno local; el protocolo y las semillas se registran en el JSON de resultados.",
         r"\end{table}"
     ])
 

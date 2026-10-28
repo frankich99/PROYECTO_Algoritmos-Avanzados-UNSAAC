@@ -1,0 +1,43 @@
+\begin{table}[H]
+\centering
+\fontsize{9}{10.5}\selectfont
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{4pt}
+\caption{Dijkstra con tres colas, perfil disperso: mediana e IQR en $\mu$s.}
+\label{tab:benchmark_sparse}
+\begin{tabular}{@{}rrccc l@{}}
+\toprule
+$|V|$ & $|E|$ & \makecell{Binary\\Heap} & \makecell{4-ary\\Heap} & \makecell{Fibonacci\\Heap} & Mejor \\
+\midrule
+100 & 400 & \makecell{1648.4\\{\scriptsize[1377.9, 1979.3]}} & \makecell{1673.3\\{\scriptsize[1393.8, 2186.5]}} & \makecell{2574.3\\{\scriptsize[2371.2, 2870.8]}} & Binary \\
+500 & 2000 & \makecell{19232.5\\{\scriptsize[14655.3, 24254.5]}} & \makecell{14531.3\\{\scriptsize[11524.1, 18064.2]}} & \makecell{30497.4\\{\scriptsize[20429.6, 38086.3]}} & 4-ary \\
+1000 & 4000 & \makecell{43378.1\\{\scriptsize[37780.5, 54962.6]}} & \makecell{41803.4\\{\scriptsize[33976.3, 53954.7]}} & \makecell{58348.7\\{\scriptsize[47548.7, 65855.4]}} & 4-ary \\
+2500 & 10000 & \makecell{105786.6\\{\scriptsize[96970.5, 121834.1]}} & \makecell{106339.6\\{\scriptsize[94379.9, 122938.1]}} & \makecell{138649.1\\{\scriptsize[121508.9, 170908.3]}} & Binary \\
+5000 & 20000 & \makecell{254749.2\\{\scriptsize[219442.6, 316895.6]}} & \makecell{212803.0\\{\scriptsize[199918.1, 232243.5]}} & \makecell{285718.4\\{\scriptsize[261162.8, 315459.6]}} & 4-ary \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.1cm}
+\raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} Cada celda muestra la mediana y, entre corchetes, el IQR.
+\end{table}
+
+\begin{table}[H]
+\centering
+\fontsize{9}{10.5}\selectfont
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{4pt}
+\caption{Dijkstra con tres colas, perfil denso: mediana e IQR en $\mu$s.}
+\label{tab:benchmark_dense}
+\begin{tabular}{@{}rrccc l@{}}
+\toprule
+$|V|$ & $|E|$ & \makecell{Binary\\Heap} & \makecell{4-ary\\Heap} & \makecell{Fibonacci\\Heap} & Mejor \\
+\midrule
+50 & 196 & \makecell{892.0\\{\scriptsize[821.0, 1074.6]}} & \makecell{872.9\\{\scriptsize[783.2, 994.0]}} & \makecell{1284.4\\{\scriptsize[1132.8, 1411.3]}} & 4-ary \\
+100 & 792 & \makecell{2287.0\\{\scriptsize[2057.4, 3227.4]}} & \makecell{2182.2\\{\scriptsize[1894.3, 2405.6]}} & \makecell{3142.8\\{\scriptsize[2655.2, 3976.6]}} & 4-ary \\
+200 & 3184 & \makecell{5138.6\\{\scriptsize[4040.9, 6430.3]}} & \makecell{4852.3\\{\scriptsize[3881.0, 6065.4]}} & \makecell{7169.3\\{\scriptsize[5476.0, 8327.4]}} & 4-ary \\
+400 & 12768 & \makecell{16408.9\\{\scriptsize[13090.2, 18599.3]}} & \makecell{15487.6\\{\scriptsize[12208.9, 19884.7]}} & \makecell{17183.7\\{\scriptsize[15487.0, 21265.9]}} & 4-ary \\
+800 & 51136 & \makecell{57923.5\\{\scriptsize[50208.7, 62974.9]}} & \makecell{58345.2\\{\scriptsize[50691.3, 68398.6]}} & \makecell{74614.7\\{\scriptsize[60800.1, 89075.6]}} & Binary \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.1cm}
+\raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} Cada celda muestra la mediana y, entre corchetes, el IQR.
+\end{table}

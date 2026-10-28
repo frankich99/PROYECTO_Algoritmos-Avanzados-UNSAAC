@@ -1,256 +1,184 @@
 # Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-221%20passed%20(100%25)-brightgreen.svg)](python/tests/)
-[![Documento](https://img.shields.io/badge/documento-57%20páginas%20(LaTeX)-orange.svg)](documento/main.pdf)
-[![Google Colab](https://img.shields.io/badge/Google%20Colab-26%20celdas%20(interactivo)-yellow.svg)](python/colab/rutas_minimas_cusco.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/blob/main/python/colab/rutas_minimas_cusco.ipynb)
-[![License](https://img.shields.io/badge/license-Académica%20UNSAAC-lightgrey.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-246%20passed-brightgreen.svg)](python/tests/)
+[![Documento](https://img.shields.io/badge/documento-50%20p%C3%A1ginas-orange.svg)](documento/main.pdf)
+[![Red OSM](https://img.shields.io/badge/OSM-891%20nodos%20%7C%202139%20aristas-informational.svg)](python/data/processed/cusco_osm_drive.json)
+[![License](https://img.shields.io/badge/license-Acad%C3%A9mica%20UNSAAC-lightgrey.svg)](LICENSE)
 
 **Universidad Nacional de San Antonio Abad del Cusco (UNSAAC)**  
 **Facultad de Ingeniería Eléctrica, Electrónica, Informática y Mecánica**  
 **Escuela Profesional de Ingeniería Informática y de Sistemas**  
 **Asignatura:** Algoritmos Avanzados (Semestre 2026-II)  
-**Docente Revisor:** Ing. Héctor Eduardo Ugarte Rojas  
+**Docente Revisor:** Ing. Héctor Eduardo Ugarte Rojas
 
 ---
 
-### Integrantes del Grupo 5 y Ramas de Trabajo
+## Integrantes del Grupo 5
 
-| Integrante | Código | Rol y Responsabilidad Principal | Rama en GitHub |
-| :--- | :---: | :--- | :--- |
-| **Noe Franklin Choquenaira Quispe** | **133962** | **Líder de Proyecto & Arquitecto:** Arquitectura modular desacoplada en 4 capas, diseño e implementación del **Algoritmo $A^*$** con heurística admisible, visualización vectorial con **Graphviz**, desarrollo del cuaderno **Google Colab** (26 celdas) e informe final de 57 páginas (14 secciones canónicas). | [`ramaFRANKI`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaFRANKI) |
-| **Aldo Yaranga Achahui** | **103179** | **QA & Validación:** Suite de 221 pruebas automatizadas bajo el patrón **AAA (Arrange-Act-Assert)**, implementación del certificador de optimalidad de Bellman $O(\|V\|+\|E\|)$ y opciones avanzadas de la interfaz CLI. | [`ramaAldo`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaAldo) |
-| **Yeni Ruth Porroa Sivana** | **120893** | **Estructuras de Datos & Caché:** Implementación y optimización de **`DAryHeap` ($d=4$)** alineado a líneas de caché de CPU (64 bytes), estudio comparativo de montículos y matriz de selección técnica. | [`ramaYeni`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/ramaYeni) |
-| **Romario Quispe Rimachi** | **164257** | **Benchmarking & Modelado:** Generador de redes sintéticas reproducibles ($\bar{d} \approx 3.5$), protocolo experimental de escalabilidad en tiempo de CPU ($\mu s$) y calibración de la función de impedancia andina ($\alpha = 2.5$). | [`RamaRomario`](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/tree/RamaRomario) |
-
----
-
-## 📌 Enlaces Rápidos del Proyecto
-
-* 📖 **[GUIA.md](GUIA.md):** Guía rápida de sustentación oral (el "machete" con preguntas del docente y comandos en vivo).
-* 📑 **[documento/main.pdf](documento/main.pdf):** Informe académico completo de **57 páginas** (14 secciones canónicas) compilado en LaTeX con rigor matemático y experimental.
-* 🚀 **[python/colab/rutas_minimas_cusco.ipynb](python/colab/rutas_minimas_cusco.ipynb):** Cuaderno interactivo listo para ejecutar en Google Colab con 26 celdas, Graphviz interactivo y batería de pruebas.
-* 📋 **[docs/AVANCE_4.md](docs/AVANCE_4.md):** Guion de demostración y requisitos del Avance 4 (Algoritmo 1: Binary Min-Heap).
-* 📋 **[docs/AVANCE_5.md](docs/AVANCE_5.md):** Guion de demostración y requisitos del Avance 5 (Segunda alternativa: 4-ary Heap, Fibonacci Heap, integración y equivalencia).
+| Integrante | Código | Responsabilidad principal |
+| :--- | :---: | :--- |
+| **Noe Franklin Choquenaira Quispe** | **133962** | Arquitectura modular, modelo de costo, algoritmo $A^*$, aplicación Streamlit y coordinación del informe. |
+| **Aldo Yaranga Achahui** | **103179** | Pruebas automatizadas, certificado de optimalidad, CLI, aplicación y documentación. |
+| **Yeni Ruth Porroa Sivana** | **120893** | Heap binario indexado y heap 4-ario indexado; análisis de localidad de memoria. |
+| **Romario Quispe Rimachi** | **164257** | Fibonacci heap, protocolo de benchmark, carga OSM y servicio meteorológico. |
 
 ---
 
-## 1. Descripción del Proyecto
+## Enlaces rápidos
 
-El proyecto modela, implementa y evalúa experimentalmente algoritmos de rutas mínimas para la atención rápida de unidades de emergencia en la red vial urbana del **Centro Histórico de la ciudad del Cusco**, incorporando las particularidades geográficas y urbanísticas de la ciudad andina.
-
-```
-                              [Capa 4: Presentación y CLI]
-                               (main.py, cli.py, tests/)
-                                          │
-                                          ▼
-                         [Capa 3: Algoritmos y Verificación]
-                      (dijkstra.py, a_star.py, certificate.py)
-                                          │
-                                          ▼
-                       [Capa 2: Estructuras de Datos Puras]
-                    (IndexedMinHeap, DAryHeap, FibonacciHeap)
-                                          │
-                                          ▼
-                      [Capa 1: Modelos Viales y Datos Urbanos]
-                      (cusco_network.py, cost_model.py, .json)
-```
-
-### Particularidades Topográficas del Cusco y "Dijkstra Modificado"
-1. **Sentidos de circulación estrictos:** Calles coloniales estrechas donde el tránsito es estrictamente unidireccional (dígrafo dirigido $E \subseteq V \times V$).
-2. **Calles angostas y peatonales:** Velocidades nominales diferenciadas ($8\text{ km/h}$ en pasajes peatonales como Loreto, $15\text{ km/h}$ en calles coloniales céntricas como Marqués o Santa Clara, y $35\text{ km/h}$ en avenidas como El Sol o Tullumayo).
-3. **Pendientes andinas (subidas pronunciadas):** Se formula una función de costo e impedancia con penalización por gradiente positivo:
-   $$\Phi(u, v) = 1.0 + 2.5 \cdot \max\left(0, \frac{\text{pendiente}(u, v)}{100}\right)$$
-   El **Dijkstra Modificado** minimiza el **tiempo de viaje efectivo en segundos** (`--metric time`) en lugar de la distancia puramente geométrica en metros (`--metric distance`), permitiendo que el sistema priorice avenidas fluidas y planas sobre callejones empinados y estrechos.
-
-### Algoritmo $A^*$ (Búsqueda Heurística Orientada a Objetivos)
-Para el ruteo de emergencia punto a punto ($s \to t$, de la base al hospital), se implementó el algoritmo **$A^*$ (A-Star)** evaluando:
-$$f(u) = g(u) + h(u)$$
-Se formuló una **heurística física admisible y consistente**:
-$$h(u, t) = \frac{\text{Distancia Euclídea}(u, t)}{V_{\max}} \quad \text{con } V_{\max} = 35\text{ km/h} \approx 9.72\text{ m/s}$$
-Dado que $h(u) \le h^*(u)$ en todo momento, **$A^*$ garantiza la misma solución óptima podando entre el 30% y el 70% del espacio de búsqueda** (hacia Mercado San Pedro, Dijkstra expande 6 nodos mientras que $A^*$ solo necesita expandir 4 nodos).
+* **[documento/main.pdf](documento/main.pdf):** informe académico de 50 páginas (38 de cuerpo), 14 secciones, referencias y anexos.
+* **[GUIA.md](GUIA.md):** guía breve de sustentación con respuestas y comandos.
+* **[python/app.py](python/app.py):** aplicación Streamlit integrada.
+* **[python/scripts/reproduce_canonical.py](python/scripts/reproduce_canonical.py):** regeneración del benchmark, del caso OSM, de las tablas y de las figuras.
+* **[python/colab/rutas_minimas_cusco.ipynb](python/colab/rutas_minimas_cusco.ipynb):** cuaderno didáctico de 26 celdas. No es la fuente de los resultados canónicos del informe.
 
 ---
 
-## 2. Comparativa de Alternativas y Estructuras de Datos
+## 1. Problema y modelo
 
-Todas las estructuras fueron implementadas **100% desde cero** en Python puro sin dependencias de terceros para la resolución:
+Se modela una red vial urbana como un dígrafo dirigido $G=(V,E)$ con pesos no negativos. Para la métrica de tiempo, el costo de una arista es
 
-| Algoritmo / Estructura | Inserción | Extract-Min | Decrease-Key | Memoria / Caché | ¿Cuándo usarlo en el proyecto? |
-| :--- | :---: | :---: | :---: | :--- | :--- |
-| **Dijkstra + Binary Min-Heap** | $O(\log V)$ | $O(\log V)$ | $O(\log V)$ | Arreglo contiguo + tabla hash inversa `pos` | Redes pequeñas ($N \le 250$) y prototipado rápido. |
-| **Dijkstra + 4-ary Heap ($d=4$)** | $O(\log_4 V)$ | $O(4 \log_4 V)$ | $O(\log_4 V)$ | Arreglo contiguo, 4 hijos alineados en línea de caché L1 (64B) | **Estructura recomendada para redes viales urbanas medianas y grandes ($N \ge 500$).** Reduce 40% los swaps. |
-| **Dijkstra + Fibonacci Heap** | $O(1)$ | $O(\log V)$ amort. | $O(1)$ amort. | Listas circulares dobles dinámicas | Grafos densos ($E \gg V$). En redes viales dispersas ($E \approx 3.5V$) la sobrecarga de punteros degrada el rendimiento. |
-| **Algoritmo $A^*$ (A-Star)** | $O(\log V)$ | $O(\log V)$ | $O(\log V)$ | Abanico elíptico orientado al destino | **Ruteo de emergencia punto a punto** ($s \to t$), reduciendo la cantidad de llamadas a la cola de prioridad. |
-| **Bellman-Ford (Referencia)** | — | — | — | Arreglos lineales directos | Oráculo independiente para validar consistencia matemática ante aristas negativas ($O(V \cdot E)$). |
-| **NetworkX (Oráculo)** | — | — | — | C-optimizado externo | **Oráculo externo de prueba** en el test suite automatizado para contrastar equivalencia estricta ($10^{-6}$). |
+$$
+w(u,v)=\frac{L(u,v)}{v_{\text{nom}}(u,v)}\left(1+2.5\max\left(0,\theta(u,v)\right)\right)m_{\text{clima}},
+$$
 
----
+donde $L$ es la longitud en metros, $v_{\text{nom}}$ la velocidad nominal, $\theta$ la pendiente como fracción y $m_{\text{clima}}\ge 1$ un factor uniforme de sensibilidad meteorológica. La métrica de distancia usa $w=L$. El modelo no es una calibración de tránsito: la pendiente y el clima son escenarios explícitos.
 
-## 3. Visualización Vectorial con Graphviz
+Se comparan tres colas dentro del mismo Dijkstra:
 
-Atendiendo expresamente las observaciones académicas (*se descartó Plotly por su excesivo peso y dinamismo no determinista*), se integró el motor **Graphviz** para generar:
-1. **Especificaciones `.dot` nativas:** Almacenadas en `python/results/figures/ruta_optima_cusco.dot`.
-2. **Resaltado de ruta crítica:** Los tramos mínimos de emergencia se renderizan en trazo grueso rojo/verde con información de longitud (m), tiempo (s) y pendiente (+/- %).
-3. **Renderizado vectorial SVG en Google Colab:** Se visualiza directamente en el navegador mediante `graphviz.Source`.
+| Cola | Complejidad de referencia | Resultado medido |
+| :--- | :--- | :--- |
+| **Binary Heap indexado** | $O((V+E)\log V)$ | Menor mediana en 3 de 10 escalas sintéticas y en la consulta OSM. Opción por defecto. |
+| **4-ary Heap indexado ($d=4$)** | $O((V+E)\log_4 V)$ con 4 comparaciones por nivel | Menor mediana en 7 de 10 escalas; razón mediana 0.964 (disperso) y 0.954 (denso). Los IQR se solapan en las 10 escalas. |
+| **Fibonacci Heap** | $O(E+V\log V)$ amortizado | Ninguna victoria; 1.05--1.59 veces más lento que el binario en las escalas medidas. |
 
-Comando para generar el diagrama:
-```bash
-python main.py graphviz --target E
-```
+$A^*$ se incluye como extensión para consultas punto a punto. Usa una heurística euclidiana escalada y consistente; en la consulta OSM redujo las expansiones de 887 a 823 (7.2 %) sin cambiar el costo. Bellman-Ford y NetworkX se usan como oráculos independientes, no como solvers del sistema.
 
 ---
 
-## 4. Instrucciones de Instalación y Ejecución
+## 2. Resultados principales
 
-### A. Ejecución del Prototipo en Python
+* **Benchmark canónico:** 1350 muestras cronometradas (2 perfiles $\times$ 5 escalas $\times$ 3 instancias $\times$ 3 colas $\times$ 15 repeticiones). Se reportan mediana e IQR; no se declara un ganador cuando los intervalos se solapan.
+* **Perfil disperso ($E=4V$):** el 4-ario ganó 3 de 5 escalas; el binario, 2. La razón mediana 4-ario/binario fue 0.964.
+* **Perfil denso ($E=0.08V(V-1)$):** el 4-ario ganó 4 de 5 escalas; el binario, 1. La razón mediana fue 0.954.
+* **Consulta OSM:** 891 vértices y 2139 aristas. Tiempos medianos: Binary 15.65 ms, 4-ary 19.87 ms (+26.9 %), Fibonacci 26.09 ms (+66.7 %). Ruta de 17 vértices, 2810.6 m y 387.197 s de costo base.
+* **$A^*$:** 823 expansiones frente a 887 de Dijkstra punto a punto; costo idéntico.
+* **Clima:** el snapshot de Open-Meteo produce $m_{\text{clima}}=1.0691$ y un tiempo ajustado de 413.952 s (+6.91 %). La ruta no cambia porque el factor es uniforme.
+* **No se midieron métricas de memoria.** Las cotas espaciales del informe son teóricas.
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC.git
-   cd PROYECTO_Algoritmos-Avanzados-UNSAAC/python
-   ```
+---
 
-2. **Crear entorno virtual e instalar dependencias:**
-   ```bash
-   python -m venv .venv
-   # En Windows:
-   .venv\Scripts\activate
-   # En Linux/macOS:
-   source .venv/bin/activate
+## 3. Aplicación Streamlit
 
-   pip install -r requirements.txt
-   ```
+La aplicación integra cuatro vistas:
 
-3. **Ejecutar la demostración integral:**
-   ```bash
-   python main.py
-   ```
-
-### B. Los Comandos Esenciales para Sustentación (CLI)
+1. **Comparación:** curvas de mediana e IQR por perfil y tabla de resultados.
+2. **Ruta OSM:** cálculo interactivo de Dijkstra o $A^*$ sobre el snapshot local, con o sin factor climático.
+3. **Traza manual:** ejecución paso a paso sobre la instancia ilustrativa de seis nodos.
+4. **Procedencia:** protocolo, fuentes, snapshots y actualización opcional de Open-Meteo.
 
 ```bash
-# 1. Comparativa de las 3 colas de prioridad con Dijkstra Modificado (Tiempo):
-python main.py compare --metric time
-
-# 2. Comparativa con métrica puramente física (Distancia):
-python main.py compare --metric distance
-
-# 3. Demostración del Algoritmo A* y poda de búsqueda frente a Dijkstra:
-python main.py astar --target E
-
-# 4. Exportar el grafo vial con ruta óptima en Graphviz (.dot):
-python main.py graphviz --target E
-
-# 5. Instancia pequeña resuelta manualmente (Cormen CLRS Fig. 24.6):
-python main.py run -i data/instances/clrs_24_6.txt --trace
-
-# 6. Grafo personalizado dictado en vivo por el docente:
-python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
-
-# 7. Demostración de manejo defensivo ante entradas inválidas:
-python main.py run -i data/instances/invalidas/peso_negativo.txt
-python main.py run -s NODO_INEXISTENTE
-
-# 8. Menú de navegación interactivo por consola:
-python main.py menu
+cd python
+..\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-### C. Ejecución de la Suite de Pruebas Automatizadas (AAA)
+La interfaz usa Plotly para las visualizaciones interactivas y Graphviz para exportar especificaciones `.dot`. Los gráficos de la aplicación no dependen de teselas externas: la red se dibuja desde el snapshot local.
 
-La suite de 221 pruebas automatizadas cubre casos básicos, límites (grafo desconectado $\infty$, grafo unitario $\|V\|=1$), adversos y equivalencia cruzada:
+---
+
+## 4. Instalación y ejecución
 
 ```bash
-pytest -v
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r python/requirements.txt
 ```
-> **Resultado verificado:** `221 passed in 19.16s` (100% de éxito).
+
+### Suite de pruebas
+
+```bash
+.\.venv\Scripts\python.exe -m pytest python/tests -q
+```
+
+Resultado esperado: **246 pruebas aprobadas**. La suite cubre el contrato de las tres colas, la equivalencia con Bellman-Ford y NetworkX, el certificado de optimalidad, la CLI, OSM, el clima y la aplicación.
+
+### CLI
+
+```bash
+cd python
+..\.venv\Scripts\python.exe main.py list
+..\.venv\Scripts\python.exe main.py compare --metric time
+..\.venv\Scripts\python.exe main.py astar --target E
+..\.venv\Scripts\python.exe main.py run -i data/instances/clrs_24_6.txt --trace
+..\.venv\Scripts\python.exe main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
+```
+
+### Reproducción canónica
+
+```bash
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
+```
+
+El script ejecuta el protocolo del informe, reutiliza los snapshots OSM y meteorológico y escribe los JSON, las tablas de `documento/tablas/` y las figuras de `documento/figuras/`. Para regenerar solo tablas y figuras:
+
+```bash
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
+```
+
+### Informe
+
+```powershell
+cd documento
+.\compilar.ps1
+```
 
 ---
 
-## 5. Demostración en Google Colab
-
-El cuaderno interactivo está ubicado en [`python/colab/rutas_minimas_cusco.ipynb`](python/colab/rutas_minimas_cusco.ipynb) y cuenta con **26 celdas integrales**:
-
-1. Ingrese a [Google Colab](https://colab.research.google.com/).
-2. Cargue el archivo `rutas_minimas_cusco.ipynb` o ábralo directamente con el botón:  
-   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/blob/main/python/colab/rutas_minimas_cusco.ipynb)
-3. Seleccione **Entorno de ejecución > Ejecutar todas** (`Ctrl + F9`).
-4. **Celdas clave para la sustentación:**
-   * **Celda 12:** Verificación cruzada estricta contra el oráculo `NetworkX`.
-   * **Celda 14:** Comparativa **Dijkstra vs. $A^*$** (reducción en nodos expandidos).
-   * **Celda 16:** **Renderizado vectorial SVG interactivo con Graphviz**.
-   * **Celda 20:** **Batería de 7 pruebas unitarias automatizadas** con `assert`.
-   * **Celda 22:** **Instancia interactiva en tiempo real** (permite evaluar cualquier origen y destino solicitado por el docente en vivo).
-   * **Celda 24:** Curvas de escalabilidad experimental de tiempos de CPU ($\mu s$).
-
----
-
-## 6. Estructura del Repositorio
+## 5. Estructura del repositorio
 
 ```text
 .
-├── GUIA.md                               # Guía rápida de sustentación oral (preguntas y comandos)
-├── README.md                             # Documentación principal del repositorio en GitHub
-├── docs/                                 # Especificaciones de los avances del curso
-│   ├── AVANCE_4.md                       # Especificación técnica del Avance 4 (Binary Heap)
-│   └── AVANCE_5.md                       # Especificación técnica del Avance 5 (4-ary, Fibonacci, integración)
-├── documento/                            # Informe formal académico en LaTeX (60 páginas)
-│   ├── main.tex                          # Archivo raíz de LaTeX
-│   ├── main.pdf                          # Informe final compilado en PDF
-│   ├── compilar.ps1 / compilar.bat       # Scripts de compilación con pdflatex
-│   ├── capitulos/                        # 14 capítulos temáticos y anexos
-│   ├── tablas/                           # Tablas formales booktabs de trazas y complejidades
-│   └── figuras/                          # Diagramas vectoriales, escudo y gráficos
-└── python/                               # Núcleo del software científico ejecutable
-    ├── main.py                           # Punto de entrada principal (demo y CLI)
-    ├── requirements.txt                  # Dependencias de Python
-    ├── colab/                            # Cuaderno interactivo Google Colab
-    │   ├── rutas_minimas_cusco.ipynb     # Cuaderno de 26 celdas reproducible
-    │   └── README.md                     # Guía de uso en Colab
-    ├── data/                             # Instancias de prueba
-    │   ├── processed/                    # Red del Centro Histórico y resultados benchmark
-    │   └── instances/                    # CLRS 24.6, desconectado, empates e inválidas
-    ├── src/                              # Código fuente modular en 4 capas
-    │   ├── cli.py                        # Parser unificado de comandos de consola
-    │   ├── algorithms/                   # Dijkstra desacoplado, A-Star (A*) y referencias
-    │   ├── datastructures/               # IndexedMinHeap, DAryHeap (d=4) y FibonacciHeap
-    │   ├── io/                           # Lectura y validación defensiva de grafos
-    │   ├── generators/                   # Generadores sintéticos de redes viales
-    │   ├── verification/                 # Certificados de optimalidad y comparador
-    │   ├── models/                       # Definición de la red vial del Cusco
-    │   ├── utils/                        # Modelo de costos, telemetría y exportadores
-    │   └── visualization/                # Generación de figuras y código DOT Graphviz
-    └── tests/                            # 221 pruebas automatizadas con Pytest (patrón AAA)
+├── GUIA.md
+├── README.md
+├── documento/
+│   ├── main.tex
+│   ├── main.pdf
+│   ├── capitulos/          # 14 secciones y anexos
+│   ├── tablas/             # tablas usadas por el informe
+│   └── figuras/            # figuras usadas por el informe
+└── python/
+    ├── app.py              # aplicación Streamlit
+    ├── main.py             # CLI y demostración
+    ├── scripts/
+    │   └── reproduce_canonical.py
+    ├── data/
+    │   ├── instances/      # instancia ilustrativa y casos de prueba
+    │   └── processed/      # snapshots OSM, clima y resultados JSON
+    ├── src/
+    │   ├── algorithms/     # Dijkstra, A* y referencias
+    │   ├── datastructures/ # Binary, 4-ary y Fibonacci
+    │   ├── benchmarks/     # protocolo canónico y caso aplicado
+    │   ├── io/             # carga y validación de grafos y OSM
+    │   ├── services/       # Open-Meteo y factor climático
+    │   ├── verification/   # certificado de optimalidad
+    │   └── visualization/  # figuras y Graphviz
+    └── tests/              # 246 pruebas
 ```
 
 ---
 
-## 7. Compilación del Informe Académico en LaTeX
+## 6. Limitaciones
 
-Para compilar el informe de 60 páginas desde el código fuente en LaTeX:
-
-* **En PowerShell (Windows):**
-  ```powershell
-  cd documento
-  .\compilar.ps1
-  ```
-* **En Símbolo del Sistema (CMD):**
-  ```cmd
-  cd documento
-  compilar.bat
-  ```
-* **Con `pdflatex` directamente:**
-  ```bash
-  cd documento
-  pdflatex -interaction=nonstopmode main.tex
-  pdflatex -interaction=nonstopmode main.tex
-  ```
-> Produce el archivo [documento/main.pdf](documento/main.pdf) con numeración de páginas, bibliografía cruzada e índices de figuras y tablas.
+* Los tiempos corresponden a Python 3.12 en un AMD Ryzen 5 5600H; no son extrapolables a otro lenguaje o CPU.
+* No se midió memoria residente ni número de asignaciones.
+* El benchmark usa redes sintéticas y una sola consulta OSM; no representa todas las distribuciones de tráfico.
+* Open-Meteo entrega datos de modelo, no de una estación física. El clima se aplica como factor uniforme y no puede cambiar la ruta óptima.
+* La instancia de seis nodos es ilustrativa: los nombres son reales, pero longitudes, pendientes y topología son esquemáticas.
 
 ---
 
-## 8. Licencia y Créditos
+## 7. Licencia y créditos
 
 Proyecto desarrollado con fines estrictamente académicos para la asignatura de **Algoritmos Avanzados (2026-II)** de la **Universidad Nacional de San Antonio Abad del Cusco (UNSAAC)**.
 

@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering
+\fontsize{8.5}{10.5}\selectfont
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{4pt}
+\caption{Síntesis comparativa por perfil y consulta. Las razones usan la mediana; no se declara un ganador cuando los IQR se solapan.}
+\label{tab:sintesis_colas}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Perfil} & \textbf{4-ary/Binary} & \textbf{Fibonacci/Binary} & \textbf{Gana 4-ary} & \textbf{Gana Binary} & \textbf{IQR solap.} \\
+\midrule
+Disperso ($|E|=4|V|$) & 0.964 & 1.345 & 3 de 5 & 2 de 5 & 5 de 5 \\
+Denso ($|E|=0.08|V|(|V|-1)$) & 0.954 & 1.374 & 4 de 5 & 1 de 5 & 5 de 5 \\
+\midrule
+Total sintético & 0.959 & 1.360 & 7 de 10 & 3 de 10 & 10 de 10 \\
+Consulta OSM & 1.269 & 1.666 & 0 & 1 & -- \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.1cm}
+\raggedright\fontsize{8}{10}\selectfont\textit{Nota.} Una razón 4-ary/Binary menor que 1 indica que el 4-ario fue más rápido. La columna IQR se refiere a 4-ary frente a Binary. Fibonacci no ganó ninguna escala sintética.
+\end{table}

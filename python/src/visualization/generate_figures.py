@@ -115,40 +115,35 @@ def generate_cost_comparison_plot(output_paths: List[str]) -> None:
 
 
 def generate_scalability_plot(benchmark_results: Dict[str, Any], output_paths: List[str]) -> None:
-    """Genera curvas de escalabilidad comparativa de tiempo de ejecución vs número de vértices."""
-    scales = benchmark_results["scales"]
-    bin_times = [d["mean_us"] for d in benchmark_results["data"]["binary_heap"]]
-    bin_std = [d["std_us"] for d in benchmark_results["data"]["binary_heap"]]
-
-    four_times = [d["mean_us"] for d in benchmark_results["data"]["4ary_heap"]]
-    four_std = [d["std_us"] for d in benchmark_results["data"]["4ary_heap"]]
-
-    fib_times = [d["mean_us"] for d in benchmark_results["data"]["fibonacci_heap"]]
-    fib_std = [d["std_us"] for d in benchmark_results["data"]["fibonacci_heap"]]
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.5), dpi=300)
-
-    # Gráfico lineal
-    ax1.errorbar(scales, bin_times, yerr=bin_std, fmt='-o', color='#2563eb', label='Binary Min-Heap Indexado', lw=2, capsize=4)
-    ax1.errorbar(scales, four_times, yerr=four_std, fmt='-s', color='#16a34a', label='4-ary Heap Contiguo', lw=2, capsize=4)
-    ax1.errorbar(scales, fib_times, yerr=fib_std, fmt='-^', color='#dc2626', label='Fibonacci Heap Dinámico', lw=2, capsize=4)
-    ax1.set_xlabel("Número de Vértices (|V|)", fontsize=10, weight='bold')
-    ax1.set_ylabel("Tiempo Medio de CPU (µs)", fontsize=10, weight='bold')
-    ax1.set_title("Escalabilidad Temporal en Redes Viales (Escala Lineal)", fontsize=11, weight='bold')
-    ax1.grid(True, linestyle='--', alpha=0.6)
-    ax1.legend(frameon=True, facecolor='white', framealpha=0.9)
-
-    # Gráfico logarítmico
-    ax2.plot(scales, bin_times, '-o', color='#2563eb', label='Binary Min-Heap Indexado', lw=2)
-    ax2.plot(scales, four_times, '-s', color='#16a34a', label='4-ary Heap Contiguo', lw=2)
-    ax2.plot(scales, fib_times, '-^', color='#dc2626', label='Fibonacci Heap Dinámico', lw=2)
-    ax2.set_xscale('log')
-    ax2.set_yscale('log')
-    ax2.set_xlabel("Número de Vértices (|V|) - Escala Log", fontsize=10, weight='bold')
-    ax2.set_ylabel("Tiempo de CPU (µs) - Escala Log", fontsize=10, weight='bold')
-    ax2.set_title("Comportamiento Asintótico (Escala Log-Log)", fontsize=11, weight='bold')
-    ax2.grid(True, which="both", linestyle='--', alpha=0.6)
-    ax2.legend(frameon=True, facecolor='white', framealpha=0.9)
+    """Curvas de mediana e IQR para los perfiles disperso y denso."""
+    profiles = benchmark_results["profiles"]
+    names = [name for name in ("sparse", "dense") if name in profiles]
+    fig, axes = plt.subplots(1, len(names), figsize=(7 * len(names), 5.5), dpi=300, squeeze=False)
+    styles = {
+        "binary_heap": ("#1f4e79", "o", "Binary Heap"),
+        "4ary_heap": ("#2f6b3f", "s", "4-ary Heap"),
+        "fibonacci_heap": ("#9b3a32", "^", "Fibonacci Heap"),
+    }
+    for axis, profile_name in zip(axes[0], names):
+        profile = profiles[profile_name]
+        scales = profile["scales"]
+        for queue, (color, marker, label) in styles.items():
+            rows = profile["data"][queue]
+            medians = np.array([row["median_us"] for row in rows])
+            lower = medians - np.array([row["q1_us"] for row in rows])
+            upper = np.array([row["q3_us"] for row in rows]) - medians
+            axis.errorbar(
+                scales, medians, yerr=np.vstack([lower, upper]), marker=marker,
+                color=color, label=label, linewidth=2, capsize=3,
+            )
+        axis.set_xscale("log")
+        axis.set_yscale("log")
+        axis.set_xlabel(r"Vértices $|V|$")
+        axis.set_ylabel(r"Tiempo, mediana [$\mu$s]")
+        title = "Disperso: E = 4V" if profile_name == "sparse" else r"Denso: E = 0.08V(V-1)"
+        axis.set_title(title)
+        axis.grid(True, which="both", linestyle=":", alpha=0.45)
+        axis.legend(frameon=False)
 
     plt.tight_layout()
     for path_str in output_paths:
@@ -160,8 +155,9 @@ def generate_scalability_plot(benchmark_results: Dict[str, Any], output_paths: L
 
 def generate_operations_breakdown_plot(benchmark_results: Dict[str, Any], output_paths: List[str]) -> None:
     """Genera gráfico del desglose cuantitativo de operaciones elementales."""
-    scales = benchmark_results["scales"]
-    ops_bin = benchmark_results["operation_counts"]["binary_heap"]
+    profile = benchmark_results["profiles"]["sparse"]
+    scales = profile["scales"]
+    ops_bin = [row["operations_mean"] for row in profile["data"]["binary_heap"]]
 
     inserts = [op.get("insert_ops", scales[i]) for i, op in enumerate(ops_bin)]
     extract_mins = [op.get("extract_min_ops", scales[i]) for i, op in enumerate(ops_bin)]
@@ -192,6 +188,36 @@ def generate_operations_breakdown_plot(benchmark_results: Dict[str, Any], output
         p.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(p, bbox_inches="tight")
     plt.close()
+
+
+def generate_osm_route_plot(instance, path: List[Any], output_paths: List[str]) -> None:
+    """Dibuja la topología OSM local y una ruta sin requerir teselas web."""
+    fig, ax = plt.subplots(figsize=(8.2, 7.2), dpi=300)
+    for u in instance.nodes:
+        if u not in instance.coords:
+            continue
+        x1, y1 = instance.coords[u]
+        for v, _weight in instance.adj.get(u, []):
+            if v in instance.coords:
+                x2, y2 = instance.coords[v]
+                ax.plot([x1, x2], [y1, y2], color="#c9c2b7", linewidth=0.35, alpha=0.55)
+    route_x = [instance.coords[node][0] for node in path]
+    route_y = [instance.coords[node][1] for node in path]
+    ax.plot(route_x, route_y, color="#681c32", linewidth=2.8, zorder=3, label="Ruta mínima")
+    ax.scatter(route_x[0], route_y[0], color="#2f6b3f", s=55, zorder=4, label="Origen")
+    ax.scatter(route_x[-1], route_y[-1], color="#8a6418", s=55, zorder=4, label="Destino")
+    ax.set_xlabel("Longitud")
+    ax.set_ylabel("Latitud")
+    ax.set_title("Consulta representativa en la red vial OSM de Cusco")
+    ax.set_aspect("equal", adjustable="datalim")
+    ax.legend(frameon=False)
+    ax.grid(False)
+    fig.tight_layout()
+    for path_str in output_paths:
+        destination = Path(path_str)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(destination, bbox_inches="tight")
+    plt.close(fig)
 
 
 def generate_architecture_diagram(output_paths: List[str]) -> None:

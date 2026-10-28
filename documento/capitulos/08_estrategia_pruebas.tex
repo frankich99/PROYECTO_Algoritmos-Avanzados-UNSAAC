@@ -1,90 +1,96 @@
 \section{Estrategia de Pruebas y Validación Automatizada}
 \label{sec:pruebas}
 
-\subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
-Para garantizar la confiabilidad y correctitud matemática del software, la verificación no se limita a inspecciones visuales o ejecuciones manuales aisladas, sino que se fundamenta en una suite de pruebas unitarias automatizadas desarrollada con el framework \texttt{pytest} / \texttt{unittest}. Cada prueba sigue la convención estándar de tres fases:
-\begin{itemize}
-    \item \textbf{Arrange (Organizar):} Inicialización del entorno, instanciación de la estructura de datos o construcción del grafo vial de prueba y definición explícita del resultado esperado.
-    \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{extract\_min}, \texttt{decrease\_key}, \texttt{dijkstra\_solver}).
-    \item \textbf{Assert (Afirmar):} Comprobación determinista mediante aserciones de igualdad (\texttt{assertEqual}), orden (\texttt{assertGreater}) o manejo de excepciones (\texttt{assertRaises}).
-\end{itemize}
+\subsection{Objetivo y organización}
+La validación persigue tres metas: (i) comprobar que las tres colas cumplen el mismo contrato; (ii) verificar que Dijkstra devuelve distancias óptimas y rutas reconstruibles; y (iii) asegurar que la carga de datos, la CLI, el servicio meteorológico y la aplicación funcionan sin red y rechazan entradas inválidas. La suite se ejecuta con \texttt{pytest} y se organiza por módulo, no por integrante, para que cualquier cambio pueda evaluarse de forma local.
 
-\subsection{Tipología y Cobertura de Casos de Prueba}
-La suite de pruebas (Tabla \ref{tab:suite_pruebas}) se divide en cuatro categorías operacionales diseñadas para detectar fallas en límites asintóticos y condiciones anómalas:
+\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa}]
+python -m pytest python/tests -q
+\end{lstlisting}
+
+La Tabla~\ref{tab:suite_pruebas} resume las 246 pruebas que componen la suite. El conteo incluye casos parametrizados: una misma función de prueba puede ejecutarse sobre las tres colas, varios tamaños o varias entradas inválidas. Una ejecución completa finalizó con \texttt{246 passed in 45.86s} en el entorno descrito en la Sección~\ref{sec:metodologia}.
 
 \begin{table}[H]
     \centering
-    \fontsize{10}{12.5}\selectfont
-    \renewcommand{\arraystretch}{1.2}
-    \setlength{\tabcolsep}{5pt}
-    \caption{Clasificación de la suite de pruebas unitarias y casos evaluados}
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \caption{Distribución de la suite automatizada}
     \label{tab:suite_pruebas}
-    \begin{tabularx}{\textwidth}{@{}>{\ttfamily\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.4cm}@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.3cm} r >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Función de Prueba} & \textbf{Condición Evaluada y Aserción AAA} & \textbf{Resultado} \\
+        \textbf{Archivo} & \textbf{Pruebas} & \textbf{Propósito principal} \\
         \midrule
-        \multicolumn{3}{@{}l}{\textit{\textbf{1. Pruebas Funcionales de Colas y Algoritmo}}} \\
+        \texttt{test\_priority\_queues.py} & 61 & Contrato común, orden de extracción, claves inválidas, cortes en cascada y comparación con \texttt{heapq}. \\
+        \texttt{test\_equivalence.py} & 48 & Equivalencia con Bellman-Ford, Dijkstra con arreglo y NetworkX; empates y escalas de 1000 y 3000 nodos. \\
+        \texttt{test\_validation\_io.py} & 40 & Validación de JSON, pesos negativos, NaN, campos faltantes, métricas y certificado. \\
+        \texttt{test\_dijkstra\_manual.py} & 36 & Traza manual de Cusco, CLRS 24.6, nodos inalcanzables, lazos, aristas paralelas y pesos extremos. \\
+        \texttt{test\_cli.py} & 25 & Comandos, códigos de salida, generación, verificación, exportación y modo interactivo. \\
+        \texttt{test\_dijkstra.py} & 11 & Casos básicos, límites y equivalencia a escala. \\
+        \texttt{test\_a\_star.py} & 8 & Optimalidad, consistencia, ausencia de coordenadas y regresión de heurística no admisible. \\
+        \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas, perfiles y esquema del benchmark canónico. \\
+        \texttt{test\_osm\_loader.py} & 4 & Conversión determinista, métricas, caché y rechazo de snapshots inválidos. \\
+        \texttt{test\_weather.py} & 4 & Multiplicador, clima adverso, \textit{snapshot} y \textit{fallback} sin red. \\
+        \texttt{test\_applied\_analysis.py} & 3 & Nodo más cercano, escalamiento uniforme y rechazo de factores inválidos. \\
+        \texttt{test\_streamlit\_app.py} & 2 & Carga de resultados canónicos y composición de la figura de ruta. \\
         \midrule
-        test\_indexed\_min\_heap & Inserción, flotado \texttt{decrease\_key} y extracción de mínimo en montículo binario. & Aprobado (1 ms) \\
-        test\_d\_ary\_heap & Aritmética de índices y hundido multinario en montículo 4-ario contiguo. & Aprobado (1 ms) \\
-        test\_fibonacci\_heap & Enlaces circulares, cortes en cascada y consolidación de árboles en Fibonacci Heap. & Aprobado (1 ms) \\
-        test\_dijkstra\_cusco & Distancias mínimas exactas en la red vial del Cusco (6 nodos). & Aprobado (1 ms) \\
-        \midrule
-        \multicolumn{3}{@{}l}{\textit{\textbf{2. Casos Límite y Condiciones de Borde (Edge Cases)}}} \\
-        \midrule
-        test\_single\_node & Grafo trivial con un solo nodo ($|V|=1, |E|=0$). & Aprobado (1 ms) \\
-        test\_disconnected & Vértice inalcanzable; distancia $\infty$ y camino vacío devuelto. & Aprobado (1 ms) \\
-        test\_empty\_extraction & Invocación de \texttt{extract\_min} en cola vacía levanta \texttt{IndexError}. & Aprobado (1 ms) \\
-        test\_invalid\_decrease & Intento de incrementar distancia es ignorado (\textit{no-op}). & Aprobado (1 ms) \\
-        \midrule
-        \multicolumn{3}{@{}l}{\textit{\textbf{3. Condiciones Adversas y Topografía Andina}}} \\
-        \midrule
-        test\_downhill\_slope & Pendiente negativa severa ($-15\%$) acotada por $\max(0, s)$. & Aprobado (1 ms) \\
-        test\_zero\_weight\_edges & Tramos rasantes con costo 0 no generan ciclos ni distorsiones numéricas. & Aprobado (1 ms) \\
-        \midrule
-        \multicolumn{3}{@{}l}{\textit{\textbf{4. Escalabilidad y Equivalencia Cruzada (Cross-Validation)}}} \\
-        \midrule
-        test\_cross\_validation & Grafo sintético ($|V|=50, |E|=200$). Distancias 100\% idénticas entre Binary, 4-ary y Fibonacci Heap. & Aprobado (6 ms) \\
+        \textbf{Total} & \textbf{246} & \\
         \bottomrule
     \end{tabularx}
-    \vspace{0.15cm}
-    \raggedright \fontsize{9}{11}\selectfont \textit{Nota.} Todas las pruebas fueron ejecutadas con el framework \texttt{pytest} / \texttt{unittest} bajo el patrón Arrange-Act-Assert (AAA).
 \end{table}
 
-\subsection{Validación Cruzada y Equivalencia Algorítmica}
-Un aspecto metodológico central del proyecto consiste en la validación cruzada (\textit{cross-validation}). Dado que el Algoritmo de Dijkstra es determinista para grafos con aristas con costos estrictamente positivos, las distancias calculadas deben ser matemáticamente idénticas sin importar si la cola de prioridad es un montículo binario, un montículo 4-ario o un montículo de Fibonacci:
-\begin{equation}
-    |d_{\text{binary}}[v] - d_{\text{4ary}}[v]| < \epsilon \quad \land \quad |d_{\text{binary}}[v] - d_{\text{fibonacci}}[v]| < \epsilon, \quad \forall v \in V, \quad \epsilon = 10^{-6}
-\end{equation}
-La prueba \texttt{test\_cross\_validation\_random\_synthetic\_graph} ejecuta esta verificación sobre 50 nodos y 200 aristas generadas con semilla fija (\texttt{seed=42}), garantizando reproducibilidad y confirmando que ninguna optimización de bajo nivel introdujo errores de cálculo en las distancias.
+\subsection{Patrón Arrange-Act-Assert}
+Cada prueba sigue tres fases explícitas:
+\begin{itemize}
+    \item \textbf{Arrange.} Se construye la instancia, la cola o el archivo temporal, y se declara el resultado esperado.
+    \item \textbf{Act.} Se invoca la operación bajo prueba: \texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key}, \texttt{dijkstra\_solver} o un comando de la CLI.
+    \item \textbf{Assert.} Se comprueba igualdad exacta o aproximada, orden, excepción esperada o código de salida.
+\end{itemize}
+Las comparaciones de distancias usan una tolerancia relativa de $10^{-6}$ para absorber el redondeo de punto flotante; las comparaciones de rutas verifican el costo, no la identidad de la secuencia, porque puede haber varios caminos óptimos.
 
-\subsection{Salida Verificable y Certificado de Optimalidad de Bellman}
-\label{sec:certificado_optimalidad}
-Para redes con pesos no negativos ($w(e) \ge 0$), un vector de distancias $d$ y un árbol de predecesores $\pi$ constituyen la solución óptima si y solo si satisfacen las cuatro condiciones de Bellman, las cuales el módulo \texttt{src/verification/certificate.py} comprueba en tiempo lineal $O(|V|+|E|)$ de forma estrictamente independiente, sin re-ejecutar el algoritmo:
+\subsection{Pruebas del contrato de colas}
+Las pruebas de \texttt{test\_priority\_queues.py} se parametrizan sobre las tres estructuras y cubren:
 \begin{enumerate}
-    \item[(a)] \textbf{Condición de Origen:} $d[s] = 0$.
-    \item[(b)] \textbf{Cota Superior Estricta (No Relajación Pendiente):} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se satisface $d[v] \le d[u] + w(u, v)$. Esta condición certifica que el vector $d$ no sobreestima el costo mínimo real $\delta(s, \cdot)$.
-    \item[(c)] \textbf{Consistencia de Predecesores:} Para todo vértice alcanzado $v \ne s$, existe un predecesor $\pi[v]$ tal que $d[v] = d[\pi[v]] + w(\pi[v], v)$, certificando que la solución no subestima el costo real.
-    \item[(d)] \textbf{Aciclicidad y Validez Topológica:} Cada camino reconstruido desde $s$ hasta $v$ emplea exclusivamente aristas existentes en $E$ y su longitud acumulada coincide con $d[v]$. Los vértices inalcanzables mantienen $d[v] = \infty$ y predecesor nulo.
+    \item extracción en orden creciente y vaciado completo;
+    \item \texttt{decrease\_key} hacia el frente, desde $\infty$ y sobre un elemento ausente;
+    \item rechazo de inserciones duplicadas y de claves NaN, cadenas, \texttt{None} o booleanos;
+    \item extracción sobre cola vacía, elemento único y claves repetidas;
+    \item comparación aleatoria contra una implementación de referencia, con seis variantes de heap y tres semillas;
+    \item ejercitación específica de cortes en cascada y consolidación del Fibonacci heap.
 \end{enumerate}
+La comparación con \texttt{heapq} se usa solo como oráculo de orden, no como estructura del solver. Esto separa la corrección del contrato de la decisión de diseño de implementar las colas desde cero.
 
-\subsection{Clasificación Formal de Diferencias entre Alternativas}
-\label{sec:clasificacion_diferencias_sec}
-Dado que el Algoritmo de Dijkstra es exacto, las distancias producidas por el Binary Heap, 4-ary Heap y Fibonacci Heap deben ser estrictamente equivalentes. No obstante, ante empates de costo mínimo o al comparar con Bellman-Ford, pueden surgir variaciones estructurales legítimas que el sistema clasifica de forma determinista (Tabla \ref{tab:clasificacion_diferencias}).
+\subsection{Oráculos de caminos mínimos}
+La corrección se contrasta con tres referencias independientes:
+\begin{itemize}
+    \item \textbf{Bellman-Ford.} Tolerante a pesos negativos y capaz de detectar ciclos negativos; se usa en 40 grafos aleatorios de $5$ a $122$ nodos, con y sin pesos enteros, ceros y densidad $4|V|$.
+    \item \textbf{Dijkstra con arreglo no ordenado.} Referencia $O(|V|^2+|E|)$ sobre una red de 300 nodos; comprueba que la cola no altera las distancias.
+    \item \textbf{NetworkX 3.7.} Oráculo externo sobre una cuadrícula dirigida de $8\times 8$; evita que un error compartido por las tres implementaciones pase inadvertido.
+\end{itemize}
+Además, \texttt{test\_dijkstra\_manual.py} compara contra valores calculados a mano en la instancia de seis nodos y en la Figura~24.6 de \textcite{cormen2022introduction}. Esa prueba detecta errores de relajación que un oráculo automático podría reproducir si compartiera el mismo sesgo de implementación.
 
-\begin{table}[H]
-    \centering
-    \fontsize{9.5}{12}\selectfont
-    \caption{Taxonomía y clasificación de diferencias observadas entre alternativas}
-    \label{tab:clasificacion_diferencias}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{2.8cm}X@{}}
-        \toprule
-        \textbf{Diferencia Observada} & \textbf{Clasificación} & \textbf{Justificación Algorítmica} \\
-        \midrule
-        Distancia numérica distinta & Error Crítico & No debe ocurrir ($|d_1 - d_2| < 10^{-6}$). Indica violación de invariante. \\
-        Ruta distinta con igual costo & Propiedad Esperada & Múltiples caminos mínimos alternativos; el orden de inserción de cada cola desempata distinto. Ambas rutas son óptimas. \\
-        Conteo de primitivas internas & Propiedad Estructural & Refleja la arquitectura de cada montículo (Tabla \ref{tab:complejidades}). \\
-        Dijkstra bloquea y Bellman-Ford resuelve & Criterio Distinto & Dijkstra requiere precondición $w(e) \ge 0$. Bellman-Ford soporta aristas negativas siempre que no formen ciclos negativos. \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
+\subsection{Certificado de optimalidad}
+Para pesos no negativos, un vector $d$ es óptimo si y solo si cumple cuatro condiciones:
+\begin{enumerate}
+    \item $d[s]=0$;
+    \item para toda arista $(u,v)$ con $d[u]$ finito, $d[v]\le d[u]+w(u,v)$;
+    \item todo $v\ne s$ alcanzable tiene un predecesor $u$ con $d[v]=d[u]+w(u,v)$;
+    \item cada camino reportado empieza en $s$, termina en $v$, usa aristas existentes y cuesta $d[v]$; los inalcanzables tienen $d[v]=\infty$ y camino vacío.
+\end{enumerate}
+La verificación recorre cada arista y cada camino una vez, por lo que cuesta $O(|V|+|E|)$ y no vuelve a ejecutar Dijkstra. El certificado se aplica a las tres colas en cada instancia del benchmark y en la consulta OSM. \texttt{test\_validation\_io.py} incluye un caso con salida alterada para comprobar que el certificado efectivamente falla cuando debe fallar.
+
+\subsection{Pruebas de borde y regresión}
+La suite cubre los siguientes casos adversos:
+\begin{itemize}
+    \item grafo de un solo nodo, origen sin aristas salientes y nodos inalcanzables;
+    \item lazos, aristas paralelas, pesos cero, pesos muy grandes y muy pequeños, e identificadores enteros;
+    \item cadenas largas sin recursión, para verificar que la reconstrucción de rutas es iterativa;
+    \item ciclos negativos, que deben ser rechazados por Dijkstra y detectados por Bellman-Ford;
+    \item archivos inexistentes, extensión incorrecta, JSON mal formado, codificación no UTF-8 y estructuras incompletas.
+\end{itemize}
+La prueba de regresión de $A^*$ merece mención aparte. Una versión anterior aplicaba coordenadas de Cusco a cualquier grafo y producía una heurística no admisible. El caso de regresión construye un grafo con coordenadas que violan la cota y comprueba que la implementación actual rechaza la heurística o cae a $h=0$; no se limita a comparar el resultado final.
+
+\subsection{Pruebas de integración sin red}
+Las pruebas de OSM y clima no dependen de Internet. \texttt{test\_osm\_loader.py} usa un \textit{snapshot} temporal, comprueba que la conversión es determinista, que se preservan aristas paralelas y que la caché evita una segunda descarga. \texttt{test\_weather.py} simula una respuesta, guarda el \textit{snapshot} y verifica que \texttt{fetch\_or\_cached} usa el archivo cuando la red falla. La aplicación Streamlit se prueba con dos casos de humo: carga de los resultados canónicos y composición de la figura de ruta con tres capas (red, ruta y extremos).
+
+\subsection{Criterio de aceptación}
+Una versión se considera aceptable si: (i) las 246 pruebas pasan; (ii) el certificado de optimalidad se cumple en todas las instancias del benchmark; (iii) las tres colas producen las mismas distancias; y (iv) la aplicación y la CLI funcionan con el \textit{snapshot} local aunque no haya red. No se reporta un porcentaje de cobertura porque no se midió con una herramienta de cobertura; afirmarlo sin medición sería una precisión ficticia.

@@ -66,6 +66,63 @@ def random_road_network(num_nodes: int, avg_degree: float = 3.5, seed: int = 42)
                          default_source=nodes[0])
 
 
+def random_directed_network(
+    num_nodes: int,
+    target_edges: int,
+    seed: int = 42,
+    profile: str = "synthetic",
+) -> GraphInstance:
+    """Grafo alcanzable con exactamente ``target_edges`` aristas, si es posible."""
+    _check_positive_int(num_nodes, "num_nodes")
+    maximum = num_nodes * (num_nodes - 1)
+    minimum = max(0, num_nodes - 1)
+    if not isinstance(target_edges, int) or isinstance(target_edges, bool):
+        raise InvalidInstanceError("target_edges debe ser entero.")
+    if target_edges < minimum or target_edges > maximum:
+        raise InvalidInstanceError(
+            f"target_edges debe estar entre {minimum} y {maximum} para {num_nodes} nodos."
+        )
+    rng = random.Random(seed)
+    nodes = [f"N{i}" for i in range(num_nodes)]
+    adj: Adj = {node: [] for node in nodes}
+    existing = set()
+
+    # La cadena dirigida garantiza alcanzabilidad desde N0.
+    for index in range(num_nodes - 1):
+        u, v = nodes[index], nodes[index + 1]
+        adj[u].append((v, round(rng.uniform(1.0, 1_000.0), 3)))
+        existing.add((index, index + 1))
+
+    while len(existing) < target_edges:
+        u_index = rng.randrange(num_nodes)
+        v_index = rng.randrange(num_nodes)
+        if u_index == v_index or (u_index, v_index) in existing:
+            continue
+        existing.add((u_index, v_index))
+        adj[nodes[u_index]].append((nodes[v_index], round(rng.uniform(1.0, 1_000.0), 3)))
+
+    for node in nodes:
+        adj[node].sort(key=lambda item: (str(item[0]), item[1]))
+    return GraphInstance(
+        nodes=nodes,
+        adj=adj,
+        name=f"{profile}_n{num_nodes}_m{target_edges}_s{seed}",
+        default_source=nodes[0],
+        metadata={"generator": "random_directed_network", "profile": profile, "seed": seed},
+    )
+
+
+def benchmark_network(num_nodes: int, profile: str, seed: int = 42) -> GraphInstance:
+    """Perfiles canónicos: disperso O(V) y denso con 8% de aristas posibles."""
+    if profile == "sparse":
+        target = min(num_nodes * (num_nodes - 1), max(num_nodes - 1, 4 * num_nodes))
+    elif profile == "dense":
+        target = max(num_nodes - 1, round(0.08 * num_nodes * (num_nodes - 1)))
+    else:
+        raise InvalidInstanceError("profile debe ser 'sparse' o 'dense'.")
+    return random_directed_network(num_nodes, target, seed=seed, profile=profile)
+
+
 def grid_network(rows: int, cols: int, weight_mode: str = "unit", seed: int = 7,
                  low: float = 1.0, high: float = 10.0) -> GraphInstance:
     _check_positive_int(rows, "rows")
