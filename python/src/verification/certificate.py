@@ -5,15 +5,17 @@ Verificación independiente de la salida (no vuelve a ejecutar Dijkstra).
    mínimos. Para pesos no negativos, d es la distancia mínima si y solo si:
      (a) d[s] = 0;
      (b) para toda arista (u,v,w) con d[u] finito: d[v] <= d[u] + w   (no queda relajación posible);
-     (c) todo v alcanzado (v != s) tiene un predecesor u con una arista (u,v,w)
-         tal que d[v] = d[u] + w (la cota es alcanzada por un camino real);
+      (c) los predecesores de todos los vértices con distancia finita forman
+          cadenas de aristas ajustadas que terminan en s (no en ciclos de peso cero);
      (d) cada camino reportado empieza en s, termina en v, usa aristas
          existentes y su costo es d[v]; los inalcanzables tienen d = inf y [].
-   Así cualquier persona puede validar la salida en O(V + E).
+    Sin caminos explícitos, se valida en O(V + E). Si se reportan caminos,
+    leerlos cuesta además O(suma de sus longitudes).
 
 2. compare_results: compara varias alternativas sobre la misma instancia y
    clasifica cada diferencia como esperada o como error.
 """
+import math
 from typing import Any, Dict, Hashable, List, Optional, Tuple
 
 INF = float("inf")
@@ -23,6 +25,8 @@ DEFAULT_EPS = 1e-6
 def _close(a: float, b: float, eps: float) -> bool:
     if a == INF or b == INF:
         return a == b
+    if not math.isfinite(a) or not math.isfinite(b):
+        return False
     return abs(a - b) <= eps * max(1.0, abs(a), abs(b))
 
 
@@ -62,34 +66,66 @@ def verify_shortest_paths(
     if not _close(dist[source], 0.0, eps):
         violations.append(f"(a) d[{source}] = {dist[source]} != 0")
 
+    edge_weights: Dict[Tuple[Hashable, Hashable], float] = {}
     checked_edges = 0
     for u in nodes:
-        if dist[u] == INF:
-            continue
         for v, w in adj.get(u, []):
-            checked_edges += 1
-            if dist[v] > dist[u] + w and not _close(dist[v], dist[u] + w, eps):
+            pair = (u, v)
+            if pair not in edge_weights or w < edge_weights[pair]:
+                edge_weights[pair] = w
+            if dist[u] != INF:
+                checked_edges += 1
+            if dist[u] != INF and dist[v] > dist[u] + w and not _close(dist[v], dist[u] + w, eps):
                 violations.append(f"(b) arista {u}->{v}: d[{v}]={dist[v]} > d[{u}]+w={dist[u] + w}")
+
+    if prev.get(source) is not None:
+        violations.append(f"(c) el origen {source} no debe tener predecesor")
+
+    anchored = {source}
+    unanchored = set()
+    for v in nodes:
+        if v == source or dist[v] == INF:
+            continue
+        chain = []
+        in_chain = set()
+        current = v
+        while current not in anchored and current not in unanchored and current not in in_chain:
+            in_chain.add(current)
+            chain.append(current)
+            parent = prev.get(current)
+            weight = edge_weights.get((parent, current))
+            if (parent not in dist or dist[parent] == INF or weight is None
+                    or not _close(dist[current], dist[parent] + weight, eps)):
+                violations.append(f"(c) predecesor inválido para {current}: pi={parent}")
+                unanchored.add(current)
+                break
+            current = parent
+        if current in anchored:
+            anchored.update(chain)
+        else:
+            if current in in_chain:
+                violations.append(f"(c) ciclo de predecesores sin camino desde {source}: {v}")
+            unanchored.update(chain)
 
     checked_paths = 0
     for v in nodes:
-        if v == source or dist[v] == INF:
-            if dist[v] == INF and paths and paths.get(v):
+        if not paths:
+            break
+        if dist[v] == INF:
+            if paths.get(v):
                 violations.append(f"(d) {v} es inalcanzable pero se reportó el camino {paths[v]}")
             continue
-        u = prev.get(v)
-        w = _min_edge_weight(adj, u, v) if u is not None else None
-        if u is None or w is None or dist[u] == INF or not _close(dist[v], dist[u] + w, eps):
-            violations.append(f"(c) predecesor inválido para {v}: pi={u}")
-        if paths:
-            checked_paths += 1
-            p = paths.get(v, [])
-            cost = path_cost(adj, p) if p else None
-            if not p or p[0] != source or p[-1] != v:
-                violations.append(f"(d) camino a {v} no va de {source} a {v}: {p}")
-            elif cost is None:
-                violations.append(f"(d) camino a {v} usa una arista inexistente: {p}")
-            elif not _close(cost, dist[v], eps):
+        checked_paths += 1
+        p = paths.get(v, [])
+        if not isinstance(p, list) or not p or p[0] != source or p[-1] != v:
+            violations.append(f"(d) camino a {v} no va de {source} a {v}: {p}")
+            continue
+        weights = [edge_weights.get((a, b)) for a, b in zip(p, p[1:])]
+        if any(weight is None for weight in weights):
+            violations.append(f"(d) camino a {v} usa una arista inexistente: {p}")
+        else:
+            cost = sum(weights)
+            if not _close(cost, dist[v], eps):
                 violations.append(f"(d) camino a {v} cuesta {cost} pero d[{v}]={dist[v]}")
 
     return {"ok": not violations, "violations": violations,

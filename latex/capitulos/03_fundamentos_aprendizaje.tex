@@ -1,0 +1,95 @@
+\section{Fundamentos y aprendizaje autónomo}
+\label{sec:fundamentos}
+
+\subsection{Conceptos y algoritmos requeridos}
+Una red vial urbana se modela como un grafo dirigido ponderado $G=(V,E,w)$, donde $V$ son intersecciones o cambios de geometría, $E\subseteq V\times V$ son tramos con sentido de circulación y $w:E\to\mathbb{R}_{\ge 0}$ es el costo. Las redes viales son dispersas: en el recorte OSM utilizado, $|E|/|V|=2139/891=2.40$. Esta razón condiciona el peso relativo de las operaciones de cola.
+
+\paragraph{Dijkstra e invariante.} Dijkstra mantiene un conjunto $S$ de vértices con distancia definitiva y una cola $Q=V\setminus S$ con distancias tentativas. En cada iteración extrae $u=\arg\min_{z\in Q}d[z]$, lo incorpora a $S$ y relaja las aristas salientes:
+\begin{equation}
+    \text{si } d[u]+w(u,v)<d[v],\quad d[v]\leftarrow d[u]+w(u,v),\ \pi[v]\leftarrow u.
+    \label{eq:relajacion}
+\end{equation}
+El invariante es: al inicio de cada iteración, $d[u]=\delta(s,u)$ para todo $u\in S$, y $d[v]$ es el costo mínimo de un camino de $s$ a $v$ con vértices intermedios en $S$. La demostración es por inducción. Si existiera un camino más corto hacia el vértice extraído $u$, ese camino abandonaría $S$ por una arista $(x,y)$ con $x\in S$ e $y\in Q$; entonces
+\begin{equation}
+    w(P)\ge \delta(s,x)+w(x,y)=d[y]\ge d[u],
+    \label{eq:prueba_dijkstra}
+\end{equation}
+lo que contradice $w(P)<d[u]$. La no negatividad de los pesos es esencial para la última desigualdad.
+
+\paragraph{Colas de prioridad.} Las tres estructuras evaluadas implementan el mismo contrato: \texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key} e \texttt{is\_empty}. El heap binario indexado usa un arreglo contiguo y una tabla $\text{pos}:V\to\mathbb{N}$ para localizar cada vértice en $O(1)$. El heap 4-ario generaliza la aritmética de índices:
+\begin{equation}
+    \operatorname{padre}(i)=\left\lfloor\frac{i-1}{4}\right\rfloor,\qquad \operatorname{hijo}_k(i)=4i+k,\quad k=1,\dots,4.
+    \label{eq:aritmetica_4ary}
+\end{equation}
+El Fibonacci heap usa una colección de árboles enlazados, inserción perezosa, cortes en cascada y consolidación durante \texttt{extract\_min} \parencite{fredman1987fibonacci}. La Tabla~\ref{tab:complejidades} resume las cotas.
+
+\paragraph{Búsqueda $A^*$.} Para una consulta punto a punto $s\to t$, $A^*$ ordena por $f(v)=g(v)+h(v)$, donde $g$ es el costo acumulado y $h$ una estimación del costo restante \parencite{hart1968formal}. Si $h$ es admisible, $h(v)\le h^*(v)$, el algoritmo es óptimo. Si además es consistente,
+\begin{equation}
+    h(u)\le w(u,v)+h(v)\quad\forall (u,v)\in E,
+    \label{eq:consistencia}
+\end{equation}
+entonces $f$ no decrece a lo largo de un camino y no es necesario reabrir vértices cerrados. En este proyecto, cuando la instancia tiene coordenadas, se usa
+\begin{equation}
+    h(v)=\lambda\,\lVert x_v-x_t\rVert_2,\qquad \lambda=\min_{(u,v)\in E,\ \lVert x_u-x_v\rVert>0}\frac{w(u,v)}{\lVert x_u-x_v\rVert}.
+    \label{eq:heuristica_escalada}
+\end{equation}
+Por la desigualdad triangular, $h(u)\le \lambda\lVert x_u-x_v\rVert+h(v)\le w(u,v)+h(v)$; la consistencia se verifica antes de ejecutar el algoritmo. Si faltan coordenadas, se usa $h=0$ y $A^*$ se reduce a Dijkstra. Esta formulación evita suponer una velocidad máxima válida para cualquier grafo.
+
+\subsection{Fuentes estudiadas y criterios para seleccionarlas}
+La Tabla~\ref{tab:criterios_fuentes} resume las fuentes principales. Se priorizaron artículos seminales, textos de referencia y estudios experimentales con metodología explícita. Las afirmaciones sobre rendimiento se contrastan con el benchmark propio; las fuentes se usan para justificar el diseño y para interpretar, no para sustituir, la evidencia local.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{11.5}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Fuentes principales y criterio de pertinencia}
+    \label{tab:criterios_fuentes}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Fuente} & \textbf{Tipo y dominio} & \textbf{Uso en el proyecto} \\
+        \midrule
+        \textcite{dijkstra1959note} & Artículo seminal, algoritmos & Definición del SSSP y de la relajación voraz. \\
+        \textcite{fredman1987fibonacci} & Artículo teórico, estructuras & Cotas amortizadas del Fibonacci heap y operaciones. \\
+        \textcite{tarjan1983data} & Monografía, análisis amortizado & Método del potencial y análisis de costos. \\
+        \textcite{cherkassky1996shortest} & Estudio experimental, caminos mínimos & Contraste entre teoría y rendimiento práctico. \\
+        \textcite{lamarca1996cache} & Artículo, arquitectura y algoritmos & Efecto de la caché en heaps binarios y $d$-arios. \\
+        \textcite{boeing2017osmnx} & Artículo, sistemas geoespaciales & Descarga, proyección y conversión de redes OSM. \\
+        \textcite{cormen2022introduction} & Libro de texto, algoritmos & Pseudocódigo, invariantes y demostraciones. \\
+        \textcite{hart1968formal} & Artículo seminal, búsqueda heurística & Admisibilidad y consistencia de $A^*$. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Conocimientos nuevos que el grupo tuvo que adquirir}
+A partir de los componentes y fuentes del proyecto, se reconocen
+retrospectivamente cuatro áreas de aprendizaje; no consta que esta lista
+fuera un plan firmado al inicio de la Entrega 1:
+\begin{enumerate}
+    \item \textbf{Estructuras enlazadas.} Implementar listas circulares, punteros padre/hijo/izquierda/derecha y cortes en cascada sin ciclos ni fugas lógicas.
+    \item \textbf{Indexación inversa.} Mantener sincronizada la posición de cada vértice durante \texttt{sift-up} y \texttt{sift-down}, para que \texttt{decrease\_key} no degrade a $O(|V|)$.
+    \item \textbf{Geometría y datos OSM.} Descargar, proyectar y convertir una red vial real, preservando direccionalidad y atributos de velocidad.
+    \item \textbf{Medición de tiempos.} Aislar ruido del sistema operativo, calentar la caché y reportar una estadística robusta en lugar de promedios simples.
+\end{enumerate}
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \caption{Áreas abordadas y cambios verificables, reconstrucción retrospectiva}
+    \label{tab:plan_aprendizaje}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Integrante} & \textbf{Área técnica} & \textbf{Evidencia de cambios, no de plan personal} \\
+        \midrule
+        Choquenaira, Noe & Arquitectura, modelado y $A^*$ & \texttt{592589a}: Dijkstra, heap binario y costo; \texttt{b307be4}: heurística $A^*$. \\
+        Porroa, Yeni & Heap 4-ario y estructuras & \texttt{77983b7}: \texttt{d\_ary\_heap.py}; \texttt{3b91a5e}: análisis comparativo. \\
+        Quispe, Romario & Fibonacci heap y benchmark & \texttt{72df976}: heap y benchmark; \texttt{e3af921}: resultados preliminares. \\
+        Yaranga, Aldo & Pruebas, CLI y exportación & \texttt{d50e67b}: pruebas y exportadores; \texttt{65d303d}: CLI y sus pruebas. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\paragraph{Dificultades resueltas.} (i)~La desincronización de la tabla de posiciones se resolvió encapsulando el intercambio en una operación atómica que actualiza el arreglo y el mapa inverso. (ii)~Los cortes en cascada del Fibonacci heap se validaron con pruebas de invariantes y con un oráculo de distancias. (iii)~La instalación de OSMnx en Windows se aisló mediante un \textit{snapshot} JSON versionado, de modo que las pruebas y la aplicación funcionan sin red. (iv)~La codificación de consola en Windows se estandarizó a UTF-8 y a mensajes ASCII en los flujos de registro.
+
+\subsection{Estrategia y evidencias de aprendizaje autónomo}
+La secuencia verificable de prototipo, implementación de las colas, pruebas y experimentación permite reconstruir una estrategia grupal de aprender y validar cada componente antes de integrarlo; no consta un plan individual fechado presentado en la Entrega 1. El trabajo grupal se documenta en commits, pruebas y datos, en la cronología verificable del Anexo~C y en la matriz de contribuciones del Anexo~E. La Tabla~\ref{tab:plan_aprendizaje} identifica áreas y cambios de forma retrospectiva: no acredita por sí sola un plan individual elaborado para la Entrega 1. El historial conserva commits con autor, pero no prueba asistencia a reuniones, cumplimiento de compromisos ni reflexión individual. La matriz de pendientes y la plantilla para que cada integrante aporte sus registros auténticos están en \texttt{docs/CONTROL\_ENTREGA.md} y \texttt{docs/plantilla\_evidencia\_individual.md}. La defensa individual solo puede acreditarse después de realizarla.

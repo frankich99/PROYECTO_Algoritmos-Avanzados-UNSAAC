@@ -1,0 +1,172 @@
+\section{Anexos}
+\label{sec:anexos}
+
+\subsection*{Anexo A: Instalación y configuración}
+\addcontentsline{toc}{subsection}{Anexo A: Instalación y configuración}
+\label{anexo:instalacion}
+El proyecto se ejecutó con Python 3.12.8 en Windows 11. Los comandos siguientes reproducen el entorno desde la raíz del repositorio:
+\begin{lstlisting}[language=bash, caption={Clonación, entorno virtual e instalación}]
+git clone https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC.git
+cd PROYECTO_Algoritmos-Avanzados-UNSAAC
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r python/requirements.txt
+\end{lstlisting}
+Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{streamlit}, \texttt{plotly}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
+
+\subsection*{Anexo B: Uso del prototipo}
+\addcontentsline{toc}{subsection}{Anexo B: Uso del prototipo}
+\label{anexo:uso}
+
+\paragraph{Suite de pruebas.} Desde la raíz:
+\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (278 pruebas)}]
+.\.venv\Scripts\python.exe -m pytest python/tests -q
+\end{lstlisting}
+
+\paragraph{Configuración de credenciales de API (opcional).} Tras revocar cualquier clave expuesta, configure una clave nueva y propia. Para la CLI se admite la variable de entorno, nunca un archivo versionado (\url{https://home.openweathermap.org/api_keys}):
+\begin{lstlisting}[language=bash, caption={Definición de variable de entorno para OpenWeatherMap}]
+# PowerShell en Windows
+$env:OPENWEATHERMAP_API_KEY = "SU_CLAVE_NUEVA"
+\end{lstlisting}
+La web no toma automáticamente la variable ni archivos locales: exige introducir una clave nueva en el campo de contraseña de la consulta opcional. Si el proveedor rechaza la conexión, la interfaz conserva el archivo local sin reportar una nueva lectura. La clave no se imprime ni se guarda en el informe.
+
+\paragraph{Interfaz de comandos.} Desde \texttt{python/}:
+\begin{lstlisting}[language=bash, caption={Comandos principales de la CLI}]
+..\.venv\Scripts\python.exe main.py list
+..\.venv\Scripts\python.exe main.py run --queue all --trace
+..\.venv\Scripts\python.exe main.py compare
+..\.venv\Scripts\python.exe main.py astar --input data/processed/cusco_osm_drive.json
+\end{lstlisting}
+
+\paragraph{Aplicación web.} Desde \texttt{python/}:
+\begin{lstlisting}[language=bash, caption={Ejecución de la aplicación Streamlit}]
+..\.venv\Scripts\python.exe -m streamlit run app.py
+\end{lstlisting}
+La aplicación tiene cinco secciones visibles. En Ruta se seleccionan costo, recorrido, algoritmo y cola; se pueden contrastar las tres colas de Dijkstra y $A^*$ por costo, elegir una observación histórica, local o temporal como escenario uniforme, y descargar los nodos. El plano local no necesita Internet; solo el mapa base necesita teselas. Comparación filtra perfiles y escalas, muestra mediana e IQR y la relación frente al binario, admite un JSON temporal compatible y descarga CSV. Clima y tráfico separa observaciones y supuestos; Traza manual permite recorrer extracciones y comprobar el certificado; Datos y método presenta protocolo, procedencia, límites y descarga del informe si existe. Ninguna consulta opcional sobrescribe las mediciones.
+
+\paragraph{Reproducción de tablas y figuras.} Desde la raíz, sin alterar
+las mediciones del 28/10/2026:
+\begin{lstlisting}[language=bash, caption={Regeneración de tablas y figuras con mediciones guardadas}]
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
+\end{lstlisting}
+El comando anterior reutiliza \texttt{benchmark\_results.json} y
+\texttt{applied\_results.json} y escribe tablas en \texttt{latex/tablas/}
+y figuras en \texttt{latex/figuras/}. Sin las opciones de omisión, el script
+repite las mediciones y \emph{sobrescribe} ambos JSON; ejecutar el protocolo
+completo solo en una copia separada. La red OSM y el clima ya almacenados
+no se descargan de nuevo.
+
+\paragraph{Compilación del informe.} Desde \texttt{latex/}:
+\begin{lstlisting}[language=bash, caption={Compilación con pdflatex y biber}]
+.\compilar.ps1
+\end{lstlisting}
+
+\subsection*{Anexo C: Cronología verificable del repositorio}
+\addcontentsline{toc}{subsection}{Anexo C: Cronología verificable}
+\label{anexo:bitacora}
+La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git. Cada
+fecha es la del commit y cada autor es el registrado en Git; no se deducen
+reuniones, horas de dedicación, fuentes personales ni dificultades resueltas
+en una fecha anterior al commit. La bitácora de aprendizaje individual
+requerida por AG\_C06.01 sigue pendiente de documentación por sus autores.
+
+\begin{table}[H]
+    \centering
+    \fontsize{8.5}{10.5}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \setlength{\tabcolsep}{3.5pt}
+    \caption{Cronología de aportes individuales comprobables en Git}
+    \label{tab:bitacora_detallada}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.65cm} >{\centering\arraybackslash}p{1.55cm} >{\raggedright\arraybackslash}p{1.35cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Autor en Git} & \textbf{Fecha} & \textbf{Commit} & \textbf{Cambios identificables} \\
+        \midrule
+        Choquenaira, Noe & 02/10/2026 & \texttt{592589a} & \texttt{dijkstra.py}, \texttt{indexed\_min\_heap.py}, \texttt{cost\_model.py} y primera versión del informe. \\
+        \midrule
+        Porroa, Yeni & 04/10/2026 & \texttt{77983b7} & \texttt{d\_ary\_heap.py}, capítulo de evaluación del stack y tabla comparativa. \\
+        \midrule
+        Quispe, Romario & 04/10/2026 & \texttt{72df976} & \texttt{fibonacci\_heap.py}, \texttt{scalability\_benchmark.py} y resultados preliminares. \\
+        \midrule
+        Yaranga, Aldo & 04/10/2026 & \texttt{d50e67b} & \texttt{test\_dijkstra.py}, cuaderno Colab y exportación de figuras y tablas. \\
+        \midrule
+        Choquenaira, Noe & 23/10/2026 & \texttt{b307be4} & \texttt{a\_star.py} y capítulo de aprendizaje. \\
+        Porroa, Yeni & 23/10/2026 & \texttt{3b91a5e} & Capítulo de diseño algorítmico y análisis de estructuras. \\
+        Quispe, Romario & 23/10/2026 & \texttt{e3af921} & Actualización de \texttt{benchmark\_results.json}; el snapshot canónico se integró después como commit grupal. \\
+        Yaranga, Aldo & 23/10/2026 & \texttt{65d303d} & \texttt{cli.py} y \texttt{test\_cli.py}. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Anexo D: Matriz de trazabilidad}
+\addcontentsline{toc}{subsection}{Anexo D: Matriz de trazabilidad}
+\label{anexo:trazabilidad}
+La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia verificable.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Trazabilidad entre objetivos, componentes y evidencia}
+    \label{tab:matriz_trazabilidad}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Objetivo} & \textbf{Componente} & \textbf{Evidencia} \\
+        \midrule
+        OE1 & Modelo de grafo y costo temporal & Sección~\ref{sec:formulacion}; ecuación~\eqref{eq:costo}; instancia ilustrativa y red OSM. \\
+        OE2 & Tres colas y Dijkstra parametrizado & Sección~\ref{sec:diseno_algoritmico}; \texttt{src/datastructures/}; 61 pruebas de contrato. \\
+        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 278 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
+        OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
+        AG\_C06.01 & Aprendizaje autónomo & Sección~\ref{sec:fundamentos}; Anexo~C; pendientes individuales en \texttt{docs/CONTROL\_ENTREGA.md}. \\
+        AG\_C06.02 & Selección de stack & Sección~\ref{sec:stack}; Tabla~\ref{tab:matriz_multicriterio}; adopción temprana por verificar. \\
+        AG\_C06.03 & Experimentación y pensamiento crítico & Sección~\ref{sec:metodologia}; Sección~\ref{sec:discusion}; conclusión condicionada. \\
+        Aplicación & Streamlit integrado & Sección~\ref{sec:implementacion}; \texttt{app.py}; pruebas de humo. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Anexo E: Matriz de contribuciones}
+\addcontentsline{toc}{subsection}{Anexo E: Matriz de contribuciones}
+\label{anexo:contribuciones}
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Contribuciones por integrante y evidencia en el repositorio}
+    \label{tab:contribuciones}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Integrante} & \textbf{Componentes principales} & \textbf{Evidencia} \\
+        \midrule
+        Choquenaira, Noe & Dijkstra, heap binario, modelo didáctico, $A^*$ e informe & \texttt{592589a}, \texttt{b307be4}, \texttt{f0799bf}; archivos en anexo C. \\
+        Porroa, Yeni & Heap 4-ario y análisis de estructuras & \texttt{77983b7}, \texttt{3b91a5e}; \texttt{d\_ary\_heap.py} y capítulo 6. \\
+        Quispe, Romario & Fibonacci heap, benchmark y resultados preliminares & \texttt{72df976}, \texttt{e3af921}; módulos y JSON del anexo C. \\
+        Yaranga, Aldo & Pruebas, CLI, cuaderno y exportadores & \texttt{d50e67b}, \texttt{65d303d}; pruebas y CLI del anexo C. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection*{Anexo F: Estado del seguimiento}
+\addcontentsline{toc}{subsection}{Anexo F: Estado del seguimiento}
+\label{anexo:seguimiento}
+No se encontraron actas de seguimiento ni planes con meta, responsable,
+fecha comprometida y resultado verificable para cada estudiante. Por ello,
+no se afirma que hubo sesiones en fechas concretas ni que los compromisos
+fueron cumplidos. El hito grupal \texttt{7922f52} (28/10/2026) contiene los
+\textit{snapshots} OSM y meteorológico, las mediciones canónicas y la
+aplicación. En los JSON, la descarga OSM figura a las 17:29 UTC y el
+snapshot de clima se guardó a las 17:33 UTC. Estos registros no equivalen
+a un acta de reunión. Cada estudiante debe aportar sus planes,
+compromisos y reflexión originales y confirmar la correspondencia con
+las entregas. La plantilla y la matriz requisito--evidencia están en
+\texttt{docs/plantilla\_evidencia\_individual.md} y
+\texttt{docs/CONTROL\_ENTREGA.md}; no sustituyen los originales.
+
+\paragraph{Calendario de cierre propuesto, no evidencia de ejecución.}
+El 04/11/2026 es la fecha objetivo comunicada por el equipo; el PDF del
+proyecto remite la fecha oficial al docente. El 30/10 se revisan modelo y
+datos (Choquenaira y Quispe); el 31/10, certificado y pruebas (Yaranga y
+Porroa); el 01/11, cada integrante aporta su evidencia individual auténtica;
+el 02/11 se validan manuales y presentación en una copia limpia (Choquenaira
+y Yaranga); el 03/11 se compila el PDF y los cuatro ensayan la demostración.
+Ninguno de estos hitos futuros se marca aquí como cumplido. La defensa
+individual solo se acredita cuando se realiza.

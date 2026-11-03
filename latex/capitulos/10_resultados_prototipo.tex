@@ -1,0 +1,62 @@
+\section{Resultados}
+\label{sec:resultados}
+
+\subsection{Verificación de corrección}
+En todas las instancias del benchmark, las tres colas produjeron las mismas distancias y el certificado de optimalidad se cumplió. La comparación con NetworkX no detectó discrepancias y el certificado de Bellman recorrió todas las aristas y caminos sin violaciones. En la consulta OSM, las tres colas devolvieron la misma ruta y el mismo costo base de $387.197$ s. La igualdad de distancias es la condición mínima para que la comparación de tiempos tenga sentido: si las colas resolvieran problemas distintos, el tiempo no sería comparable.
+
+\subsection{Benchmark sintético}
+Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan la mediana y el IQR de 45 muestras por celda (tres instancias $\times$ 15 repeticiones). La Figura~\ref{fig:benchmark_canonico} muestra las curvas en escala logarítmica; las barras de error corresponden al IQR.
+
+\input{tablas/benchmark_canonico.tex}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figuras/benchmark_canonico.png}
+    \caption{Tiempo mediano de Dijkstra con las tres colas. Izquierda: perfil disperso ($|E|=4|V|$). Derecha: perfil denso ($|E|=0.08|V|(|V|-1)$). Las barras verticales representan el IQR.}
+    \label{fig:benchmark_canonico}
+\end{figure}
+
+\paragraph{Perfil disperso.} El heap 4-ario obtuvo la menor mediana en 3 de 5 escalas (500, 1000 y 5000), y el binario en 2 (100 y 2500). La razón mediana 4-ario/binario fue $0.964$; es decir, el 4-ario fue un 3.6\,\% más rápido en la mediana de las escalas, pero la diferencia cambia de signo: fue 24.4\,\% más rápido en $|V|=500$, 3.6\,\% en $|V|=1000$, 16.5\,\% en $|V|=5000$, y 1.5\,\% y 0.5\,\% más lento en $|V|=100$ y $|V|=2500$. Los IQR de ambas colas se solapan en las cinco escalas, por lo que la ventaja no es concluyente en ninguna escala individual.
+
+\paragraph{Perfil denso.} El 4-ario ganó 4 de 5 escalas (50, 100, 200 y 400) y el binario ganó en $|V|=800$. La razón mediana fue $0.954$ (4.6\,\% más rápido), con ventajas de 2.1\,\%, 4.6\,\%, 5.6\,\% y 5.6\,\% en las cuatro escalas ganadas, y una desventaja de 0.7\,\% en $|V|=800$. Los IQR se solapan en las cinco escalas. La densidad no produjo un cambio cualitativo: el 4-ario conserva una ventaja pequeña y variable, no una superioridad sistemática.
+
+\paragraph{Fibonacci heap.} El Fibonacci heap no obtuvo la menor mediana en ninguna de las 10 escalas. Fue entre 1.05 y 1.59 veces más lento que el binario; en el perfil disperso, el rango fue 1.12--1.59, y en el denso, 1.05--1.44. Los IQR de Fibonacci y binario se solapan en 8 de 10 escalas; las dos excepciones son $|V|=100$ disperso y $|V|=50$ denso, donde el Fibonacci fue claramente más lento. La dirección del resultado es consistente: la cota asintótica no se tradujo en tiempo de pared.
+
+\input{tablas/sintesis_colas.tex}
+
+\subsection{Operaciones elementales}
+La Figura~\ref{fig:operaciones} descompone las operaciones del perfil disperso. En $|V|=5000$, las tres colas realizaron 5000 inserciones, 5000 extracciones y 6695 \texttt{decrease\_key} efectivos sobre 10415 intentos de relajación. Los intentos que no mejoran la distancia no invocan \texttt{decrease\_key}; por eso el número de decrementos es menor que $|E|$. En el perfil denso con $|V|=800$, hubo 2976 decrementos sobre 25527 intentos, es decir, solo el 11.7\,\%.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/operaciones_canonicas.png}
+    \caption{Operaciones primitivas de Dijkstra en el perfil disperso. Las barras agrupan inserciones, extracciones, \texttt{decrease\_key} efectivos e intentos de relajación.}
+    \label{fig:operaciones}
+\end{figure}
+
+El conteo de comparaciones explica solo una parte del tiempo. En $|V|=5000$ disperso, el Fibonacci heap realizó 101303 comparaciones frente a 125776 del binario (19.5\,\% menos), pero fue 12.2\,\% más lento. En $|V|=800$ denso, hizo 19848 comparaciones frente a 21280 (6.7\,\% menos) y fue 28.8\,\% más lento. La diferencia restante proviene de la manipulación de punteros, la asignación de nodos, los cortes en cascada y la consolidación, costos que no aparecen en el conteo de comparaciones. Esta observación es consistente con la literatura sobre localidad de memoria \parencite{lamarca1996cache}.
+
+\subsection{Caso aplicado: consulta OSM en Cusco}
+La red aplicada tiene 891 vértices y 2139 aristas dirigidas. La consulta seleccionada por la regla determinista va del vértice \texttt{30972889} al \texttt{5996728243}; la ruta óptima tiene 17 vértices, 2810.6 m y un costo base de 387.197 s. La Figura~\ref{fig:ruta_osm} muestra la red, la ruta y los extremos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.86\textwidth]{figuras/ruta_osm_cusco.png}
+    \caption{Ruta mínima sobre la red vial OSM de Cusco. La línea resalta el camino óptimo; los marcadores indican origen y destino.}
+    \label{fig:ruta_osm}
+\end{figure}
+
+La Tabla~\ref{tab:benchmark_osm} reporta los tiempos de la consulta. El heap binario obtuvo la menor mediana (15.65 ms), seguido del 4-ario (19.87 ms, +26.9\,\%) y del Fibonacci (26.09 ms, +66.7\,\%). El IQR del binario [13.07, 19.55] se solapa con el del 4-ario [17.33, 22.68], de modo que la ventaja del binario frente al 4-ario es sugerente pero no concluyente; el IQR del Fibonacci [24.03, 27.34] no se solapa con el del binario, y su desventaja sí es clara en esta consulta.
+
+\input{tablas/caso_osm.tex}
+
+\paragraph{Extensión $A^*$.} Con la heurística escalada ($\lambda=6484.687$), $A^*$ expandió 823 vértices frente a 887 de Dijkstra punto a punto, una reducción de 64 expansiones (7.2\,\%). El costo óptimo fue idéntico. La reducción es modesta porque la heurística es una cota inferior geométrica y el destino está relativamente cerca en costo; no se observó la poda del 60--70\,\% que suele citarse en otros escenarios. El resultado confirma la propiedad teórica (mismo costo, menos expansiones) sin exagerar su magnitud.
+
+\subsection{Sensibilidad meteorológica y alcance del tráfico}
+La observación histórica de modelo Open-Meteo guardada en \texttt{applied\_results.json} (28/10/2026 a las 12:30, hora de Lima) registra 0.1 mm de precipitación por intervalo de 900 s, 8920 m de visibilidad, 40.7 km/h de ráfaga y 17.0\,\textdegree C. \emph{No registra humedad relativa ni presión}: el cargador asigna 50\,\% a la humedad ausente y deja la presión sin dato. El 50\,\% no afecta al cálculo porque el término de humedad solo interviene por encima de 65\,\%; no debe citarse como observación. La respuesta devuelve un punto de grilla distinto de las coordenadas solicitadas. El archivo local \texttt{weather\_cusco.json} contiene una lectura posterior de OpenWeatherMap y no fue la entrada del experimento canónico. Los parámetros y su procedencia se detallan en \texttt{docs/DATOS\_Y\_MODELO.md}.
+
+Con los coeficientes de escenario de la Sección~\ref{sec:formulacion}, el multiplicador fue $m_{\text{clima}}=1.0691$ ($+6.91\%$). Al escalar uniformemente el costo base de $387.197$ s se obtienen $413.952312$ s; la secuencia de la ruta no cambia. Se trata de \emph{tiempo estimado bajo un supuesto}, no de duración observada en campo.
+
+El módulo de tráfico ofrece horarios y factores hipotéticos, pero \texttt{applied\_results.json} no contiene una corrida canónica de congestión. La vista OSM emplea un solo factor de avenida para todas las aristas. Por ello, no se reporta una cifra experimental de tiempo con congestión ni una ruta alternativa atribuida a tráfico. La asignación por tramo y su validación se reservan para trabajo futuro.
+
+\paragraph{Síntesis de la evidencia.} El 4-ary heap obtuvo la menor mediana en 7 de 10 escalas sintéticas con IQR solapados; el binary heap, en 3 y en la consulta OSM; el Fibonacci no ganó ninguna y fue 1.05--1.59 veces más lento; $A^*$ redujo un 7.2\,\% las expansiones sin cambiar el costo; el escenario climático uniforme elevó el tiempo estimado un 6.91\,\% sin cambiar la ruta.

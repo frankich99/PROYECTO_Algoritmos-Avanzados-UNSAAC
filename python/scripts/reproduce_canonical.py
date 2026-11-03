@@ -41,7 +41,7 @@ from src.visualization.generate_figures import (  # noqa: E402
 )
 
 DATA_DIR = PYTHON_DIR / "data" / "processed"
-DOCUMENT_DIR = REPO_ROOT / "documento"
+DOCUMENT_DIR = REPO_ROOT / "latex"
 TABLES_DIR = DOCUMENT_DIR / "tablas"
 FIGURES_DIR = DOCUMENT_DIR / "figuras"
 BENCHMARK_PATH = DATA_DIR / "benchmark_results.json"

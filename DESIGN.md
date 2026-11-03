@@ -6,7 +6,7 @@
 - **Tipografía:** Georgia para títulos por su tono académico; Source Sans 3 o sans-serif del sistema para controles y lectura de datos.
 - **Composición:** editorial y orientada a evidencia; primero pregunta, después controles, resultados y procedencia.
 - **Motivo:** regla fina granate y numeración tabular, como continuidad visual entre informe y aplicación.
-- **Dial:** ENERGY 1 / RHYTHM 2 / MOTION 1.
+- **Dial:** ENERGY 2 / RHYTHM 2 / MOTION 1.
 
 ## Razones de diseño
 
@@ -15,3 +15,5 @@
 - Las tarjetas solo agrupan resultados que se comparan; no se usan como relleno.
 - El espaciado separa entrada, cálculo y evidencia para que la secuencia experimental sea legible.
 - No se añaden ilustraciones ni iconos decorativos: la red vial y los gráficos son los activos visuales reales.
+- La cabecera granate hace reconocible la aplicación sin ocupar el espacio del cálculo; cinco secciones visibles recuperan las funciones de la primera versión, con Ruta y Comparación al frente.
+- El plano vial local es el recurso visual principal cuando no hay teselas; la traza usa estados reales del algoritmo, no una animación decorativa.

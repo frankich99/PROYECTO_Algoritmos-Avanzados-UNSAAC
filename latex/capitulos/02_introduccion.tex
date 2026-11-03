@@ -1,0 +1,44 @@
+\section{Introducción}
+\label{sec:introduccion}
+
+\subsection{Contexto y motivación}
+El cálculo de rutas mínimas en una red vial es un problema central en logística, navegación y atención de emergencias. En una ciudad con topografía irregular, la ruta más corta en distancia no es necesariamente la más rápida: una pendiente pronunciada, una calle estrecha o un sentido único pueden aumentar el tiempo de viaje. Por ello, el problema se modela como un grafo dirigido con pesos no negativos que representan tiempo estimado, y se resuelve con el algoritmo de Dijkstra \parencite{dijkstra1959note}.
+
+La literatura demuestra que el costo de Dijkstra depende de la cola de prioridad utilizada. El Fibonacci heap de \textcite{fredman1987fibonacci} alcanza la cota asintótica $O(|E|+|V|\log |V|)$, mientras que un heap binario indexado requiere $O((|V|+|E|)\log |V|)$. Sin embargo, la cota asintótica oculta constantes de implementación, localidad de memoria y costos de asignación dinámica. \textcite{cherkassky1996shortest} y \textcite{lamarca1996cache} muestran que, en redes dispersas y en implementaciones reales, los heaps contiguos suelen superar al Fibonacci heap. Este proyecto traslada esa discusión a una red vial de Cusco y la somete a un protocolo reproducible.
+
+\subsection{Planteamiento del problema}
+Sea $G=(V,E,w)$ un grafo dirigido con $w(e)\ge 0$. Para un origen $s\in V$, se busca un vector $d:V\to\mathbb{R}_{\ge 0}\cup\{\infty\}$ tal que $d(v)=\delta(s,v)$, donde $\delta(s,v)$ es el costo mínimo de un camino de $s$ a $v$. Dijkstra mantiene una cola de prioridad $Q$ con las distancias tentativas y ejecuta tres operaciones: \texttt{Insert}, \texttt{Extract-Min} y \texttt{Decrease-Key}. Su costo total es
+\begin{equation}
+    T(|V|,|E|)=O\bigl(|V|\,T_{\text{Extract-Min}}+|E|\,T_{\text{Decrease-Key}}+|V|\,T_{\text{Insert}}\bigr).
+    \label{eq:costo_dijkstra}
+\end{equation}
+La pregunta central es empírica: \emph{¿qué cola conviene en una red vial urbana, bajo qué escala y densidad, y por qué?} La respuesta no se presume; se mide con un benchmark canónico y se contrasta con la teoría.
+
+\subsection{Objetivos}
+\paragraph{Objetivo general.} Diseñar, implementar y evaluar experimentalmente una solución modular de rutas mínimas para una red vial urbana de Cusco, comparando el algoritmo de Dijkstra con tres colas de prioridad y verificando la corrección de los resultados.
+
+\paragraph{Objetivos específicos.}
+\begin{enumerate}
+    \item \textbf{OE1. Modelar:} formular el grafo vial, la función de costo temporal y las restricciones de no negatividad.
+    \item \textbf{OE2. Implementar:} construir desde cero el heap binario indexado, el heap 4-ario indexado y el Fibonacci heap, con una interfaz común que permita sustituirlos dentro de Dijkstra.
+    \item \textbf{OE3. Validar:} comprobar las distancias con una traza manual, con NetworkX y con un certificado de Bellman y de conexión de predecesores al origen, además de una suite automatizada de pruebas.
+    \item \textbf{OE4. Evaluar:} medir tiempo y operaciones elementales en instancias sintéticas y en una consulta real de OpenStreetMap, y analizar la extensión $A^*$ y la sensibilidad meteorológica.
+\end{enumerate}
+
+\subsection{Alcance y delimitaciones}
+\begin{itemize}
+    \item \textbf{Red de estudio.} La comparación controlada usa grafos sintéticos con semilla fija. El caso aplicado usa una consulta sobre un recorte vial real de Cusco de 1.5 km de radio, con 891 vértices y 2139 aristas dirigidas, obtenido con OSMnx \parencite{boeing2017osmnx}. La instancia de seis nodos es ilustrativa: los nombres de las plazas son reales, pero longitudes, pendientes y topología son un ejemplo docente, no un levantamiento geográfico.
+    \item \textbf{Modelo de costo.} Los pesos canónicos son deterministas y no negativos. El ejemplo de seis nodos incluye pendiente supuesta; la red OSM no contiene pendiente por arista. El clima y el tráfico horario de la interfaz son factores uniformes opcionales de escenario, separados del benchmark principal: no hay congestión medida ni elección de ruta por tipo de vía.
+    \item \textbf{Alcance algorítmico.} Dijkstra es el objeto principal; $A^*$ se incluye como extensión punto a punto con heurística consistente. Bellman-Ford y NetworkX se usan como oráculos, no como alternativas del benchmark.
+    \item \textbf{Implementación.} Python 3.12, sin usar \texttt{heapq} ni colas de bibliotecas para las estructuras evaluadas. El objetivo es comparar las implementaciones del proyecto, no las de una biblioteca optimizada en C.
+\end{itemize}
+
+\subsection{Organización del documento}
+La Sección~\ref{sec:fundamentos} presenta los fundamentos y el aprendizaje autónomo (AG\_C06.01). La Sección~\ref{sec:stack} justifica el stack tecnológico (AG\_C06.02). La Sección~\ref{sec:formulacion} formula el problema y resuelve la instancia ilustrativa. La Sección~\ref{sec:diseno_algoritmico} describe los algoritmos, las colas, los invariantes y las complejidades. La Sección~\ref{sec:implementacion} documenta la arquitectura y los formatos. La Sección~\ref{sec:pruebas} describe la estrategia de pruebas. La Sección~\ref{sec:metodologia} define el protocolo experimental (AG\_C06.03). La Sección~\ref{sec:resultados} presenta los resultados. La Sección~\ref{sec:discusion} los interpreta y delimita. La Sección~\ref{sec:conclusiones} responde a los objetivos. Finalmente se incluyen las referencias y los anexos técnicos.
+
+\subsection{Repositorio y control de versiones}
+El código, los datos procesados y el informe se mantienen en el repositorio público del grupo:
+\begin{center}
+    \url{https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC}
+\end{center}
+La rama \texttt{main} contiene la versión estable; las ramas temáticas documentan el trabajo por integrante. Los datos experimentales se versionan en \texttt{python/data/processed/} para que las tablas y figuras puedan regenerarse sin depender de una descarga en vivo.

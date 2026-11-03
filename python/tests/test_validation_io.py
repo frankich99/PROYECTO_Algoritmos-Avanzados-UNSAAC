@@ -161,8 +161,64 @@ def test_certificate_detects_wrong_outputs():
     too_short = {**good, "distances": {**good["distances"], "C": 1.0}}
     assert not verify_shortest_paths(nodes, adj, "A", too_short)["ok"]         # (c) cota no alcanzable
 
+    negative_infinity = {**good, "distances": {**good["distances"], "C": float("-inf")}}
+    assert not verify_shortest_paths(nodes, adj, "A", negative_infinity)["ok"]
+
     bad_path = {**good, "paths": {**good["paths"], "C": ["A", "C"]}}
     assert not verify_shortest_paths(nodes, adj, "A", bad_path)["ok"]          # (d) costo de ruta != d
 
     bad_source = {**good, "distances": {**good["distances"], "A": 1.0}}
     assert not verify_shortest_paths(nodes, adj, "A", bad_source)["ok"]        # (a)
+
+
+def test_certificate_rejects_unreachable_zero_weight_cycle_with_finite_distances():
+    nodes = ["s", "a", "b"]
+    adj = {"s": [], "a": [("b", 0.0)], "b": [("a", 0.0)]}
+    false_result = {
+        "distances": {"s": 0.0, "a": 0.0, "b": 0.0},
+        "predecessors": {"s": None, "a": "b", "b": "a"},
+        "paths": {},
+    }
+    certificate = verify_shortest_paths(nodes, adj, "s", false_result)
+    assert not certificate["ok"]
+    assert any("ciclo" in message for message in certificate["violations"])
+
+
+def test_certificate_rejects_reachable_zero_weight_predecessor_cycle():
+    nodes = ["s", "a", "b"]
+    adj = {"s": [("a", 0.0)], "a": [("b", 0.0)], "b": [("a", 0.0)]}
+    false_result = {
+        "distances": {"s": 0.0, "a": 0.0, "b": 0.0},
+        "predecessors": {"s": None, "a": "b", "b": "a"},
+        "paths": {},
+    }
+    assert not verify_shortest_paths(nodes, adj, "s", false_result)["ok"]
+
+
+def test_certificate_checks_every_reported_finite_path():
+    nodes = ["s", "a"]
+    adj = {"s": [("a", 1.0)], "a": []}
+    good = dijkstra_solver(nodes, adj, "s")
+    assert not verify_shortest_paths(nodes, adj, "s", {**good, "paths": {"s": ["s"]}})["ok"]
+    assert not verify_shortest_paths(nodes, adj, "s", {**good, "paths": {"s": ["a"], "a": ["s", "a"]}})["ok"]
+
+
+def test_certificate_accepts_valid_zero_weight_path_without_materialized_paths():
+    nodes = ["s", "a", "b"]
+    adj = {"s": [("a", 0.0)], "a": [("b", 0.0)], "b": [("a", 0.0)]}
+    result = dijkstra_solver(nodes, adj, "s", build_paths=False)
+    assert verify_shortest_paths(nodes, adj, "s", result)["ok"]
+
+
+def test_certificate_handles_long_predecessor_chain_iteratively():
+    count = 2_000
+    nodes = list(range(count))
+    adj = {node: [(node + 1, 1.0)] if node + 1 < count else [] for node in nodes}
+    result = {
+        "distances": {node: float(node) for node in nodes},
+        "predecessors": {node: node - 1 if node else None for node in nodes},
+        "paths": {},
+    }
+    certificate = verify_shortest_paths(nodes, adj, 0, result)
+    assert certificate["ok"]
+    assert certificate["checked_paths"] == 0

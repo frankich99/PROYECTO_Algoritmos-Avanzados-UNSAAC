@@ -49,3 +49,5 @@ python/cache/
 agent/
 skills-lock.json
 data/skills/
+
+.playwright-mcp/

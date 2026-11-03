@@ -4,22 +4,22 @@
 **Curso:** Algoritmos Avanzados (UNSAAC, 2026-II) · **Grupo 5**  
 **Docente:** Ing. Héctor Eduardo Ugarte Rojas
 
-Esta guía resume qué afirmar, qué no afirmar y qué comandos ejecutar. Las cifras provienen de los JSON versionados en `python/data/processed/` y del informe `documento/main.pdf` (50 páginas totales, 38 de cuerpo).
+Esta guía resume qué afirmar, qué no afirmar y qué comandos ejecutar. Las cifras proceden de los JSON en `python/data/processed/`. Consultar [`docs/DATOS_Y_MODELO.md`](docs/DATOS_Y_MODELO.md) para unidades y campos faltantes y [`docs/CONTROL_ENTREGA.md`](docs/CONTROL_ENTREGA.md) para el cierre anterior al 04/11/2026 y las evidencias individuales pendientes.
 
 ---
 
 ## 1. El argumento en cinco minutos
 
 1. **Problema.** Se resuelve el camino mínimo desde un origen en un dígrafo dirigido con pesos no negativos que representa una red vial.
-2. **Modelo.** Para la métrica de tiempo:
+2. **Modelo.** Para la instancia didáctica de seis nodos:
    $$w(u,v)=\frac{L(u,v)}{v_{\text{nom}}(u,v)}\left(1+2.5\max(0,\theta(u,v))\right)m_{\text{clima}},$$
-   con $L$ en metros, $v_{\text{nom}}$ en m/s, $\theta$ la pendiente como fracción y $m_{\text{clima}}\ge 1$ un factor uniforme. Para distancia, $w=L$. No es una calibración de tránsito: pendiente y clima son escenarios explícitos.
+   con $L$ en metros, $v_{\text{nom}}$ en m/s, $\theta$ una pendiente supuesta y $m_{\text{clima}}\ge 1$ un factor uniforme. Para distancia, $w=L$. OSM usa `travel_time_sec`, **no** la pendiente del ejemplo. Tráfico horario y clima no son tiempos medidos.
 3. **Comparación.** Se usa el mismo solver Dijkstra y la misma instancia con tres colas: binary heap indexado, 4-ary heap indexado ($d=4$) y Fibonacci heap.
-4. **Corrección.** Las tres colas deben producir las mismas distancias. Se verifica contra Bellman-Ford, contra NetworkX y con un certificado de optimalidad $O(|V|+|E|)$.
+4. **Corrección.** Las tres colas deben producir las mismas distancias. Se verifica contra Bellman-Ford, NetworkX y un certificado que exige caminos de predecesores hasta el origen. Sin caminos explícitos cuesta $O(|V|+|E|)$; si hay caminos materializados añade el tiempo de leerlos.
 5. **Experimento.** Perfiles sintéticos reproducibles: disperso ($|E|=4|V|$) y denso ($|E|=0.08|V|(|V|-1)$), cinco escalas por perfil, tres instancias por escala, 15 repeticiones, semilla 12345. Caso aplicado: una consulta sobre la red OSM de Cusco (891 vértices, 2139 aristas).
 6. **Resultado.** El 4-ario obtiene la menor mediana en 7 de 10 escalas sintéticas; el binario, en 3, y también en la consulta OSM. Fibonacci no gana ninguna. Los IQR se solapan en las 10 escalas, así que no se declara un vencedor universal.
 7. **$A^*$.** Extensión punto a punto con heurística euclidiana escalada y consistente. En OSM reduce las expansiones de 887 a 823 ($-7.2\%$); en la instancia manual, de 6 a 5 ($-16.7\%$). El costo óptimo no cambia.
-8. **Clima.** El snapshot de Open-Meteo produce $m_{\text{clima}}=1.0691$ y un tiempo ajustado de $413.952$ s ($+6.91\%$). La ruta no cambia porque el factor es uniforme.
+8. **Clima.** La observación Open-Meteo histórica conservada en `applied_results.json` produce $m_{\text{clima}}=1.0691$ y 413.952 s estimados ($+6.91\%$). Carece de humedad y presión: 50 % es un valor de reserva para humedad y la presión falta. El snapshot local posterior de OpenWeatherMap es distinto y no cambia este resultado. La ruta no cambia porque el factor es uniforme.
 
 ---
 
@@ -27,11 +27,11 @@ Esta guía resume qué afirmar, qué no afirmar y qué comandos ejecutar. Las ci
 
 ### ¿Cómo se incorpora la topografía?
 
-Con la pendiente $\theta$ en el peso de tiempo. Solo se penaliza el ascenso: $\max(0,\theta)$. Un 8\,\% de pendiente se escribe $0.08$. La red manual usa nombres reales, pero longitudes, pendientes y topología son esquemáticas; no son levantamiento de campo.
+Con la pendiente $\theta$ en el peso de tiempo **solo para la instancia ilustrativa**. Se penaliza el ascenso: $\max(0,\theta)$. Un 8\,\% se escribe $0.08$. La red OSM no incluye pendiente por arista; no se ha medido allí el efecto de la topografía.
 
 ### ¿Qué es el «Dijkstra modificado»?
 
-No es otro algoritmo. Es Dijkstra con pesos de tiempo en lugar de distancias. La modularidad permite inyectar la cola sin reescribir el solver. `--metric distance` usa $w=L$; `--metric time` usa la fórmula anterior.
+No es otro algoritmo. Es Dijkstra con pesos de tiempo en lugar de distancias. La modularidad permite inyectar la cola sin reescribir el solver. `--metric distance` usa $w=L$; `--metric time` usa la fórmula anterior **en la red manual** o el campo temporal del snapshot **en OSM**.
 
 ### ¿Por qué tres colas y cuál es mejor?
 
@@ -59,7 +59,7 @@ Lo medido: 887 $\to$ 823 expansiones en OSM ($-7.2\%$) y 6 $\to$ 5 en la instanc
 
 ### ¿Cómo se valida que la ruta es óptima?
 
-Con dos comprobaciones independientes: comparación de distancias contra NetworkX y certificado de Bellman, que recorre todas las aristas y verifica $d[v]\le d[u]+w(u,v)$ para todo camino. Si una arista viola la desigualdad, el certificado falla.
+Con comparación de distancias contra NetworkX y un certificado propio: comprueba $d[s]=0$, desigualdades en cada arista y que los predecesores de distancias finitas lleven realmente al origen. Cuando se reportan rutas, verifica también sus aristas y costos. Las desigualdades solas no descartan un ciclo de peso cero desconectado.
 
 ### ¿El clima puede cambiar la ruta?
 
@@ -77,10 +77,10 @@ Los nombres son reales; longitudes, pendientes y topología son ilustrativas. La
 
 ## 3. Comandos para la demostración
 
-Abrir la terminal en `F:\unsaac\alg-avanzados\proyecto\python`:
+Desde la raíz del repositorio, entrar en `python/`:
 
 ```powershell
-cd F:\unsaac\alg-avanzados\proyecto\python
+cd python
 ```
 
 El Python del proyecto está en el `.venv` de la raíz. Desde `python/`, se invoca con `..\.venv\Scripts\python.exe`.
@@ -147,11 +147,11 @@ Genera `results/figures/ruta_optima_cusco.dot` con la ruta resaltada.
 Desde la raíz del repositorio:
 
 ```powershell
-cd F:\unsaac\alg-avanzados\proyecto
+cd ..
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-Resultado de una ejecución completa: **246 passed in 45.86s**.
+Última verificación de esta revisión: **278 passed** (duración variable).
 
 ### 3.9 Reproducción canónica
 
@@ -159,7 +159,7 @@ Resultado de una ejecución completa: **246 passed in 45.86s**.
 .\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
 ```
 
-Regenera `benchmark_results.json`, `applied_results.json`, las tablas de `documento/tablas/` y las figuras de `documento/figuras/`. Reutiliza los snapshots OSM y meteorológico; no necesita Internet si ya existen.
+Este comando repite la medición y **sobrescribe** `benchmark_results.json` y `applied_results.json`. Ejecutarlo solo en una copia separada para preservar las muestras del 28/10/2026. Reutiliza los snapshots OSM y meteorológico; no necesita Internet si ya existen.
 
 Para reescribir solo tablas y figuras:
 
@@ -179,11 +179,11 @@ Abrir la URL que imprime Streamlit (por defecto `http://localhost:8501`).
 ### 3.11 Informe
 
 ```powershell
-cd documento
+cd latex
 .\compilar.ps1
 ```
 
-Genera `documento/main.pdf`.
+Genera `latex/main.pdf`.
 
 ---
 
@@ -191,12 +191,13 @@ Genera `documento/main.pdf`.
 
 | Vista | Qué mostrar |
 | :--- | :--- |
-| **Comparación** | Curvas de mediana e IQR por perfil, tabla de escalas y síntesis de victorias. Señalar que los IQR se solapan. |
-| **Ruta OSM** | Elegir origen y destino, ejecutar Dijkstra o $A^*$, comparar costo base y costo con clima. La ruta se dibuja desde el snapshot local. |
-| **Traza manual** | Ejecutar paso a paso la instancia de seis nodos y mostrar extracción, relajación y cola. |
-| **Procedencia** | Protocolo, fuentes, snapshots y actualización opcional de Open-Meteo. |
+| **Ruta** | Mostrar la consulta OSM del informe en el plano local sin conexión; elegir otros nodos, costo, cola y $A^*$. Contrastar tres colas con $A^*$ sin usar la ejecución interactiva como benchmark; seleccionar clima histórico/local y descargar CSV. |
+| **Comparación** | Filtrar perfiles y escalas del experimento, revisar medianas, IQR y relación frente al binario. Un JSON cargado es temporal y su protocolo no se verifica automáticamente. |
+| **Clima y tráfico** | Distinguir la observación histórica Open-Meteo del archivo posterior OpenWeatherMap; explorar el horario supuesto y explicar que TomTom solo consulta un segmento. |
+| **Traza manual** | Seleccionar cada paso para ver distancias, predecesores y relajaciones del grafo de seis nodos; comprobar certificado y descargar CSV. |
+| **Datos y método** | Mostrar fuentes, protocolo guardado, límites y descarga del informe compilado si existe. |
 
-La aplicación funciona sin Internet porque lee los snapshots locales. La actualización meteorológica es opcional y no borra el snapshot anterior si falla.
+El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa base necesita teselas. No aparece la barra «Deploy». Una consulta meteorológica opcional no borra el snapshot si falla.
 
 ---
 
@@ -215,7 +216,7 @@ La aplicación funciona sin Internet porque lee los snapshots locales. La actual
 | $A^*$ en OSM | 887 $\to$ 823 expansiones ($-7.2\%$) |
 | $A^*$ manual | 6 $\to$ 5 expansiones ($-16.7\%$) |
 | Clima | $m=1.0691$; 413.952 s; $+6.91\%$; ruta sin cambios |
-| Pruebas | 246 passed in 45.86s |
+| Pruebas | 278 casos aprobados en esta revisión; repetir en el entorno final |
 
 ---
 
@@ -225,6 +226,9 @@ La aplicación funciona sin Internet porque lee los snapshots locales. La actual
 * «$A^*$ poda entre 30\,\% y 70\,\% de los nodos.» No fue medido. Los valores medidos son 7.2\,\% y 16.7\,\%.
 * «Usamos SENAMHI.» No hay API pública documentada de SENAMHI en este proyecto. La fuente es Open-Meteo, que entrega datos de modelo.
 * «El clima puede cambiar la ruta.» Con un factor uniforme, no.
+* «La observación usada para el informe registró humedad y presión.» No las registró. El archivo local posterior de OpenWeatherMap sí reporta 55 % de humedad y 651 hPa de presión de suelo; sus 1013 hPa son presión al nivel del mar, no presión superficial.
+* «TomTom o el tráfico por calle cambia la ruta OSM.» No existe ese cálculo por arista ni un experimento canónico de congestión.
+* «AG-C06 está cumplido para cada integrante.» Faltan evidencias individuales y defensa; ver el control de entrega.
 * «Medimos memoria.» No se midió.
 * «La instancia de seis nodos es un levantamiento real.» Es ilustrativa.
 * «No usamos Plotly.» Se usa en Streamlit.

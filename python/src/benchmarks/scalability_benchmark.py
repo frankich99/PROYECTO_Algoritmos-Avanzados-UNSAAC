@@ -176,7 +176,7 @@ def run_canonical_benchmark(
             "runs_per_instance": runs,
             "instances_per_size": instances_per_size,
             "seed": seed,
-            "oracle": "NetworkX single_source_dijkstra_path_length + certificado O(V+E)",
+            "oracle": "NetworkX single_source_dijkstra_path_length + certificado O(V+E+longitud total de caminos)",
             "primary_statistic": "mediana; dispersión IQR",
         },
         "environment": {

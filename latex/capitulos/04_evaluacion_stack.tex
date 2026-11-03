@@ -1,0 +1,69 @@
+\section{Evaluación y selección del stack tecnológico}
+\label{sec:stack}
+
+\subsection{Alternativas consideradas}
+La Tabla~\ref{tab:alternativas_stack} resume las alternativas evaluadas en seis capas. Se distingue entre la tecnología adoptada para el prototipo y las opciones consideradas para una eventual ampliación. No se valoró la novedad por sí misma, sino la capacidad de aprender, integrar, probar y justificar cada herramienta.
+
+\begin{table}[H]
+    \centering
+    \fontsize{8.8}{10.5}\selectfont
+    \renewcommand{\arraystretch}{1.10}
+    \caption{Alternativas por capa tecnológica}
+    \label{tab:alternativas_stack}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.35cm} >{\raggedright\arraybackslash}p{3.65cm} >{\raggedright\arraybackslash}p{2.55cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Capa} & \textbf{Alternativas} & \textbf{Decisión} & \textbf{Criterio principal} \\
+        \midrule
+        Lenguaje principal & C++20, Rust 1.75, Python 3.12 & \textbf{Python 3.12} & Expresividad algorítmica, tipado, instrumentación y rapidez de experimentación. \\
+        Red vial y grafos & OSMnx/NetworkX, Overpass API, PostGIS & \textbf{OSMnx + NetworkX} & Descarga y conversión reproducible a grafo dirigido; NetworkX se usa como oráculo. \\
+        Pruebas & pytest, unittest, GoogleTest & \textbf{pytest} & Parametrización, fixtures, aserciones y compatibilidad directa con el código Python. \\
+        Interfaz web & Streamlit + Plotly, Dash, Flask + HTML & \textbf{Streamlit + Plotly} & Permite construir la aplicación web en Python con vistas interactivas y despliegue local sencillo. Dash y Flask no forman parte del prototipo. \\
+        Aplicación móvil & Flutter/Dart, React Native, Kivy & \textit{No implementada} & Flutter/Dart queda como alternativa para una futura aplicación móvil; no se presenta como parte del sistema actual. \\
+        Documentación & LaTeX, Typst, Word & \textbf{LaTeX + BibLaTeX/Biber} & Ecuaciones, tablas, referencias APA y control de versiones. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Criterios de comparación}
+Se usaron cuatro criterios ponderados: C1 expresividad algorítmica (30\%), C2 instrumentación y aislamiento del ruido (25\%), C3 reproducibilidad y portabilidad (25\%) y C4 curva de aprendizaje (20\%). La Tabla~\ref{tab:matriz_multicriterio} presenta una escala ordinal de 1 a 5. Los puntajes son un juicio técnico del equipo, no una medición física; se incluyen para hacer explícita la decisión, no para simular precisión inexistente.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{11.5}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Matriz multicriterio del lenguaje principal (escala 1--5)}
+    \label{tab:matriz_multicriterio}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xccccc@{}}
+        \toprule
+        \textbf{Alternativa} & \textbf{C1 (30\%)} & \textbf{C2 (25\%)} & \textbf{C3 (25\%)} & \textbf{C4 (20\%)} & \textbf{Ponderado} \\
+        \midrule
+        \textbf{Python 3.12} & 5.0 & 4.2 & 4.8 & 4.8 & \textbf{4.71} \\
+        C++20 & 3.8 & 4.8 & 3.5 & 2.8 & 3.78 \\
+        Rust 1.75 & 4.0 & 4.6 & 3.6 & 2.2 & 3.69 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Tecnología seleccionada y justificación}
+\begin{enumerate}
+    \item \textbf{Python 3.12.8.} Permite expresar los algoritmos con tipado y pruebas sin una cadena de compilación. Las tres colas se implementaron desde cero; no se usó \texttt{heapq} para las estructuras evaluadas. La contrapartida es que los tiempos absolutos incluyen la sobrecarga del intérprete y no son extrapolables a C++ o Rust.
+    \item \textbf{OSMnx 2.1.1 y NetworkX 3.7.} OSMnx descarga y convierte la red vial; NetworkX se usa como oráculo de distancias. La red se congela en JSON para que el análisis no dependa de una descarga en vivo.
+    \item \textbf{pytest 9.1.1.} Pruebas parametrizadas, fixtures y ejecución selectiva. La suite completa se ejecuta con \texttt{python -m pytest python/tests -q}.
+    \item \textbf{Streamlit 1.64.0 y Plotly 7.1.0.} Constituyen la interfaz web actual del proyecto: una sola aplicación para comparar resultados, explorar la ruta OSM, revisar la traza manual y consultar la procedencia de los datos. Dash y Flask + HTML se consideraron alternativas, pero no se implementaron. La interfaz es un medio de interacción; el núcleo evaluado sigue siendo el algoritmo.
+    \item \textbf{Flutter/Dart como alternativa móvil futura.} No se desarrolló una aplicación móvil en este trabajo. Si el sistema se amplía a Android y iOS, Flutter permitiría reutilizar el servicio y construir una interfaz multiplataforma; por tanto, se registra como trabajo futuro y no como tecnología usada en los resultados.
+    \item \textbf{LaTeX con BibLaTeX y Biber.} Informe reproducible, ecuaciones y referencias APA. La compilación se automatiza con \texttt{compilar.ps1}.
+    \item \textbf{Servicios meteorológicos (Open-Meteo y OpenWeatherMap API).} Se implementó un diseño de doble proveedor en \texttt{src/services/weather.py}. Como opción sin credenciales se emplea Open-Meteo (datos de modelo). Como proveedor alternativo autenticado se integró \texttt{OpenWeatherMapClient} (\url{https://home.openweathermap.org/users/sign_up}). Ambas fuentes alimentan \texttt{WeatherObservation}; las consultas opcionales de la web son temporales y no reescriben el caso canónico. Una clave debe suministrarse localmente, nunca en archivos versionados.
+    \item \textbf{Modelo horario de tráfico.} Reglas deterministas y coeficientes hipotéticos por franja y tipo de vía; la interfaz muestra los factores, pero aplica solo el de avenida de forma uniforme a la ruta OSM. El cliente opcional de TomTom no dispone de un experimento canónico ni de pruebas de red en este repositorio; no se declara tráfico calibrado.
+\end{enumerate}
+
+\subsection{Procedimiento de aprendizaje e integración}
+La adopción se organizó en tres fases. Primero se construyó un prototipo mínimo con el heap binario y la instancia de seis nodos. Después se añadieron el heap 4-ario, el Fibonacci heap y el certificado de optimalidad. Finalmente se integraron OSMnx, el benchmark canónico, la aplicación Streamlit y el servicio meteorológico con caché. Cada fase dejó pruebas y datos versionados; las decisiones que cambiaron el diseño se registraron en el repositorio.
+
+\subsection{Dificultades de adopción y soluciones}
+\begin{itemize}
+    \item \textbf{Dependencias geoespaciales en Windows.} La instalación de GDAL y OSMnx puede fallar por binarios incompatibles. Se exportó la red a JSON; las pruebas usan el \textit{snapshot}, no la descarga. \texttt{requirements.txt} declara versiones mínimas, no versiones exactas; el entorno de la medición está anotado en la Sección~\ref{sec:metodologia}.
+    \item \textbf{Codificación de consola.} La consola CP1252 producía errores con caracteres Unicode. Se forzó UTF-8 en archivos y se usaron mensajes ASCII en los registros de la CLI.
+    \item \textbf{Reproducibilidad temporal.} Las primeras mediciones usaban promedios y no aislaban el recolector de basura. Se adoptó \texttt{perf\_counter\_ns}, \textit{warm-up}, \texttt{gc.disable()} durante la muestra y mediana/IQR.
+    \item \textbf{Interfaz y estado.} Streamlit reejecuta el script en cada interacción. Se separaron cálculo y visualización; se cachea la carga del grafo y del benchmark por fecha de modificación y se mantiene el resultado de la consulta en sesión. Las consultas meteorológicas requieren una acción explícita y no se cachean como si fueran actuales.
+    \item \textbf{Clima sin API oficial de SENAMHI y latencia de claves.} Al no existir una API pública libre de SENAMHI, se adoptó Open-Meteo y la integración con OpenWeatherMap. Para mitigar la latencia de 10 a 30 minutos en la activación de claves de OpenWeatherMap (error \texttt{HTTP 401}), el cliente notifica al usuario e implementa respaldo automático en \textit{snapshots} locales.
+\end{itemize}

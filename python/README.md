@@ -3,12 +3,12 @@
 Implementación modular en Python de Dijkstra con tres colas de prioridad intercambiables, $A^*$ con heurística consistente, un certificado de optimalidad y un caso aplicado sobre OpenStreetMap.
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-246%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](tests/)
 [![Datos](https://img.shields.io/badge/snapshots-OSM%20%2B%20clima-informational.svg)](data/processed/)
 
 **Asignatura:** Algoritmos Avanzados (2026-II) · UNSAAC  
 **Grupo 5:** Choquenaira Q. Noe, Yaranga A. Aldo, Porroa S. Yeni Ruth, Quispe R. Romario  
-**Guía de sustentación:** [GUIA.md](../GUIA.md) · **Informe:** [main.pdf](../documento/main.pdf)
+**Guía de sustentación:** [GUIA.md](../GUIA.md) · **Informe:** [main.pdf](../latex/main.pdf)
 
 ---
 
@@ -76,7 +76,7 @@ Códigos de salida: `0` ejecución correcta; `1` fallo de verificación; `2` ent
 python -m streamlit run app.py
 ```
 
-Vistas: **Comparación**, **Ruta OSM**, **Traza manual** y **Procedencia**. La aplicación lee los snapshots locales; si no hay red, sigue funcionando. La actualización meteorológica desde Open-Meteo es opcional y nunca elimina el snapshot anterior si falla.
+Cinco secciones visibles: **Ruta** (OSM, Dijkstra/$A^*$, tres colas, plano offline o mapa base, clima histórico/local y CSV), **Comparación** (benchmark filtrable, relación frente al binario, JSON temporal y CSV), **Clima y tráfico** (fuentes separadas, supuestos y consultas API opcionales), **Traza manual** (pasos y certificado) y **Datos y método** (protocolo, límites e informe PDF). Ruta y Comparación son las tareas principales. Las consultas API no sobrescriben el experimento canónico; TomTom solo consulta un segmento. Consulte [datos y modelo](../docs/DATOS_Y_MODELO.md).
 
 ---
 
@@ -88,19 +88,23 @@ Vistas: **Comparación**, **Ruta OSM**, **Traza manual** y **Procedencia**. La a
 | `data/processed/cusco_osm_drive.json` | Snapshot OSM: 891 vértices y 2139 aristas dirigidas, con coordenadas y metadatos. |
 | `data/processed/benchmark_results.json` | Protocolo, entorno, muestras, medianas, IQR y operaciones por escala. |
 | `data/processed/applied_results.json` | Consulta OSM, tiempos por cola, $A^*$ y sensibilidad climática. |
-| `data/processed/weather_cusco.json` | Snapshot de Open-Meteo (datos de modelo). |
+| `data/processed/weather_cusco.json` | Lectura local posterior de OpenWeatherMap; la observación Open-Meteo del informe está en `applied_results.json`. |
 
-Regeneración completa desde la raíz del repositorio:
+Desde la raíz del repositorio, regenerar tablas y figuras preservando los
+JSON de mediciones históricas:
+
+```bash
+.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
+```
+
+Para repetir el protocolo completo, hacerlo **en una copia separada**:
 
 ```bash
 .\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py
 ```
 
-Para reutilizar los JSON existentes y reescribir solo tablas y figuras:
-
-```bash
-.\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
-```
+El comando completo sobrescribe `benchmark_results.json` y
+`applied_results.json` con nuevas mediciones, que pueden diferir del 28/10.
 
 ---
 
@@ -110,13 +114,13 @@ Para reutilizar los JSON existentes y reescribir solo tablas y figuras:
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-La suite contiene **246 pruebas** y cubre:
+La suite contiene **278 pruebas** y cubre:
 
 * contrato común de las tres colas (inserción, extracción, `decrease_key`, claves inválidas y cortes en cascada);
 * equivalencia con Bellman-Ford, Dijkstra con arreglo y NetworkX;
-* certificado de optimalidad $O(V+E)$ y casos alterados que deben fallar;
+* certificado de optimalidad: $O(V+E)$ sin caminos materializados, más $O(L)$ al comprobar caminos explícitos de longitud total $L$; rechaza ciclos de peso cero desconectados;
 * validación de JSON, pesos negativos, NaN y estructuras incompletas;
-* CLI, carga OSM, clima, análisis aplicado y pruebas de humo de Streamlit.
+* CLI, carga OSM, clima, modelo horario de tráfico, análisis aplicado y pruebas de humo de Streamlit (no API TomTom en vivo).
 
 No se reporta cobertura porque no se midió con una herramienta de cobertura.
 
@@ -139,7 +143,7 @@ python/
 │   ├── generators/      # redes sintéticas reproducibles
 │   ├── io/              # grafos, JSON y OSM
 │   ├── models/          # red ilustrativa del Cusco
-│   ├── services/        # Open-Meteo y factor climático
+│   ├── services/        # Open-Meteo y escenario horario de tráfico
 │   ├── utils/           # medición, costo y exportadores
 │   ├── verification/    # certificado de optimalidad
 │   └── visualization/   # figuras y Graphviz
@@ -154,4 +158,5 @@ python/
 * Sin métricas de memoria residente ni de asignaciones.
 * Una sola consulta OSM y redes sintéticas; no se cubre toda la variabilidad del tráfico.
 * El clima es un factor uniforme de sensibilidad, no una calibración de tráfico.
+* La observación meteorológica canónica carece de humedad y presión; la lectura local posterior es de otra fuente. No se ha medido congestión ni efecto por arista.
 * La instancia de seis nodos es ilustrativa.

@@ -1,46 +1,68 @@
 {
   "schema_version": 1,
-  "fetched_at_utc": "2026-10-28T17:33:13.541220+00:00",
+  "fetched_at_utc": "2026-11-01T00:00:51.982904+00:00",
   "observation": {
-    "observed_at": "2026-10-28T12:30",
-    "latitude": -13.462214,
-    "longitude": -71.96707,
-    "temperature_c": 17.0,
-    "precipitation_mm": 0.1,
-    "visibility_m": 8920.0,
-    "wind_speed_kmh": 12.4,
-    "wind_gusts_kmh": 40.7,
-    "weather_code": 51,
-    "source": "Open-Meteo (datos de modelo)",
+    "observed_at": "2026-10-31T23:58:57+00:00",
+    "latitude": -13.5165,
+    "longitude": -71.9788,
+    "temperature_c": 15.13,
+    "precipitation_mm": 0.0,
+    "visibility_m": 10000.0,
+    "wind_speed_kmh": 12.96,
+    "wind_gusts_kmh": 12.96,
+    "weather_code": 803,
+    "relative_humidity_pct": 55.0,
+    "rain_mm": 0.0,
+    "surface_pressure_hpa": 651.0,
+    "cloud_cover_pct": 77.0,
+    "weather_description": "Muy nuboso",
+    "station_name": "Consulta meteorológica para Cusco (OpenWeatherMap)",
+    "source": "OpenWeatherMap REST API",
     "cached": false
   },
   "raw_response": {
-    "latitude": -13.462214,
-    "longitude": -71.96707,
-    "generationtime_ms": 25.090456008911133,
-    "utc_offset_seconds": -18000,
-    "timezone": "America/Lima",
-    "timezone_abbreviation": "GMT-5",
-    "elevation": 3410.0,
-    "current_units": {
-      "time": "iso8601",
-      "interval": "seconds",
-      "temperature_2m": "°C",
-      "precipitation": "mm",
-      "visibility": "m",
-      "wind_speed_10m": "km/h",
-      "wind_gusts_10m": "km/h",
-      "weather_code": "wmo code"
+    "coord": {
+      "lon": -71.9788,
+      "lat": -13.5165
     },
-    "current": {
-      "time": "2026-10-28T12:30",
-      "interval": 900,
-      "temperature_2m": 17.0,
-      "precipitation": 0.1,
-      "visibility": 8920.0,
-      "wind_speed_10m": 12.4,
-      "wind_gusts_10m": 40.7,
-      "weather_code": 51
-    }
+    "weather": [
+      {
+        "id": 803,
+        "main": "Clouds",
+        "description": "muy nuboso",
+        "icon": "04n"
+      }
+    ],
+    "base": "stations",
+    "main": {
+      "temp": 15.13,
+      "feels_like": 14.13,
+      "temp_min": 15.13,
+      "temp_max": 15.13,
+      "pressure": 1013,
+      "humidity": 55,
+      "sea_level": 1013,
+      "grnd_level": 651
+    },
+    "visibility": 10000,
+    "wind": {
+      "speed": 3.6,
+      "deg": 100
+    },
+    "clouds": {
+      "all": 77
+    },
+    "dt": 1793491137,
+    "sys": {
+      "type": 1,
+      "id": 8708,
+      "country": "PE",
+      "sunrise": 1793441642,
+      "sunset": 1793486932
+    },
+    "timezone": -18000,
+    "id": 3941584,
+    "name": "Cusco",
+    "cod": 200
   }
 }
