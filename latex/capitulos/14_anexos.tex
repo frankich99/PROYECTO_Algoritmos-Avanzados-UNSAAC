@@ -2,7 +2,6 @@
 \label{sec:anexos}
 
 \subsection*{Anexo A: Instalación y configuración}
-\addcontentsline{toc}{subsection}{Anexo A: Instalación y configuración}
 \label{anexo:instalacion}
 El proyecto se ejecutó con Python 3.12.8 en Windows 11. Los comandos siguientes reproducen el entorno desde la raíz del repositorio:
 \begin{lstlisting}[language=bash, caption={Clonación, entorno virtual e instalación}]
@@ -15,22 +14,21 @@ python -m pip install -r python/requirements.txt
 Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{streamlit}, \texttt{plotly}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
 
 \subsection*{Anexo B: Uso del prototipo}
-\addcontentsline{toc}{subsection}{Anexo B: Uso del prototipo}
 \label{anexo:uso}
 
-\paragraph{Suite de pruebas.} Desde la raíz:
+\noindent\textbf{Suite de pruebas.} Desde la raíz:
 \begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (278 pruebas)}]
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 \end{lstlisting}
 
-\paragraph{Configuración de credenciales de API (opcional).} Tras revocar cualquier clave expuesta, configure una clave nueva y propia. Para la CLI se admite la variable de entorno, nunca un archivo versionado (\url{https://home.openweathermap.org/api_keys}):
+\noindent\textbf{Configuración de credenciales de API (opcional).} Tras revocar cualquier clave expuesta, configure una clave nueva y propia. Para la CLI se admite la variable de entorno, nunca un archivo versionado (\url{https://home.openweathermap.org/api_keys}):
 \begin{lstlisting}[language=bash, caption={Definición de variable de entorno para OpenWeatherMap}]
 # PowerShell en Windows
 $env:OPENWEATHERMAP_API_KEY = "SU_CLAVE_NUEVA"
 \end{lstlisting}
 La web no toma automáticamente la variable ni archivos locales: exige introducir una clave nueva en el campo de contraseña de la consulta opcional. Si el proveedor rechaza la conexión, la interfaz conserva el archivo local sin reportar una nueva lectura. La clave no se imprime ni se guarda en el informe.
 
-\paragraph{Interfaz de comandos.} Desde \texttt{python/}:
+\noindent\textbf{Interfaz de comandos.} Desde \texttt{python/}:
 \begin{lstlisting}[language=bash, caption={Comandos principales de la CLI}]
 ..\.venv\Scripts\python.exe main.py list
 ..\.venv\Scripts\python.exe main.py run --queue all --trace
@@ -38,37 +36,26 @@ La web no toma automáticamente la variable ni archivos locales: exige introduci
 ..\.venv\Scripts\python.exe main.py astar --input data/processed/cusco_osm_drive.json
 \end{lstlisting}
 
-\paragraph{Aplicación web.} Desde \texttt{python/}:
+\noindent\textbf{Aplicación web.} Desde \texttt{python/}:
 \begin{lstlisting}[language=bash, caption={Ejecución de la aplicación Streamlit}]
 ..\.venv\Scripts\python.exe -m streamlit run app.py
 \end{lstlisting}
 La aplicación tiene cinco secciones visibles. En Ruta se seleccionan costo, recorrido, algoritmo y cola; se pueden contrastar las tres colas de Dijkstra y $A^*$ por costo, elegir una observación histórica, local o temporal como escenario uniforme, y descargar los nodos. El plano local no necesita Internet; solo el mapa base necesita teselas. Comparación filtra perfiles y escalas, muestra mediana e IQR y la relación frente al binario, admite un JSON temporal compatible y descarga CSV. Clima y tráfico separa observaciones y supuestos; Traza manual permite recorrer extracciones y comprobar el certificado; Datos y método presenta protocolo, procedencia, límites y descarga del informe si existe. Ninguna consulta opcional sobrescribe las mediciones.
 
-\paragraph{Reproducción de tablas y figuras.} Desde la raíz, sin alterar
-las mediciones del 28/10/2026:
+\noindent\textbf{Reproducción de tablas y figuras.} Desde la raíz, sin alterar las mediciones del 28/10/2026:
 \begin{lstlisting}[language=bash, caption={Regeneración de tablas y figuras con mediciones guardadas}]
 .\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
 \end{lstlisting}
-El comando anterior reutiliza \texttt{benchmark\_results.json} y
-\texttt{applied\_results.json} y escribe tablas en \texttt{latex/tablas/}
-y figuras en \texttt{latex/figuras/}. Sin las opciones de omisión, el script
-repite las mediciones y \emph{sobrescribe} ambos JSON; ejecutar el protocolo
-completo solo en una copia separada. La red OSM y el clima ya almacenados
-no se descargan de nuevo.
+El comando anterior reutiliza \texttt{benchmark\_results.json} y \texttt{applied\_results.json} y escribe tablas en \texttt{latex/tablas/} y figuras en \texttt{latex/figuras/}. Sin las opciones de omisión, el script repite las mediciones y \emph{sobrescribe} ambos JSON; ejecutar el protocolo completo solo en una copia separada. La red OSM y el clima ya almacenados no se descargan de nuevo.
 
-\paragraph{Compilación del informe.} Desde \texttt{latex/}:
+\noindent\textbf{Compilación del informe.} Desde \texttt{latex/}:
 \begin{lstlisting}[language=bash, caption={Compilación con pdflatex y biber}]
 .\compilar.ps1
 \end{lstlisting}
 
 \subsection*{Anexo C: Cronología verificable del repositorio}
-\addcontentsline{toc}{subsection}{Anexo C: Cronología verificable}
 \label{anexo:bitacora}
-La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git. Cada
-fecha es la del commit y cada autor es el registrado en Git; no se deducen
-reuniones, horas de dedicación, fuentes personales ni dificultades resueltas
-en una fecha anterior al commit. La bitácora de aprendizaje individual
-requerida por AG\_C06.01 sigue pendiente de documentación por sus autores.
+La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git. Cada fecha es la del commit y cada autor es el registrado en Git; no se deducen reuniones, horas de dedicación, fuentes personales ni dificultades resueltas en una fecha anterior al commit. La bitácora de aprendizaje individual requerida por AG\_C06.01 sigue pendiente de documentación por sus autores.
 
 \begin{table}[H]
     \centering
@@ -98,7 +85,6 @@ requerida por AG\_C06.01 sigue pendiente de documentación por sus autores.
 \end{table}
 
 \subsection*{Anexo D: Matriz de trazabilidad}
-\addcontentsline{toc}{subsection}{Anexo D: Matriz de trazabilidad}
 \label{anexo:trazabilidad}
 La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia verificable.
 
@@ -125,7 +111,6 @@ La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia ve
 \end{table}
 
 \subsection*{Anexo E: Matriz de contribuciones}
-\addcontentsline{toc}{subsection}{Anexo E: Matriz de contribuciones}
 \label{anexo:contribuciones}
 \begin{table}[H]
     \centering
@@ -146,27 +131,8 @@ La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia ve
 \end{table}
 
 \subsection*{Anexo F: Estado del seguimiento}
-\addcontentsline{toc}{subsection}{Anexo F: Estado del seguimiento}
 \label{anexo:seguimiento}
-No se encontraron actas de seguimiento ni planes con meta, responsable,
-fecha comprometida y resultado verificable para cada estudiante. Por ello,
-no se afirma que hubo sesiones en fechas concretas ni que los compromisos
-fueron cumplidos. El hito grupal \texttt{7922f52} (28/10/2026) contiene los
-\textit{snapshots} OSM y meteorológico, las mediciones canónicas y la
-aplicación. En los JSON, la descarga OSM figura a las 17:29 UTC y el
-snapshot de clima se guardó a las 17:33 UTC. Estos registros no equivalen
-a un acta de reunión. Cada estudiante debe aportar sus planes,
-compromisos y reflexión originales y confirmar la correspondencia con
-las entregas. La plantilla y la matriz requisito--evidencia están en
-\texttt{docs/plantilla\_evidencia\_individual.md} y
-\texttt{docs/CONTROL\_ENTREGA.md}; no sustituyen los originales.
+No se encontraron actas de seguimiento ni planes con meta, responsable, fecha comprometida y resultado verificable para cada estudiante. Por ello, no se afirma que hubo sesiones en fechas concretas ni que los compromisos fueron cumplidos. El hito grupal \texttt{7922f52} (28/10/2026) contiene los \textit{snapshots} OSM y meteorológico, las mediciones canónicas y la aplicación. En los JSON, la descarga OSM figura a las 17:29 UTC y el snapshot de clima se guardó a las 17:33 UTC. Estos registros no equivalen a un acta de reunión. Cada estudiante debe aportar sus planes, compromisos y reflexión originales y confirmar la correspondencia con las entregas. La plantilla y la matriz requisito--evidencia están en \texttt{docs/plantilla\_evidencia\_individual.md} y \texttt{docs/CONTROL\_ENTREGA.md}; no sustituyen los originales.
 
-\paragraph{Calendario de cierre propuesto, no evidencia de ejecución.}
-El 04/11/2026 es la fecha objetivo comunicada por el equipo; el PDF del
-proyecto remite la fecha oficial al docente. El 30/10 se revisan modelo y
-datos (Choquenaira y Quispe); el 31/10, certificado y pruebas (Yaranga y
-Porroa); el 01/11, cada integrante aporta su evidencia individual auténtica;
-el 02/11 se validan manuales y presentación en una copia limpia (Choquenaira
-y Yaranga); el 03/11 se compila el PDF y los cuatro ensayan la demostración.
-Ninguno de estos hitos futuros se marca aquí como cumplido. La defensa
-individual solo se acredita cuando se realiza.
+\noindent\textbf{Calendario de cierre propuesto, no evidencia de ejecución.}\\[0.15cm]
+El 04/11/2026 es la fecha objetivo comunicada por el equipo; el PDF del proyecto remite la fecha oficial al docente. El 30/10 se revisan modelo y datos (Choquenaira y Quispe); el 31/10, certificado y pruebas (Yaranga y Porroa); el 01/11, cada integrante aporta su evidencia individual auténtica; el 02/11 se validan manuales y presentación en una copia limpia (Choquenaira y Yaranga); el 03/11 se compila el PDF y los cuatro ensayan la demostración. Ninguno de estos hitos futuros se marca aquí como cumplido. La defensa individual solo se acredita cuando se realiza.

@@ -12,7 +12,6 @@ Los resultados empíricos demuestran que no existe una estructura óptima univer
 
 \vspace{0.8cm}
 \subsection*{Abstract}
-\addcontentsline{toc}{subsection}{Abstract}
 
 This project addresses the efficient computation of shortest paths in urban road networks through Dijkstra's Algorithm instrumented with three priority queue data structures: an Indexed Binary Min-Heap, an indexed 4-ary Heap ($d=4$) optimized for cache locality, and an amortized Fibonacci Heap. The research integrates an applied real-world case study on the Cusco road network retrieved from OpenStreetMap (891 vertices and 2,139 directed edges), evaluated under a generalized cost function incorporating Andean topography and longitudinal road gradients, along with controlled experimentation on reproducible synthetic instances with sparse ($|E|=4|V|$) and dense ($|E|=0.08\,|V|(|V|-1)$) profiles across ten scale tiers. The measurement protocol enforces a nanosecond timer (\texttt{perf\_counter\_ns}), explicit garbage collection isolation (\texttt{gc.disable()}), and randomized execution order across 1,350 wall-clock samples; mathematical correctness is verified against NetworkX and through a formal Bellman optimality certificate in $O(|V|+|E|)$ time.
 
