@@ -9,7 +9,7 @@ El diseño experimental responde a tres interrogantes computacionales centrales:
     \item \textbf{PI3:} ¿Se reproduce el comportamiento observado en el banco sintético sobre la red vial urbana real de Cusco (OpenStreetMap), y cuál es la ganancia cuantitativa de la extensión heurística $A^*$ y el análisis de sensibilidad climática?
 \end{enumerate}
 
-\paragraph{Hipótesis de trabajo:}
+\subsubsection{Hipótesis de Trabajo de la Evaluación (H1 a H4)}
 \begin{itemize}
     \item \textbf{H1 (Localidad de memoria en redes dispersas):} En redes viales dispersas ($|E| \approx 4|V|$), los montículos contiguos basados en arreglos (\texttt{IndexedMinHeap} y \texttt{DAryHeap}) superarán en tiempo de pared al \texttt{FibonacciHeap}, debido a la menor sobrecarga de asignación dinámica y a la explotación de líneas de caché de CPU.
     \item \textbf{H2 (Efecto de la densidad y factor de ramificación):} Al incrementarse la densidad del grafo ($|E| \propto |V|^2$), el mayor volumen de operaciones \texttt{Decrease-Key} favorecerá relativamente al montículo 4-ario frente al binario gracias a la reducción en un 50\% de la profundidad del árbol.
@@ -39,7 +39,8 @@ Cada celda experimental evalúa 3 instancias pseudoaleatorias generadas con semi
     \label{eq:muestras}
 \end{equation}
 
-\paragraph{Generación determinista de instancias sintéticas.} Las redes se construyen mediante el módulo \texttt{benchmark\_network}. Para garantizar conectividad y descartar componentes triviales desconectadas, el generador implanta primero una cadena dirigida hamiltoniana $N_0 \to N_1 \to \dots \to N_{n-1}$ (asegurando que todos los nodos sean alcanzables desde el origen), incorporando posteriormente aristas dirigidas aleatorias con pesos continuos uniformes en el rango $[1.0, 1000.0]$ metros hasta colmar la cuota $|E|$. Las semillas están estrictamente parametrizadas por escala $n$ e índice $j \in \{0, 1, 2\}$:
+\subsubsection{Generación Determinista de Instancias Sintéticas}
+Las redes se construyen mediante el módulo \texttt{benchmark\_network}. Para garantizar conectividad y descartar componentes triviales desconectadas, el generador implanta primero una cadena dirigida hamiltoniana $N_0 \to N_1 \to \dots \to N_{n-1}$ (asegurando que todos los nodos sean alcanzables desde el origen), incorporando posteriormente aristas dirigidas aleatorias con pesos continuos uniformes en el rango $[1.0, 1000.0]$ metros hasta colmar la cuota $|E|$. Las semillas están estrictamente parametrizadas por escala $n$ e índice $j \in \{0, 1, 2\}$:
 \begin{equation}
     s(n, j) = \begin{cases}
         12345 + 31n + j, & \text{para perfil disperso}, \\
@@ -82,7 +83,7 @@ Todas las mediciones se condujeron sobre una plataforma computacional homogénea
     \end{tabular}
 \end{table}
 
-\paragraph{Protocolo de aislamiento y precisión:}
+\subsubsection{Protocolo de Aislamiento de Ruido y Precisión Temporal}
 \begin{enumerate}
     \item \textbf{Temporizador de alta resolución:} Uso exclusivo de \texttt{time.perf\_counter\_ns()}, el reloj monotónico con resolución de nanosegundos del sistema operativo.
     \item \textbf{Aislamiento del recolector de basura:} Antes de cada corrida se invoca \texttt{gc.collect()} y se desactiva explícitamente el recolector automático (\texttt{gc.disable()}) durante la ejecución de Dijkstra, reactivándolo al concluir la muestra para impedir pausas imprevistas de compactación de memoria.

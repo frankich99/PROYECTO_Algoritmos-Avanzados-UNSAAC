@@ -24,7 +24,8 @@ Para un origen designado $s \in V$ y un destino $t \in V$, el problema de camino
 \end{equation}
 donde $\mathcal{P}(s, t)$ es el conjunto de todos los caminos dirigidos simples que conectan $s$ con $t$.
 
-\paragraph{Variables de decisión binarias.} Bajo el enfoque de optimización en redes, se define para cada arista dirigida $(u, v) \in E$ una variable de flujo binaria:
+\subsubsection{Variables de Decisión Binarias}
+Bajo el enfoque de optimización en redes, se define para cada arista dirigida $(u, v) \in E$ una variable de flujo binaria:
 \begin{equation}
     x_{uv} = \begin{cases}
         1, & \text{si el tramo vial } (u, v) \text{ forma parte del camino mínimo óptimo;} \\
@@ -33,7 +34,8 @@ donde $\mathcal{P}(s, t)$ es el conjunto de todos los caminos dirigidos simples 
     \label{eq:variables}
 \end{equation}
 
-\paragraph{Salidas del sistema.} El sistema calcula dos estructuras fundamentales:
+\subsubsection{Salidas del Sistema}
+El sistema calcula dos estructuras fundamentales:
 \begin{enumerate}
     \item El vector de distancias mínimas definitivas $d: V \to \mathbb{R}_{\ge 0} \cup \{\infty\}$, donde $d[v] = \delta(s, v)$ representa el costo óptimo desde $s$ hasta $v$.
     \item El vector de predecesores $\pi: V \to V \cup \{\text{NIL}\}$, que permite reconstruir de forma invertida la secuencia única de intersecciones del camino óptimo:
@@ -65,7 +67,8 @@ La función objetivo minimiza el costo total acumulado del recorrido:
     \label{eq:z}
 \end{equation}
 
-\paragraph{Formulación de la impedancia vial andina.} Es metodológicamente imprescindible distinguir tres escalas de instancias: la red manual didáctica de seis nodos (cuyas pendientes y longitudes son supuestos didácticos del equipo), el benchmark sintético (con pesos generados), y la consulta sobre la red real de OpenStreetMap (cuyos pesos proceden del \textit{snapshot} congelado). Para modelar la circulación vehicular en el contexto topográfico cusqueño, se formula el siguiente modelo de impedancia generalizada:
+\subsubsection{Formulación de la Impedancia Vial Andina}
+Es metodológicamente imprescindible distinguir tres escalas de instancias: la red manual didáctica de seis nodos (cuyas pendientes y longitudes son supuestos didácticos del equipo), el benchmark sintético (con pesos generados), y la consulta sobre la red real de OpenStreetMap (cuyos pesos proceden del \textit{snapshot} congelado). Para modelar la circulación vehicular en el contexto topográfico cusqueño, se formula el siguiente modelo de impedancia generalizada:
 \begin{equation}
     w(u, v) = \frac{L(u, v)}{v_{\text{nom}}(\tau(u, v))} \cdot \Bigl(1 + \alpha \max\bigl(0, \theta(u, v)\bigr)\Bigr) \cdot m_{\text{clima}} \cdot c_{\text{tráfico}}(\tau(u, v)),
     \label{eq:costo}
@@ -98,21 +101,24 @@ donde:
     \end{tabular}
 \end{table}
 
-\paragraph{Variables meteorológicas.} El multiplicador $m_{\text{clima}}$ procesa variables atmosféricas mediante el modelo de Open-Meteo consultado para las coordenadas del Cusco ($-13.5165, -71.9788$):
+\subsubsection{Variables Meteorológicas}
+El multiplicador $m_{\text{clima}}$ procesa variables atmosféricas mediante el modelo de Open-Meteo consultado para las coordenadas del Cusco ($-13.5165, -71.9788$):
 \begin{equation}
     m_{\text{clima}} = 1 + c_p \min\left(\frac{P}{P_{\text{ref}}}, 1\right) + c_h \max\left(0, \frac{H - H_0}{100 - H_0}\right) + c_v \left(1 - \min\left(\frac{V}{V_{\text{ref}}}, 1\right)\right) + c_w \min\left(\frac{W}{W_{\text{ref}}}, 1\right),
     \label{eq:clima_integral}
 \end{equation}
 donde $P$ es la precipitación acumulada en mm ($P_{\text{ref}}=10$ mm, $c_p=0.20$), $H$ es la humedad relativa en \% ($H_0=65\%$, $c_h=0.08$), $V$ es la visibilidad horizontal en metros ($V_{\text{ref}}=10\,000$ m, $c_v=0.15$) y $W$ es la ráfaga de viento en km/h ($W_{\text{ref}}=80$ km/h, $c_w=0.10$). La observación histórica canónica guardada en \texttt{applied\_results.json} (28/10/2026 a las 12:30 hora de Lima) registra $P=0.1$ mm, $V=8920$ m y $W=40.7$ km/h, produciendo un factor de escenario de $m_{\text{clima}} = 1.0691$ ($+6.91\%$).
 
-\paragraph{Modelo de congestión horaria hipotético.} El servicio \texttt{traffic.py} formula multiplicadores por franja y tipo de vía según supuestos analíticos:
+\subsubsection{Modelo de Congestión Horaria Hipotético}
+El servicio \texttt{traffic.py} formula multiplicadores por franja y tipo de vía según supuestos analíticos:
 \begin{equation}
     c_{\text{tráfico}}(\tau) = 1 + \bigl(c_{\text{base}}(t) - 1\bigr) \cdot s(\tau) \cdot \gamma_{\text{sinergia}},
     \label{eq:trafico}
 \end{equation}
 donde $c_{\text{base}}(t) \in \{1.00, 1.25, 1.65, 2.20\}$ modela la hora pico; $s(\tau)$ pondera la capacidad vial ($1.35$ para calle céntrica, $1.15$ para avenida, $0.95$ para residencial); y $\gamma_{\text{sinergia}} = 1 + 0.20(m_{\text{clima}} - 1)$. En la consulta sobre OpenStreetMap, para evitar sesgos no calibrados en campo, la red opera con los tiempos de viaje base del \textit{snapshot} (\texttt{travel\_time\_sec}) y el factor de avenida se evalúa como multiplicador global de sensibilidad.
 
-\paragraph{Supuestos del modelo.} (i) Los costos del benchmark y de la red OSM son estrictamente deterministas y no negativos. (ii) Las velocidades nominales representan límites operacionales seguros de diseño. (iii) La penalización por gradiente se aplica exclusivamente a pendientes positivas ($\theta > 0$). (iv) Los factores de clima y tráfico constituyen escenarios de sensibilidad uniforme que no alteran el orden topológico de las rutas en la red OSM. (v) La instancia de seis nodos es una abstracción docente para verificación analítica manual.
+\subsubsection{Supuestos del Modelo}
+(i) Los costos del benchmark y de la red OSM son estrictamente deterministas y no negativos. (ii) Las velocidades nominales representan límites operacionales seguros de diseño. (iii) La penalización por gradiente se aplica exclusivamente a pendientes positivas ($\theta > 0$). (iv) Los factores de clima y tráfico constituyen escenarios de sensibilidad uniforme que no alteran el orden topológico de las rutas en la red OSM. (v) La instancia de seis nodos es una abstracción docente para verificación analítica manual.
 
 \subsection{Ejemplo Ilustrativo Resuelto Analíticamente (Red Nuclear de 6 Nodos)}
 Para validar analíticamente el comportamiento del algoritmo, se diseñó la instancia representativa del Centro Histórico del Cusco mostrada en la Figura~\ref{fig:grafo_tikz} y formalizada en la Tabla~\ref{tab:aristas_cusco}, con $|V|=6$ intersecciones y $|E|=9$ tramos viales dirigidos.
@@ -156,7 +162,7 @@ Para validar analíticamente el comportamiento del algoritmo, se diseñó la ins
 \input{tablas/tabla_aristas_cusco.tex}
 
 \subsection{Traza Manual Paso a Paso del Algoritmo de Dijkstra ($k=0$ a $k=6$)}
-A continuación, se desarrolla analíticamente la traza paso a paso desde el origen $s = \text{A}$ (Plaza Mayor) bajo la métrica métrica de distancia física para verificación determinista:
+A continuación, se desarrolla analíticamente la traza paso a paso desde el origen $s = \text{A}$ (Plaza Mayor) bajo la métrica de distancia física para verificación determinista:
 \begin{itemize}
     \item \textbf{Inicialización ($k=0$):} $d[\text{A}]=0$, $d[v]=\infty$ para todo $v \ne \text{A}$, $\pi[v]=\text{NIL}$, $S=\emptyset$. La cola contiene todos los vértices: $Q = \{(\text{A}, 0), (\text{B}, \infty), (\text{C}, \infty), (\text{D}, \infty), (\text{E}, \infty), (\text{F}, \infty)\}$.
     \item \textbf{Paso 1 ($k=1$):} Se extrae $u = \text{A}$ ($d[\text{A}]=0$). Vértice permanente: $S = \{\text{A}\}$. Relajación de aristas salientes:

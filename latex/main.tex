@@ -44,13 +44,13 @@
 \end{titlepage}
 
 % =========================================================================
-% SECCIONES PRELIMINARES: RESUMEN Y ABSTRACT
+% SECCIONES PRELIMINARES: RESUMEN Y ABSTRACT (NÚMEROS ROMANOS)
 % =========================================================================
 \pagenumbering{roman}
-\setcounter{tocdepth}{2}
-\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
 
-% Resumen y Abstract (apartado preliminar, sin numeración)
+% Resumen y Abstract (aparecen en el índice como secciones preliminares)
 \input{capitulos/01_resumen.tex}
 \newpage
 
@@ -67,57 +67,58 @@
 \newpage
 
 % =========================================================================
-% CUERPO PRINCIPAL DEL INFORME
+% CUERPO PRINCIPAL DEL INFORME (INICIA EN 1 CON INTRODUCCIÓN)
 % =========================================================================
 \pagenumbering{arabic}
+\setcounter{section}{0}
 
-% Sección 2: Introducción
+% Sección 1: Introducción
 \input{capitulos/02_introduccion.tex}
 \newpage
 
-% Sección 3: Fundamentos y aprendizaje autónomo (Subsecciones 3.1 a 3.4)
+% Sección 2: Fundamentos y aprendizaje autónomo
 \input{capitulos/03_fundamentos_aprendizaje.tex}
 \newpage
 
-% Sección 4: Evaluación y selección del stack tecnológico (Subsecciones 4.1 a 4.5)
+% Sección 3: Evaluación y selección del stack tecnológico
 \input{capitulos/04_evaluacion_stack.tex}
 \newpage
 
-% Sección 5: Formulación del problema
+% Sección 4: Formulación del problema
 \input{capitulos/05_formulacion_problema.tex}
 \newpage
 
-% Sección 6: Diseño algorítmico
+% Sección 5: Diseño algorítmico
 \input{capitulos/06_diseno_algoritmico.tex}
 \newpage
 
-% Sección 7: Diseño e implementación del sistema
+% Sección 6: Diseño e implementación del sistema
 \input{capitulos/07_diseno_implementacion.tex}
 \newpage
 
-% Sección 8: Estrategia de pruebas
+% Sección 7: Estrategia de pruebas
 \input{capitulos/08_estrategia_pruebas.tex}
 \newpage
 
-% Sección 9: Metodología experimental
+% Sección 8: Metodología experimental
 \input{capitulos/09_metodologia_experimental.tex}
 \newpage
 
-% Sección 10: Resultados
+% Sección 9: Resultados
 \input{capitulos/10_resultados_prototipo.tex}
 \newpage
 
-% Sección 11: Discusión crítica
+% Sección 10: Discusión crítica
 \input{capitulos/11_discusion_critica.tex}
 \newpage
 
-% Sección 12: Conclusiones y recomendaciones (sin ramificación en el índice)
+% Sección 11: Conclusiones y recomendaciones (sin ramificación en el índice)
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
 \input{capitulos/12_conclusiones_recomendaciones.tex}
 \newpage
 
 % =========================================================================
-% SECCIÓN 13: REFERENCIAS (APA 7ma Edición)
+% SECCIÓN 12: REFERENCIAS (APA 7ma Edición)
 % =========================================================================
 \section{Referencias}
 \label{sec:referencias}
@@ -125,7 +126,7 @@
 \newpage
 
 % =========================================================================
-% SECCIÓN 14: ANEXOS
+% SECCIÓN 13: ANEXOS (sin ramificación en el índice)
 % =========================================================================
 \input{capitulos/14_anexos.tex}
 

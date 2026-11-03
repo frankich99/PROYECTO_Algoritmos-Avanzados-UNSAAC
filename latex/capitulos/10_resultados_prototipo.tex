@@ -16,13 +16,13 @@ Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan las 
     \label{fig:benchmark_canonico}
 \end{figure}
 
-\paragraph{Análisis del perfil disperso ($|E| = 4|V|$):}
+\subsubsection{Análisis del Perfil Disperso ($|E| = 4|V|$)}
 El montículo 4-ario (\texttt{DAryHeap}) obtuvo la menor mediana en 3 de las 5 escalas evaluadas ($|V| \in \{500, 1000, 5000\}$), alcanzando ventajas de 24.4\% en $|V|=500$, 3.6\% en $|V|=1000$ y 16.5\% en $|V|=5000$ respecto al montículo binario. El heap binario indexado resultó ligeramente más rápido en las escalas $|V|=100$ ($+1.5\%$) y $|V|=2500$ ($+0.5\%$). En el agregado del perfil disperso, la razón mediana de tiempos entre el heap 4-ario y el binario fue de $0.964$ (una ventaja global del 3.6\% a favor del 4-ario). No obstante, los intervalos intercuartílicos de ambas estructuras se solapan en las cinco escalas, demostrando que la variabilidad natural del sistema es comparable a la magnitud de la diferencia observada.
 
-\paragraph{Análisis del perfil denso ($|E| = 0.08\,|V|(|V|-1)$):}
+\subsubsection{Análisis del Perfil Denso ($|E| = 0.08\,|V|(|V|-1)$)}
 En el régimen denso, el montículo 4-ario superó al binario en 4 de las 5 escalas ($|V| \in \{50, 100, 200, 400\}$), con ventajas relativas del 2.1\%, 4.6\%, 5.6\% y 5.6\%, respectivamente, cediendo únicamente en $|V|=800$ por una diferencia marginal del 0.7\%. La razón mediana global en este perfil fue de $0.954$ (4.6\% más rápido para el 4-ario). Al igual que en el caso disperso, el solapamiento constante de los intervalos IQR evidencia una competencia técnica sumamente ajustada entre ambas colas de arreglo contiguo.
 
-\paragraph{Desempeño del Fibonacci Heap:}
+\subsubsection{Desempeño Comparativo del Fibonacci Heap}
 El \texttt{FibonacciHeap} no obtuvo la menor mediana en ninguna de las 10 escalas evaluadas, situándose sistemáticamente como la alternativa más lenta. En el perfil disperso, requirió entre 1.12 y 1.59 veces más tiempo que el heap binario; en el perfil denso, la penalización osciló entre 1.05 y 1.44 veces. En 8 de las 10 escalas, su intervalo IQR se solapa parcialmente con el del heap binario, confirmando que, a pesar de su óptima cota teórica, la constante de sobrecarga de indirección y la manipulación de punteros degradan de forma determinante su rendimiento práctico en Python.
 
 \input{tablas/sintesis_colas.tex}

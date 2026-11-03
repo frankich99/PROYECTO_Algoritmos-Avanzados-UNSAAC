@@ -40,7 +40,8 @@ El Algoritmo de Dijkstra es el método canónico para la resolución del problem
 \end{algorithmic}
 \end{algorithm}
 
-\paragraph{Correspondencia entre pseudocódigo y código fuente.} Para asegurar la trazabilidad estricta entre la literatura algorítmica y el paquete ejecutable, cada bloque relevante en \texttt{python/src/algorithms/dijkstra.py} implementa fielmente las líneas del Algoritmo~\ref{alg:dijkstra_generico}, como se sintetiza en la Tabla~\ref{tab:pseudo_codigo}.
+\subsubsection{Correspondencia entre Pseudocódigo e Implementación}
+Para asegurar la trazabilidad estricta entre la literatura algorítmica y el paquete ejecutable, cada bloque relevante en \texttt{python/src/algorithms/dijkstra.py} implementa fielmente las líneas del Algoritmo~\ref{alg:dijkstra_generico}, como se sintetiza en la Tabla~\ref{tab:pseudo_codigo}.
 
 \begin{table}[H]
     \centering
@@ -65,13 +66,14 @@ El Algoritmo de Dijkstra es el método canónico para la resolución del problem
 \subsection{Invariantes de Bucle y Demostración Formal de Corrección}
 La corrección formal del algoritmo descansa sobre el siguiente invariante inductivo:
 
-\paragraph{Invariante de bucle.} Al inicio de cada iteración del ciclo \texttt{while} (línea 8):
+\subsubsection{Invariante de Bucle Fundamental}
+Al inicio de cada iteración del ciclo \texttt{while} (línea 8):
 \begin{enumerate}
     \item Para todo vértice permanente $u \in S$, el valor estimado coincide con la distancia mínima real: $d[u] = \delta(s, u)$.
     \item Para todo vértice no permanente $v \in Q = V \setminus S$, $d[v]$ es la longitud del camino más corto desde $s$ hasta $v$ que transita exclusivamente por vértices pertenecientes al conjunto $S$.
 \end{enumerate}
 
-\paragraph{Demostración por inducción matemática:}
+\subsubsection{Demostración por Inducción Matemática de Optimalidad}
 \begin{itemize}
     \item \textbf{Base ($|S|=0$):} Antes de la primera iteración, $S = \emptyset$. Para el origen, $d[s] = 0 = \delta(s, s)$ dado que no existen aristas con pesos negativos ($w(e) \ge 0$). Para todo $v \ne s$, $d[v] = \infty$, lo cual satisface la cota superior sobre caminos sin vértices intermedios en $S$.
     \item \textbf{Paso inductivo:} Supóngase que el invariante se satisface para $|S| = k$. El algoritmo selecciona el vértice $u \in Q$ con $d_u = \min_{z \in Q} d[z]$ y lo incorpora a $S$. Si existiese un camino dirigido $P$ desde $s$ hasta $u$ estrictamente más corto que $d[u]$ ($w(P) < d[u]$), dicho camino debe salir de $S$ hacia $Q$ por primera vez a través de alguna arista $(x, y)$, con $x \in S$ y $y \in Q$. La longitud acumulada hasta $y$ satisface:

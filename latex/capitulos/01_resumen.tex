@@ -1,4 +1,5 @@
-\section{Resumen}
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
 \label{sec:resumen}
 
 Este proyecto aborda la determinación eficiente de rutas mínimas en redes viales urbanas mediante el Algoritmo de Dijkstra instrumentado con tres estructuras de colas de prioridad: Min-Heap Binario Indexado, 4-ary Heap ($d=4$) optimizado para memoria caché y Fibonacci Heap amortizado. La investigación integra un caso de estudio aplicado sobre la red vial real del Cusco extraída de OpenStreetMap (891 vértices y 2,139 aristas dirigidas), evaluada bajo una función de costo generalizado que incorpora la topografía andina y pendientes longitudinales severas, junto con una experimentación controlada sobre instancias sintéticas reproducibles en perfiles disperso ($|E|=4|V|$) y denso ($|E|=0.08\,|V|(|V|-1)$) en diez escalas de tamaño. El protocolo de medición utiliza reloj de nanosegundos (\texttt{perf\_counter\_ns}), aislamiento estricto del recolector de basura (\texttt{gc.disable()}) y aleatorización del orden de evaluación sobre 1,350 muestras temporales; la corrección matemática se valida exhaustivamente contra NetworkX y mediante un certificado formal de optimalidad de Bellman en tiempo $O(|V|+|E|)$.
@@ -10,8 +11,10 @@ Los resultados empíricos demuestran que no existe una estructura óptima univer
 
 \newpage
 
-\vspace{0.8cm}
-\subsection*{Abstract}
+\vspace*{0.5cm}
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+\label{sec:abstract}
 
 This project addresses the efficient computation of shortest paths in urban road networks through Dijkstra's Algorithm instrumented with three priority queue data structures: an Indexed Binary Min-Heap, an indexed 4-ary Heap ($d=4$) optimized for cache locality, and an amortized Fibonacci Heap. The research integrates an applied real-world case study on the Cusco road network retrieved from OpenStreetMap (891 vertices and 2,139 directed edges), evaluated under a generalized cost function incorporating Andean topography and longitudinal road gradients, along with controlled experimentation on reproducible synthetic instances with sparse ($|E|=4|V|$) and dense ($|E|=0.08\,|V|(|V|-1)$) profiles across ten scale tiers. The measurement protocol enforces a nanosecond timer (\texttt{perf\_counter\_ns}), explicit garbage collection isolation (\texttt{gc.disable()}), and randomized execution order across 1,350 wall-clock samples; mathematical correctness is verified against NetworkX and through a formal Bellman optimality certificate in $O(|V|+|E|)$ time.
 

@@ -2,7 +2,7 @@
 \label{sec:pruebas}
 
 \subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
-Para garantizar la confiabilidad, correctitud matemática y robustez del software, el proyecto descansa sobre una suite automatizada de pruebas implementada con el framework \texttt{pytest}. La totalidad de las 278 pruebas se estructuran formalmente bajo el patrón \textbf{Arrange - Act - Assert (AAA)}:
+Para garantizar la confiabilidad, correctitud matemática y robustez del software, el proyecto descansa sobre una suite automatizada de pruebas implementada con el framework \texttt{pytest}. La totalidad de las 278 pruebas se estructuran formalmente bajo el patrón \textbf{Arrange - Act - Assert (AAA)}, cuyos fundamentos teóricos y justificación metodológica fueron formalizados en la Sección~\ref{sec:fundamentos_aaa}:
 \begin{itemize}
     \item \textbf{Arrange (Organizar):} Configuración del entorno determinista, definición de semillas pseudoaleatorias fijas, instanciación del grafo de prueba o cola concreta y declaración explícita de los valores esperados.
     \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{dijkstra\_solver}, \texttt{a\_star\_solver}, operaciones primitivas de cola o comandos de la CLI).
@@ -65,7 +65,7 @@ La suite reúne 278 pruebas automatizadas que cubren exhaustivamente las cuatro 
 \end{table}
 
 \subsection{Metodología de Verificación y Oráculos Independientes}
-Para evitar sesgos algorítmicos derivados de errores compartidos entre implementaciones del mismo equipo, la exactitud de las soluciones se verifica contra tres oráculos independientes:
+Para evitar sesgos algorítmicos derivados de errores compartidos entre implementaciones del mismo equipo, la exactitud de las soluciones se verifica contra cuatro oráculos independientes de referencia:
 \begin{enumerate}
     \item \textbf{Algoritmo de Bellman-Ford:} Implementación pura de $O(|V||E|)$ tolerante a costos negativos y capaz de diagnosticar ciclos negativos. Se utiliza en 40 grafos aleatorios con topologías y densidades diversas.
     \item \textbf{Dijkstra sobre Arreglo no Ordenado:} Algoritmo determinista $O(|V|^2+|E|)$ que no emplea estructuras de árbol ni montículos, confirmando que la lógica de prioridades no perturba las distancias.
