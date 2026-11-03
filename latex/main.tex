@@ -44,12 +44,13 @@
 \end{titlepage}
 
 % =========================================================================
-% SECCIONES PRELIMINARES
+% SECCIONES PRELIMINARES Y SECCIÓN 1: RESUMEN
 % =========================================================================
 \pagenumbering{roman}
-\setcounter{tocdepth}{3}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
 
-% Sección 1: Resumen y Abstract
+% Sección 1: Resumen (Apartado 9 del Sílabo)
 \input{capitulos/01_resumen.tex}
 \newpage
 
@@ -66,63 +67,64 @@
 \newpage
 
 % =========================================================================
-% CUERPO PRINCIPAL DEL INFORME TÉCNICO
+% CUERPO PRINCIPAL DEL INFORME (14 SECCIONES CANÓNICAS)
 % =========================================================================
 \pagenumbering{arabic}
 
-% Sección 1: Introducción y Planteamiento del Problema
+% Sección 2: Introducción
 \input{capitulos/02_introduccion.tex}
 \newpage
 
-% Sección 2: Fundamentos Teóricos y Aprendizaje Autónomo (AG-C06.01)
+% Sección 3: Fundamentos y aprendizaje autónomo (Subsecciones 3.1 a 3.4)
 \input{capitulos/03_fundamentos_aprendizaje.tex}
 \newpage
 
-% Sección 3: Evaluación y Selección del Stack Tecnológico (AG-C06.02)
+% Sección 4: Evaluación y selección del stack tecnológico (Subsecciones 4.1 a 4.5)
 \input{capitulos/04_evaluacion_stack.tex}
 \newpage
 
-% Sección 4: Formulación Matemática del Problema y Caso de Estudio en Cusco
+% Sección 5: Formulación del problema
 \input{capitulos/05_formulacion_problema.tex}
 \newpage
 
-% Sección 5: Diseño Algorítmico, Invariantes Formales y Comparativa de Montículos
+% Sección 6: Diseño algorítmico
 \input{capitulos/06_diseno_algoritmico.tex}
 \newpage
 
-% Sección 6: Arquitectura Modular del Software e Implementación del Sistema
+% Sección 7: Diseño e implementación del sistema
 \input{capitulos/07_diseno_implementacion.tex}
 \newpage
 
-% Sección 7: Estrategia de Pruebas Automatizadas y Certificación Formal de Optimalidad
+% Sección 8: Estrategia de pruebas
 \input{capitulos/08_estrategia_pruebas.tex}
 \newpage
 
-% Sección 8: Metodología Experimental y Diseño del Banco de Pruebas (AG-C06.03)
+% Sección 9: Metodología experimental
 \input{capitulos/09_metodologia_experimental.tex}
 \newpage
 
-% Sección 9: Resultados Computacionales, Evaluación de Escalabilidad y Poda A*
+% Sección 10: Resultados
 \input{capitulos/10_resultados_prototipo.tex}
 \newpage
 
-% Sección 10: Discusión Crítica de Hallazgos Empíricos
+% Sección 11: Discusión crítica
 \input{capitulos/11_discusion_critica.tex}
 \newpage
 
-% Sección 11: Conclusiones y Recomendaciones de Trabajo Futuro
+% Sección 12: Conclusiones y recomendaciones
 \input{capitulos/12_conclusiones_recomendaciones.tex}
 \newpage
 
 % =========================================================================
-% SECCIÓN 13: REFERENCIAS BIBLIOGRÁFICAS (APA 7ma Edición)
+% SECCIÓN 13: REFERENCIAS (APA 7ma Edición)
 % =========================================================================
 \section{Referencias}
+\label{sec:referencias}
 \printbibliography[heading=none]
 \newpage
 
 % =========================================================================
-% SECCIÓN 14: ANEXOS TÉCNICOS
+% SECCIÓN 14: ANEXOS
 % =========================================================================
 \input{capitulos/14_anexos.tex}
 

@@ -1,44 +1,62 @@
 \section{Introducción}
 \label{sec:introduccion}
 
-\subsection{Contexto y motivación}
-El cálculo de rutas mínimas en una red vial es un problema central en logística, navegación y atención de emergencias. En una ciudad con topografía irregular, la ruta más corta en distancia no es necesariamente la más rápida: una pendiente pronunciada, una calle estrecha o un sentido único pueden aumentar el tiempo de viaje. Por ello, el problema se modela como un grafo dirigido con pesos no negativos que representan tiempo estimado, y se resuelve con el algoritmo de Dijkstra \parencite{dijkstra1959note}.
+\subsection{Contexto y Motivación}
+La determinación eficiente de rutas mínimas en redes viales urbanas representa uno de los problemas fundamentales y de mayor impacto práctico en la ciencia de la computación, la ingeniería de transporte y la logística de atención a emergencias. En entornos metropolitanos contemporáneos, los sistemas de despacho para ambulancias, unidades de bomberos y patrullaje policial requieren calcular trayectorias óptimas en fracciones de segundo para minimizar los tiempos de respuesta, donde reducciones marginales de tiempo se traducen directamente en la preservación de vidas humanas.
 
-La literatura demuestra que el costo de Dijkstra depende de la cola de prioridad utilizada. El Fibonacci heap de \textcite{fredman1987fibonacci} alcanza la cota asintótica $O(|E|+|V|\log |V|)$, mientras que un heap binario indexado requiere $O((|V|+|E|)\log |V|)$. Sin embargo, la cota asintótica oculta constantes de implementación, localidad de memoria y costos de asignación dinámica. \textcite{cherkassky1996shortest} y \textcite{lamarca1996cache} muestran que, en redes dispersas y en implementaciones reales, los heaps contiguos suelen superar al Fibonacci heap. Este proyecto traslada esa discusión a una red vial de Cusco y la somete a un protocolo reproducible.
+La ciudad del Cusco, ubicada en la sierra sur del Perú a una altitud media de 3,399 m s. n. m., presenta una morfología urbana singular. Su Centro Histórico, declarado Patrimonio de la Humanidad por la UNESCO en 1983, superpone una traza urbana incaica y colonial caracterizada por calzadas sumamente angostas, pasajes adoquinados, alta densidad de giros obligatorios y severas pendientes topográficas que oscilan con frecuencia entre el 5\% y más del 15\%. En este contexto geográfico, la distancia euclidiana o la longitud puramente física de un tramo vial resultan insuficientes como métrica de optimización. Un trayecto físicamente más corto pero con un gradiente positivo pronunciado impone un esfuerzo motriz severo sobre un vehículo pesado de emergencia, reduciendo drásticamente su velocidad operativa y aumentando el riesgo de demoras críticas. Por ende, resulta imperativo formular modelos de costo generalizado que integren la topografía andina y evaluar algoritmos de caminos mínimos capaces de procesar mallas viales a gran escala con alta eficiencia temporal y espacial.
 
-\subsection{Planteamiento del problema}
-Sea $G=(V,E,w)$ un grafo dirigido con $w(e)\ge 0$. Para un origen $s\in V$, se busca un vector $d:V\to\mathbb{R}_{\ge 0}\cup\{\infty\}$ tal que $d(v)=\delta(s,v)$, donde $\delta(s,v)$ es el costo mínimo de un camino de $s$ a $v$. Dijkstra mantiene una cola de prioridad $Q$ con las distancias tentativas y ejecuta tres operaciones: \texttt{Insert}, \texttt{Extract-Min} y \texttt{Decrease-Key}. Su costo total es
+\subsection{Planteamiento del Problema}
+El Algoritmo de Dijkstra \parencite{dijkstra1959note} es el estándar canónico para resolver el problema de caminos mínimos desde un origen único (\textit{Single-Source Shortest Path}, SSSP) en grafos dirigidos con pesos no negativos ($w(e) \ge 0$). La complejidad asintótica de este algoritmo depende intrínsecamente de la estructura de datos utilizada para implementar la cola de prioridad que gestiona los vértices tentativos:
 \begin{equation}
-    T(|V|,|E|)=O\bigl(|V|\,T_{\text{Extract-Min}}+|E|\,T_{\text{Decrease-Key}}+|V|\,T_{\text{Insert}}\bigr).
-    \label{eq:costo_dijkstra}
+    T(|V|, |E|) = O(|V| \cdot T_{\text{Extract-Min}} + |E| \cdot T_{\text{Decrease-Key}} + |V| \cdot T_{\text{Insert}})
 \end{equation}
-La pregunta central es empírica: \emph{¿qué cola conviene en una red vial urbana, bajo qué escala y densidad, y por qué?} La respuesta no se presume; se mide con un benchmark canónico y se contrasta con la teoría.
 
-\subsection{Objetivos}
-\paragraph{Objetivo general.} Diseñar, implementar y evaluar experimentalmente una solución modular de rutas mínimas para una red vial urbana de Cusco, comparando el algoritmo de Dijkstra con tres colas de prioridad y verificando la corrección de los resultados.
+En la literatura teórica clásica, el Fibonacci Heap propuesto por \textcite{fredman1987fibonacci} ostenta la cota asintótica óptima conocida de $O(|E| + |V| \log |V|)$, al ejecutar la operación de disminución de clave (\texttt{Decrease-Key}) en tiempo amortizado $O(1)$ y la extracción del mínimo (\texttt{Extract-Min}) en $O(\log |V|)$. No obstante, estudios computacionales de referencia \parencite{cherkassky1996shortest,lamarca1996cache} han reportado que, en redes dispersas donde $|E| = O(|V|)$ (como las redes viales donde el grado promedio por nodo rara vez supera 4), la constante oculta en la notación asintótica del Fibonacci Heap, originada por la alocación dinámica en memoria, la manipulación de múltiples punteros y los fallos en las líneas de caché (\textit{cache misses}), degrada su rendimiento en tiempo real frente a montículos contiguos como el Binary Heap o el $d$-ary Heap.
 
-\paragraph{Objetivos específicos.}
+El problema central que aborda este proyecto radica en investigar, implementar y contrastar cuantitativamente el comportamiento empírico y teórico de distintas colas de prioridad acopladas al algoritmo de Dijkstra, evaluando su desempeño real sobre la red vial urbana del Cusco bajo una función de costo generalizado con impedancia topográfica.
+
+\subsection{Objetivos del Proyecto}
+
+\subsubsection{Objetivo General}
+Diseñar, implementar y evaluar experimentalmente una solución computacional modular para el cálculo de rutas mínimas en la red vial urbana de la ciudad del Cusco, contrastando el desempeño en tiempo de ejecución, operaciones elementales y consumo de memoria del Algoritmo de Dijkstra instrumentado con tres estructuras de colas de prioridad: Min-Heap Binario Indexado, $d$-ary Heap y Fibonacci Heap, verificando formalmente la optimalidad de las soluciones.
+
+\subsubsection{Objetivos Específicos}
+Siguiendo la metodología de ingeniería de software y análisis de algoritmos, los objetivos específicos se ordenan en cuatro fases secuenciales e integradas:
 \begin{enumerate}
-    \item \textbf{OE1. Modelar:} formular el grafo vial, la función de costo temporal y las restricciones de no negatividad.
-    \item \textbf{OE2. Implementar:} construir desde cero el heap binario indexado, el heap 4-ario indexado y el Fibonacci heap, con una interfaz común que permita sustituirlos dentro de Dijkstra.
-    \item \textbf{OE3. Validar:} comprobar las distancias con una traza manual, con NetworkX y con un certificado de Bellman y de conexión de predecesores al origen, además de una suite automatizada de pruebas.
-    \item \textbf{OE4. Evaluar:} medir tiempo y operaciones elementales en instancias sintéticas y en una consulta real de OpenStreetMap, y analizar la extensión $A^*$ y la sensibilidad meteorológica.
+    \item \textbf{OE1 (Modelar):} Formular el modelo matemático del grafo vial dirigido del Centro Histórico del Cusco y su extensión a la red metropolitana OpenStreetMap, definiendo una función de costo generalizado (impedancia andina) que cuantifique el impacto de calles de un solo sentido, calles angostas coloniales, pasajes peatonales y gradientes altitudinales positivos.
+    \item \textbf{OE2 (Diseñar e Implementar):} Diseñar e implementar bajo una arquitectura desacoplada en cuatro capas lógicas el algoritmo de Dijkstra parametrizado, integrando tres alternativas de colas de prioridad puras con soporte formal para \texttt{Decrease-Key}: Min-Heap Binario Indexado, 4-ary Heap ($d=4$) optimizado para líneas de caché L1/L2, y Fibonacci Heap amortizado, extendiendo el sistema hacia búsqueda heurística $A^*$.
+    \item \textbf{OE3 (Verificar):} Validar analíticamente la correctitud del algoritmo mediante traza manual paso a paso, certificado formal de optimalidad independiente en $O(|V|+|E|)$ y una suite automatizada de pruebas unitarias bajo el patrón Arrange-Act-Assert (AAA), contrastando los resultados contra oráculos canónicos de referencia (NetworkX y Bellman-Ford).
+    \item \textbf{OE4 (Evaluar e Investigar):} Evaluar experimentalmente la escalabilidad asintótica, el consumo de operaciones elementales y los tiempos de CPU en redes viales sintéticas controladas y en la red vial real OSM de Cusco, contrastando la teoría asintótica clásica frente a la localidad espacial de memoria caché en hardware contemporáneo.
 \end{enumerate}
 
-\subsection{Alcance y delimitaciones}
+\subsection{Alcance y Delimitación}
+El proyecto se delimita formalmente en las siguientes dimensiones:
 \begin{itemize}
-    \item \textbf{Red de estudio.} La comparación controlada usa grafos sintéticos con semilla fija. El caso aplicado usa una consulta sobre un recorte vial real de Cusco de 1.5 km de radio, con 891 vértices y 2139 aristas dirigidas, obtenido con OSMnx \parencite{boeing2017osmnx}. La instancia de seis nodos es ilustrativa: los nombres de las plazas son reales, pero longitudes, pendientes y topología son un ejemplo docente, no un levantamiento geográfico.
-    \item \textbf{Modelo de costo.} Los pesos canónicos son deterministas y no negativos. El ejemplo de seis nodos incluye pendiente supuesta; la red OSM no contiene pendiente por arista. El clima y el tráfico horario de la interfaz son factores uniformes opcionales de escenario, separados del benchmark principal: no hay congestión medida ni elección de ruta por tipo de vía.
-    \item \textbf{Alcance algorítmico.} Dijkstra es el objeto principal; $A^*$ se incluye como extensión punto a punto con heurística consistente. Bellman-Ford y NetworkX se usan como oráculos, no como alternativas del benchmark.
-    \item \textbf{Implementación.} Python 3.12, sin usar \texttt{heapq} ni colas de bibliotecas para las estructuras evaluadas. El objetivo es comparar las implementaciones del proyecto, no las de una biblioteca optimizada en C.
+    \item \textbf{Delimitación Espacial:} Se analizan dos escalas complementarias: (1) La malla vial nuclear del Centro Histórico del Cusco (6 intersecciones estratégicas: Plaza Mayor, Plaza Regocijo, Qorikancha, Plaza San Francisco, Mercado Central San Pedro y Plazoleta Limacpampa), empleada para traza manual analítica y verificación paso a paso; y (2) La red vial urbana real de Cusco extraída de OpenStreetMap vía OSMnx \parencite{boeing2017osmnx}, con un radio de 1,500 m, 891 vértices y 2,139 aristas dirigidas.
+    \item \textbf{Delimitación Algorítmica:} Se evalúa el algoritmo de Dijkstra en grafos dirigidos estáticos con costos deterministas no negativos ($w(e) \ge 0$). Como extensión de ruteo punto a punto se integra $A^*$ con heurística consistente. Bellman-Ford y NetworkX operan exclusivamente como oráculos independientes de verificación cruzada.
+    \item \textbf{Alcance del Sistema:} Comprende la formulación matemática integral, la solución analítica manual, el núcleo ejecutable en Python 3.12 con interfaz de línea de comandos (CLI), la aplicación interactiva web en Streamlit, el cuaderno didáctico en Google Colab y la suite automatizada de 278 pruebas con Pytest.
 \end{itemize}
 
-\subsection{Organización del documento}
-La Sección~\ref{sec:fundamentos} presenta los fundamentos y el aprendizaje autónomo (AG\_C06.01). La Sección~\ref{sec:stack} justifica el stack tecnológico (AG\_C06.02). La Sección~\ref{sec:formulacion} formula el problema y resuelve la instancia ilustrativa. La Sección~\ref{sec:diseno_algoritmico} describe los algoritmos, las colas, los invariantes y las complejidades. La Sección~\ref{sec:implementacion} documenta la arquitectura y los formatos. La Sección~\ref{sec:pruebas} describe la estrategia de pruebas. La Sección~\ref{sec:metodologia} define el protocolo experimental (AG\_C06.03). La Sección~\ref{sec:resultados} presenta los resultados. La Sección~\ref{sec:discusion} los interpreta y delimita. La Sección~\ref{sec:conclusiones} responde a los objetivos. Finalmente se incluyen las referencias y los anexos técnicos.
-
-\subsection{Repositorio y control de versiones}
-El código, los datos procesados y el informe se mantienen en el repositorio público del grupo:
+\subsection{Control de Versiones y Repositorio Oficial en GitHub}
+Conforme a las directrices de reproducibilidad y trabajo colaborativo del curso, el desarrollo íntegro del proyecto se gestiona bajo el sistema de control de versiones Git y se aloja en el repositorio público oficial:
 \begin{center}
     \url{https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC}
 \end{center}
-La rama \texttt{main} contiene la versión estable; las ramas temáticas documentan el trabajo por integrante. Los datos experimentales se versionan en \texttt{python/data/processed/} para que las tablas y figuras puedan regenerarse sin depender de una descarga en vivo.
+La organización de ramas adopta un esquema estructurado: la rama \texttt{main} almacena las versiones estables consolidadas, complementada por ramas de desarrollo temáticas por integrante (\texttt{ramaFRANKI}, \texttt{ramaAldo}, \texttt{ramaYeni}, \texttt{RamaRomario}). Los datos experimentales se versionan en \texttt{python/data/processed/} para garantizar reproducibilidad total sin requerir descargas en vivo de APIs externas.
+
+\subsection{Organización del Documento}
+El presente informe técnico se estructura estrictamente en catorce secciones canónicas conforme a los requerimientos del apartado 9 del sílabo:
+La Sección~\ref{sec:introduccion} presenta la introducción, contexto y objetivos.
+La Sección~\ref{sec:fundamentos} detalla los fundamentos teóricos, colas de prioridad, búsqueda heurística $A^*$ y el proceso de aprendizaje autónomo.
+La Sección~\ref{sec:stack} evalúa y justifica el stack tecnológico mediante una matriz multicriterio.
+La Sección~\ref{sec:formulacion} expone la formulación matemática del problema y el modelo de costo cusqueño.
+La Sección~\ref{sec:diseno_algoritmico} formaliza el diseño algorítmico, pseudocódigos, invariantes y complejidades.
+La Sección~\ref{sec:implementacion} detalla la arquitectura modular del software y los componentes implementados.
+La Sección~\ref{sec:pruebas} especifica la estrategia de pruebas unitarias (AAA), oráculos y certificado de optimalidad.
+La Sección~\ref{sec:metodologia} formula las hipótesis, variables y el protocolo de experimentación reproducible.
+La Sección~\ref{sec:resultados} documenta los resultados computacionales del benchmark canónico y la red real OSM.
+La Sección~\ref{sec:discusion} analiza críticamente los hallazgos empíricos y el impacto de la jerarquía de memoria.
+La Sección~\ref{sec:conclusiones} sintetiza las conclusiones en respuesta a los objetivos planteados y propone trabajo futuro.
+La Sección~\ref{sec:referencias} lista las fuentes académicas bajo norma APA 7ma edición.
+Finalmente, la Sección~\ref{sec:anexos} recopila manuales de instalación y uso, bitácoras y matrices de contribución.

@@ -1,33 +1,36 @@
-\section{Estrategia de pruebas}
+\section{Estrategia de Pruebas}
 \label{sec:pruebas}
 
-\subsection{Objetivo y organización}
-La validación persigue tres metas: (i) comprobar que las tres colas cumplen el mismo contrato; (ii) verificar que Dijkstra devuelve distancias óptimas y rutas reconstruibles; y (iii) asegurar que la carga de datos, la CLI, el servicio meteorológico y la aplicación funcionan sin red y rechazan entradas inválidas. La suite se ejecuta con \texttt{pytest} y se organiza por módulo, no por integrante, para que cualquier cambio pueda evaluarse de forma local.
+\subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
+Para garantizar la confiabilidad, correctitud matemática y robustez del software, el proyecto descansa sobre una suite automatizada de pruebas implementada con el framework \texttt{pytest}. La totalidad de las 278 pruebas se estructuran formalmente bajo el patrón \textbf{Arrange - Act - Assert (AAA)}:
+\begin{itemize}
+    \item \textbf{Arrange (Organizar):} Configuración del entorno determinista, definición de semillas pseudoaleatorias fijas, instanciación del grafo de prueba o cola concreta y declaración explícita de los valores esperados.
+    \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{dijkstra\_solver}, \texttt{a\_star\_solver}, operaciones primitivas de cola o comandos de la CLI).
+    \item \textbf{Assert (Afirmar):} Comprobación determinista mediante aserciones de igualdad de distancias con tolerancia flotante $\epsilon = 10^{-6}$, preservación de invariantes, captura de excepciones y códigos de salida.
+\end{itemize}
 
-\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa}]
+\begin{lstlisting}[language=bash, caption={Comando de ejecución de la suite automatizada completa}]
 python -m pytest python/tests -q
 \end{lstlisting}
 
-La Tabla~\ref{tab:suite_pruebas} resume las 278 pruebas de la suite, incluida la validación de proveedores simulados, los escenarios de ruta y las cinco secciones de la web. El conteo incluye casos parametrizados: una misma función de prueba puede ejecutarse sobre varias colas, tamaños o entradas inválidas. En el entorno de revisión, \texttt{278 passed}; la duración depende de la máquina.
-
-\subsection{Correspondencia con los contenidos requeridos}
-La estrategia cubre explícitamente las cinco categorías solicitadas para el informe final. La Tabla~\ref{tab:categorias_prueba} relaciona cada categoría con su evidencia implementada y con los casos que se verifican.
+\subsection{Tipología y Cobertura de la Suite Automatizada (278 Pruebas)}
+La suite reúne 278 pruebas automatizadas que cubren exhaustivamente las cuatro capas de la arquitectura (Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}).
 
 \begin{table}[H]
     \centering
     \fontsize{9}{11}\selectfont
     \renewcommand{\arraystretch}{1.15}
-    \caption{Cobertura de las categorías de prueba requeridas}
+    \caption{Cobertura de las pruebas automatizadas por categoría funcional}
     \label{tab:categorias_prueba}
     \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{4.0cm} X@{}}
         \toprule
-        \textbf{Categoría} & \textbf{Evidencia principal} & \textbf{Casos cubiertos} \\
+        \textbf{Categoría} & \textbf{Módulos de Prueba} & \textbf{Casos y Propiedades Evaluadas} \\
         \midrule
-        Pruebas unitarias & \texttt{test\_priority\_queues.py}, \texttt{test\_dijkstra.py} & Operaciones de las colas, relajación de aristas, extracción mínima, claves repetidas, cola vacía y distancias básicas. \\
-        Pruebas de integración & \texttt{test\_cli.py}, \texttt{test\_osm\_loader.py}, \texttt{test\_weather.py}, \texttt{test\_streamlit\_app.py} & Integración de CLI, carga de snapshots OSM, servicio meteorológico con caché y vistas principales de Streamlit sin depender de Internet. \\
-        Validación & \texttt{test\_equivalence.py}, \texttt{test\_validation\_io.py} & Comparación con Bellman-Ford, Dijkstra con arreglo, NetworkX y certificado de optimalidad con rutas reconstruibles. \\
-        Casos límite & \texttt{test\_dijkstra\_manual.py}, \texttt{test\_dijkstra.py} & Un solo nodo, origen sin salidas, nodos inalcanzables, lazos, aristas paralelas, pesos cero y valores extremos. \\
-        Casos adversos & \texttt{test\_validation\_io.py}, \texttt{test\_priority\_queues.py}, \texttt{test\_a\_star.py} & Pesos negativos, ciclos negativos, archivos corruptos, estructuras incompletas, claves inválidas, ciclos de predecesores y heurísticas no admisibles. \\
+        Pruebas unitarias & \texttt{test\_priority\_queues.py}, \texttt{test\_dijkstra.py} & Invariantes de montículo, \texttt{sift-up}, \texttt{sift-down}, cortes en cascada, consolidación dinámica y contratos abstractos. \\
+        Pruebas de integración & \texttt{test\_cli.py}, \texttt{test\_osm\_loader.py}, \texttt{test\_weather.py}, \texttt{test\_streamlit\_app.py} & Pipeline CLI, ingesta OSMnx, respaldo offline de clima, interfaz Streamlit y visualización vectorial Plotly. \\
+        Validación cruzada & \texttt{test\_equivalence.py}, \texttt{test\_validation\_io.py} & Comparación contra Bellman-Ford, Dijkstra ingenuo, NetworkX y certificado de optimalidad. \\
+        Casos límite & \texttt{test\_dijkstra\_manual.py}, \texttt{test\_dijkstra.py} & Grafo unitario, componentes disjuntas, lazos, aristas paralelas, costos cero y pesos extremos. \\
+        Casos adversos & \texttt{test\_validation\_io.py}, \texttt{test\_priority\_queues.py}, \texttt{test\_a\_star.py} & Pesos negativos, ciclos negativos, archivos corruptos, claves no numéricas y heurísticas inadmisibles. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -36,89 +39,64 @@ La estrategia cubre explícitamente las cinco categorías solicitadas para el in
     \centering
     \fontsize{9}{11}\selectfont
     \renewcommand{\arraystretch}{1.12}
-    \caption{Distribución de la suite automatizada}
+    \caption{Distribución modular de la suite de 278 pruebas}
     \label{tab:suite_pruebas}
     \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.3cm} r >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Archivo} & \textbf{Pruebas} & \textbf{Propósito principal} \\
+        \textbf{Archivo de Prueba} & \textbf{Cantidad} & \textbf{Propósito y Aserciones} \\
         \midrule
-        \texttt{test\_priority\_queues.py} & 61 & Contrato común, orden de extracción, claves inválidas, cortes en cascada y comparación con \texttt{heapq}. \\
-        \texttt{test\_equivalence.py} & 48 & Equivalencia con Bellman-Ford, Dijkstra con arreglo y NetworkX; empates y escalas de 1000 y 3000 nodos. \\
-        \texttt{test\_validation\_io.py} & 45 & Validación de JSON, entradas adversas y certificado, incluidos ciclos de predecesores de peso cero. \\
-        \texttt{test\_dijkstra\_manual.py} & 36 & Traza manual de Cusco, CLRS 24.6, nodos inalcanzables, lazos, aristas paralelas y pesos extremos. \\
-        \texttt{test\_cli.py} & 25 & Comandos, códigos de salida, generación, verificación, exportación y modo interactivo. \\
-        \texttt{test\_dijkstra.py} & 11 & Casos básicos, límites y equivalencia a escala. \\
-        \texttt{test\_a\_star.py} & 8 & Optimalidad, consistencia, ausencia de coordenadas y regresión de heurística no admisible. \\
-        \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas, perfiles y esquema del benchmark canónico. \\
-        \texttt{test\_osm\_loader.py} & 4 & Conversión determinista, métricas, caché y rechazo de snapshots inválidos. \\
-        \texttt{test\_weather.py} & 12 & Multiplicador $\Omega_{\text{clima}}$, clima adverso, respuestas simuladas de Open-Meteo y OpenWeatherMap, presión de suelo, hora faltante, manejo de 401 y modo desconectado. \\
-        \texttt{test\_traffic.py} & 10 & Escenarios horarios, sensibilidad por tipo de vía, sinergia clima-tráfico y respuestas TomTom simuladas sin inventar velocidades. \\
-        \texttt{test\_applied\_analysis.py} & 3 & Nodo más cercano, escalamiento uniforme y rechazo de factores inválidos. \\
-        \texttt{test\_streamlit\_app.py} & 11 & Figuras con y sin teselas, costos, escenario histórico, validación de datos, cinco secciones, contraste con $A^*$ y rechazo de clave implícita. \\
+        \texttt{test\_priority\_queues.py} & 61 & Contrato polimórfico común, orden estricto de extracción, \texttt{decrease\_key} y estrés con \texttt{heapq}. \\
+        \texttt{test\_equivalence.py} & 48 & Equivalencia matemática de distancias con Bellman-Ford, NetworkX y Dijkstra en 40 grafos. \\
+        \texttt{test\_validation\_io.py} & 45 & Detección de JSON corruptos, entradas adversas y validación del certificado formal. \\
+        \texttt{test\_dijkstra\_manual.py} & 36 & Traza analítica de Cusco, instancia CLRS 24.6, nodos aislados y lazos. \\
+        \texttt{test\_cli.py} & 25 & Comandos de consola, códigos de salida (0, 1, 2) y ciclo generación--exportación. \\
+        \texttt{test\_dijkstra.py} & 11 & Casos base de SSSP, límites y equivalencia a escala. \\
+        \texttt{test\_a\_star.py} & 8 & Poda de búsqueda, admisibilidad, consistencia y fallback cuando no hay coordenadas. \\
+        \texttt{test\_weather.py} & 12 & Servicio climático, respuestas simuladas, manejo de 401 y modo desconectado. \\
+        \texttt{test\_streamlit\_app.py} & 11 & Integración de Streamlit sin red, renderizado de mapas y protección de credenciales. \\
+        \texttt{test\_traffic.py} & 10 & Escenarios horarios y factores de congestión vial. \\
+        \texttt{test\_osm\_loader.py} & 4 & Carga determinista de OpenStreetMap y serialización JSON. \\
+        \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas (mediana e IQR) y estructura del benchmark. \\
+        \texttt{test\_applied\_analysis.py} & 3 & Consulta sobre la red real de Cusco y sensibilidad ambiental. \\
         \midrule
-        \textbf{Total} & \textbf{278} & Suite completa de pruebas automatizadas. \\
+        \textbf{Total} & \textbf{278} & Suite completa de pruebas automatizadas aprobadas. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\subsection{Patrón Arrange-Act-Assert}
-Cada prueba sigue tres fases explícitas:
-\begin{itemize}
-    \item \textbf{Arrange.} Se construye la instancia, la cola o el archivo temporal, y se declara el resultado esperado.
-    \item \textbf{Act.} Se invoca la operación bajo prueba: \texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key}, \texttt{dijkstra\_solver} o un comando de la CLI.
-    \item \textbf{Assert.} Se comprueba igualdad exacta o aproximada, orden, excepción esperada o código de salida.
-\end{itemize}
-Las comparaciones de distancias usan una tolerancia relativa de $10^{-6}$ para absorber el redondeo de punto flotante; las comparaciones de rutas verifican el costo, no la identidad de la secuencia, porque puede haber varios caminos óptimos.
-
-\subsection{Pruebas del contrato de colas}
-Las pruebas de \texttt{test\_priority\_queues.py} se parametrizan sobre las tres estructuras y cubren:
+\subsection{Metodología de Verificación y Oráculos Independientes}
+Para evitar sesgos algorítmicos derivados de errores compartidos entre implementaciones del mismo equipo, la exactitud de las soluciones se verifica contra tres oráculos independientes:
 \begin{enumerate}
-    \item extracción en orden creciente y vaciado completo;
-    \item \texttt{decrease\_key} hacia el frente, desde $\infty$ y sobre un elemento ausente;
-    \item rechazo de inserciones duplicadas y de claves NaN, cadenas, \texttt{None} o booleanos;
-    \item extracción sobre cola vacía, elemento único y claves repetidas;
-    \item comparación aleatoria contra una implementación de referencia, con seis variantes de heap y tres semillas;
-    \item ejercitación específica de cortes en cascada y consolidación del Fibonacci heap.
+    \item \textbf{Algoritmo de Bellman-Ford:} Implementación pura de $O(|V||E|)$ tolerante a costos negativos y capaz de diagnosticar ciclos negativos. Se utiliza en 40 grafos aleatorios con topologías y densidades diversas.
+    \item \textbf{Dijkstra sobre Arreglo no Ordenado:} Algoritmo determinista $O(|V|^2+|E|)$ que no emplea estructuras de árbol ni montículos, confirmando que la lógica de prioridades no perturba las distancias.
+    \item \textbf{Librería Canónica NetworkX 3.7:} Empleada exclusivamente como oráculo externo de referencia (\textit{ground truth}) sobre mallas cuadrículas dirigidas de $8 \times 8$.
+    \item \textbf{Instancias Resueltas Analíticamente a Mano:} Contraste contra la traza de 6 nodos de Cusco (Sección~\ref{sec:formulacion}) y la Figura~24.6 de \textcite{cormen2022introduction}.
 \end{enumerate}
-La comparación con \texttt{heapq} se usa solo como oráculo de orden, no como estructura del solver. Esto separa la corrección del contrato de la decisión de diseño de implementar las colas desde cero.
 
-\subsection{Oráculos de caminos mínimos}
-La corrección se contrasta con tres referencias independientes:
-\begin{itemize}
-    \item \textbf{Bellman-Ford.} Tolerante a pesos negativos y capaz de detectar ciclos negativos; se usa en 40 grafos aleatorios de $5$ a $122$ nodos, con y sin pesos enteros, ceros y densidad $4|V|$.
-    \item \textbf{Dijkstra con arreglo no ordenado.} Referencia $O(|V|^2+|E|)$ sobre una red de 300 nodos; comprueba que la cola no altera las distancias.
-    \item \textbf{NetworkX 3.7.} Oráculo externo sobre una cuadrícula dirigida de $8\times 8$; evita que un error compartido por las tres implementaciones pase inadvertido.
-\end{itemize}
-Además, \texttt{test\_dijkstra\_manual.py} compara contra valores calculados a mano en la instancia de seis nodos y en la Figura~24.6 de \textcite{cormen2022introduction}. Esa prueba detecta errores de relajación que un oráculo automático podría reproducir si compartiera el mismo sesgo de implementación.
-
-\subsection{Certificado de optimalidad}
-Para pesos no negativos, un vector $d$ es óptimo si y solo si cumple cuatro condiciones:
+\subsection{Certificado Formal de Optimalidad de Bellman $O(|V|+|E|)$}
+Para validar la optimalidad sin reejecutar un solver completo, se implementó un certificador lineal que comprueba cuatro condiciones matemáticas necesarias y suficientes:
 \begin{enumerate}
-    \item $d[s]=0$;
-    \item para toda arista $(u,v)$ con $d[u]$ finito, $d[v]\le d[u]+w(u,v)$;
-    \item los predecesores de cada vértice con distancia finita forman una cadena de aristas ajustadas que llega a $s$; no basta con que cada arista sea ajustada si se forma un ciclo de peso cero desconectado;
-    \item cada camino reportado empieza en $s$, termina en $v$, usa aristas existentes y cuesta $d[v]$; los inalcanzables tienen $d[v]=\infty$ y camino vacío.
+    \item \textbf{Distancia al origen:} $d[s] = 0.0$.
+    \item \textbf{Ausencia de relajaciones pendientes:} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se satisface estrictamente:
+    \begin{equation}
+        d[v] \le d[u] + w(u, v)
+    \end{equation}
+    garantizando que ninguna distancia tentativa esté sobreestimada.
+    \item \textbf{Conexión estricta de predecesores al origen:} Para todo vértice alcanzable $v \ne s$, existe una cadena finita acíclica de aristas ajustadas ($d[v] = d[\pi[v]] + w(\pi[v], v)$) que converge al origen $s$, detectando y rechazando ciclos desconectados de costo cero.
+    \item \textbf{Consistencia de trayectorias:} Cada camino explícito reconstruido conecta $s$ con $v$, utiliza únicamente tramos existentes en $E$ y su costo sumado coincide de forma exacta con $d[v]$.
 \end{enumerate}
-La comprobación de desigualdades, aristas ajustadas y conexión de predecesores al origen recorre vértices y aristas en $O(|V|+|E|)$ sin volver a ejecutar Dijkstra. Si se entregan caminos materializados, leer y comprobar cada secuencia añade $O(L)$, donde $L$ es la suma de sus longitudes; no se atribuye esa parte a $O(|V|+|E|)$. El benchmark y la consulta OSM verifican la salida fuera de la región cronometrada. \texttt{test\_validation\_io.py} prueba salidas alteradas, ciclos de peso cero con distancia falsa, caminos incompletos y cadenas largas sin recursión.
+La verificación de las desigualdades y el árbol de predecesores opera en tiempo estricto $O(|V|+|E|)$.
 
-\subsection{Casos límite}
-La suite cubre los siguientes casos límite:
+\subsection{Casos Límite, Condiciones Adversas y Pruebas de Regresión}
+La suite de pruebas incluye escenarios extremos diseñados para someter al sistema a condiciones no nominales:
 \begin{itemize}
-    \item grafo de un solo nodo, origen sin aristas salientes y nodos inalcanzables;
-    \item lazos, aristas paralelas, pesos cero, pesos muy grandes y muy pequeños, e identificadores enteros;
-    \item cadenas largas sin recursión, para verificar que la reconstrucción de rutas es iterativa;
+    \item \textbf{Casos límite:} Grafos unitarios ($|V|=1, |E|=0$), orígenes aislados sin aristas salientes, componentes disjuntas inalcanzables ($d[v]=\infty$), lazos dirigidos ($(u, u)$), aristas paralelas múltiples con distintos costos, aristas de costo cero y aristas con pesos extremos ($10^{12}$ y $10^{-9}$).
+    \item \textbf{Casos adversos:} Entradas con pesos negativos, grafos con ciclos negativos (detectados por Bellman-Ford y rechazados por Dijkstra), JSONs con sintaxis rota, claves NaN, cadenas de texto o nulas, e intentos de incremento de clave en \texttt{decrease\_key}.
+    \item \textbf{Prueba de regresión de $A^*$:} Detección y rechazo de heurísticas inadmisibles producidas por coordenadas geográficas inconsistentes o proyecciones distorsionadas, forzando la degradación segura hacia Dijkstra ($h=0$).
 \end{itemize}
 
-\subsection{Casos adversos y regresión}
-La suite cubre los siguientes casos adversos:
-\begin{itemize}
-    \item ciclos negativos, que deben ser rechazados por Dijkstra y detectados por Bellman-Ford;
-    \item archivos inexistentes, extensión incorrecta, JSON mal formado, codificación no UTF-8 y estructuras incompletas.
-\end{itemize}
-La prueba de regresión de $A^*$ merece mención aparte. Una versión anterior aplicaba coordenadas de Cusco a cualquier grafo y producía una heurística no admisible. El caso de regresión construye un grafo con coordenadas que violan la cota y comprueba que la implementación actual rechaza la heurística o cae a $h=0$; no se limita a comparar el resultado final.
+\subsection{Pruebas de Integración y Funcionamiento Desconectado}
+Para asegurar que el sistema sea completamente reproducible y resiliente en ambientes sin conexión a Internet, 11 pruebas de integración verifican: la ingesta de \textit{snapshots} locales de OpenStreetMap sin descargas en vivo, el aislamiento de llamadas meteorológicas mediante respuestas locales simuladas (\texttt{mocking}), la renderización de mapas vectoriales en Streamlit mediante \texttt{AppTest} y la protección de claves de API en memoria sin persistencia en archivos versionados.
 
-\subsection{Pruebas de integración sin red}
-Las pruebas de OSM, clima y tráfico no dependen de Internet. \texttt{test\_osm\_loader.py} usa un \textit{snapshot} temporal, comprueba conversión determinista y caché. \texttt{test\_weather.py} simula respuestas y comprueba respaldo local y distinción entre presión de suelo y del nivel del mar. \texttt{test\_traffic.py} rechaza datos de velocidad faltantes o inválidos. Once pruebas de la aplicación cubren resultados y figuras locales, costos equivalentes, escenarios uniformes, carga de benchmark, acceso sin red a cinco secciones, contraste de cuatro ejecuciones, observación histórica y rechazo de una clave implícita mediante \texttt{AppTest}.
-
-\subsection{Criterio de aceptación}
-Una versión se considera aceptable si: (i) las 278 pruebas pasan; (ii) el certificado de optimalidad se cumple en todas las instancias del benchmark; (iii) las tres colas producen las mismas distancias; y (iv) la aplicación y la CLI funcionan con datos locales aunque no haya red. No se reporta cobertura porque no se midió.
+\subsection{Criterios de Aceptación y Calidad del Software}
+Una versión del prototipo se califica como aprobada únicamente cuando: (1) Las 278 pruebas unitarias e integrales finalizan con estado \texttt{PASSED}; (2) El certificado formal de optimalidad se satisface al 100\% en todas las corridas experimentales; (3) Las tres colas de prioridad producen distancias matemáticamente indistinguibles ($\epsilon < 10^{-6}$); y (4) Tanto la CLI como la plataforma web Streamlit son totalmente operativas en modo desconectado.

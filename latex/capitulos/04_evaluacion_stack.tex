@@ -1,7 +1,7 @@
-\section{Evaluación y selección del stack tecnológico}
+\section{Evaluación y Selección del Stack Tecnológico}
 \label{sec:stack}
 
-\subsection{Alternativas consideradas}
+\subsection{Alternativas Consideradas}
 La Tabla~\ref{tab:alternativas_stack} resume las alternativas evaluadas en seis capas. Se distingue entre la tecnología adoptada para el prototipo y las opciones consideradas para una eventual ampliación. No se valoró la novedad por sí misma, sino la capacidad de aprender, integrar, probar y justificar cada herramienta.
 
 \begin{table}[H]
@@ -24,7 +24,7 @@ La Tabla~\ref{tab:alternativas_stack} resume las alternativas evaluadas en seis 
     \end{tabularx}
 \end{table}
 
-\subsection{Criterios de comparación}
+\subsection{Criterios de Comparación}
 Se usaron cuatro criterios ponderados: C1 expresividad algorítmica (30\%), C2 instrumentación y aislamiento del ruido (25\%), C3 reproducibilidad y portabilidad (25\%) y C4 curva de aprendizaje (20\%). La Tabla~\ref{tab:matriz_multicriterio} presenta una escala ordinal de 1 a 5. Los puntajes son un juicio técnico del equipo, no una medición física; se incluyen para hacer explícita la decisión, no para simular precisión inexistente.
 
 \begin{table}[H]
@@ -44,7 +44,7 @@ Se usaron cuatro criterios ponderados: C1 expresividad algorítmica (30\%), C2 i
     \end{tabularx}
 \end{table}
 
-\subsection{Tecnología seleccionada y justificación}
+\subsection{Tecnología Seleccionada y Justificación}
 \begin{enumerate}
     \item \textbf{Python 3.12.8.} Permite expresar los algoritmos con tipado y pruebas sin una cadena de compilación. Las tres colas se implementaron desde cero; no se usó \texttt{heapq} para las estructuras evaluadas. La contrapartida es que los tiempos absolutos incluyen la sobrecarga del intérprete y no son extrapolables a C++ o Rust.
     \item \textbf{OSMnx 2.1.1 y NetworkX 3.7.} OSMnx descarga y convierte la red vial; NetworkX se usa como oráculo de distancias. La red se congela en JSON para que el análisis no dependa de una descarga en vivo.
@@ -56,10 +56,10 @@ Se usaron cuatro criterios ponderados: C1 expresividad algorítmica (30\%), C2 i
     \item \textbf{Modelo horario de tráfico.} Reglas deterministas y coeficientes hipotéticos por franja y tipo de vía; la interfaz muestra los factores, pero aplica solo el de avenida de forma uniforme a la ruta OSM. El cliente opcional de TomTom no dispone de un experimento canónico ni de pruebas de red en este repositorio; no se declara tráfico calibrado.
 \end{enumerate}
 
-\subsection{Procedimiento de aprendizaje e integración}
+\subsection{Procedimiento de Aprendizaje e Integración}
 La adopción se organizó en tres fases. Primero se construyó un prototipo mínimo con el heap binario y la instancia de seis nodos. Después se añadieron el heap 4-ario, el Fibonacci heap y el certificado de optimalidad. Finalmente se integraron OSMnx, el benchmark canónico, la aplicación Streamlit y el servicio meteorológico con caché. Cada fase dejó pruebas y datos versionados; las decisiones que cambiaron el diseño se registraron en el repositorio.
 
-\subsection{Dificultades de adopción y soluciones}
+\subsection{Dificultades de Adopción y Soluciones Aplicadas}
 \begin{itemize}
     \item \textbf{Dependencias geoespaciales en Windows.} La instalación de GDAL y OSMnx puede fallar por binarios incompatibles. Se exportó la red a JSON; las pruebas usan el \textit{snapshot}, no la descarga. \texttt{requirements.txt} declara versiones mínimas, no versiones exactas; el entorno de la medición está anotado en la Sección~\ref{sec:metodologia}.
     \item \textbf{Codificación de consola.} La consola CP1252 producía errores con caracteres Unicode. Se forzó UTF-8 en archivos y se usaron mensajes ASCII en los registros de la CLI.

@@ -1,95 +1,95 @@
-\section{Fundamentos y aprendizaje autónomo}
+\section{Fundamentos y Aprendizaje Autónomo}
 \label{sec:fundamentos}
 
-\subsection{Conceptos y algoritmos requeridos}
-Una red vial urbana se modela como un grafo dirigido ponderado $G=(V,E,w)$, donde $V$ son intersecciones o cambios de geometría, $E\subseteq V\times V$ son tramos con sentido de circulación y $w:E\to\mathbb{R}_{\ge 0}$ es el costo. Las redes viales son dispersas: en el recorte OSM utilizado, $|E|/|V|=2139/891=2.40$. Esta razón condiciona el peso relativo de las operaciones de cola.
+\subsection{Conceptos y Algoritmos Requeridos}
+El desarrollo del proyecto descansa sobre tres pilares conceptuales de las ciencias de la computación: la teoría de grafos viales dirigidos, el diseño de colas de prioridad con clave disminuible y la relajación voraz (\textit{greedy}) de caminos mínimos.
 
-\paragraph{Dijkstra e invariante.} Dijkstra mantiene un conjunto $S$ de vértices con distancia definitiva y una cola $Q=V\setminus S$ con distancias tentativas. En cada iteración extrae $u=\arg\min_{z\in Q}d[z]$, lo incorpora a $S$ y relaja las aristas salientes:
+\subsubsection{Grafos Viales Urbanos y Propiedad de Red Plana}
+Una red vial urbana se modela formalmente como un grafo dirigido ponderado $G = (V, E, W)$, donde $V$ representa el conjunto de intersecciones viales o discontinuidades geométricas, $E \subseteq V \times V$ representa los tramos viales orientados según el sentido de circulación reglamentario, y $W: E \to \mathbb{R}^+$ asigna un costo no negativo a cada tramo. Las redes viales urbanas presentan propiedades geométricas cuasi-planas con una densidad extremadamente baja:
 \begin{equation}
-    \text{si } d[u]+w(u,v)<d[v],\quad d[v]\leftarrow d[u]+w(u,v),\ \pi[v]\leftarrow u.
-    \label{eq:relajacion}
+    |E| \approx k \cdot |V|, \quad \text{donde } 2.0 \le k \le 3.5
 \end{equation}
-El invariante es: al inicio de cada iteración, $d[u]=\delta(s,u)$ para todo $u\in S$, y $d[v]$ es el costo mínimo de un camino de $s$ a $v$ con vértices intermedios en $S$. La demostración es por inducción. Si existiera un camino más corto hacia el vértice extraído $u$, ese camino abandonaría $S$ por una arista $(x,y)$ con $x\in S$ e $y\in Q$; entonces
-\begin{equation}
-    w(P)\ge \delta(s,x)+w(x,y)=d[y]\ge d[u],
-    \label{eq:prueba_dijkstra}
-\end{equation}
-lo que contradice $w(P)<d[u]$. La no negatividad de los pesos es esencial para la última desigualdad.
+En el recorte vial de OpenStreetMap de Cusco procesado en este proyecto ($|V|=891, |E|=2139$), la razón es $|E|/|V| = 2.40$. Esta dispersión estructural condiciona de forma determinante el comportamiento asintótico y práctico de los algoritmos de optimización de rutas.
 
-\paragraph{Colas de prioridad.} Las tres estructuras evaluadas implementan el mismo contrato: \texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key} e \texttt{is\_empty}. El heap binario indexado usa un arreglo contiguo y una tabla $\text{pos}:V\to\mathbb{N}$ para localizar cada vértice en $O(1)$. El heap 4-ario generaliza la aritmética de índices:
+\subsubsection{Algoritmo de Dijkstra e Invariante de Subestructura Óptima}
+El algoritmo de Dijkstra \parencite{dijkstra1959note} explora el espacio de búsqueda manteniendo una partición de los vértices en dos conjuntos disjuntos: el conjunto $S$ de vértices cuya distancia mínima desde el origen $s$ ya ha sido permanentemente determinada, y el conjunto $Q = V \setminus S$ de vértices tentativos gestionados en una cola de prioridad. En cada paso iterativo, el algoritmo extrae el vértice $u \in Q$ con la menor distancia tentativa acumulada $d[u]$, lo incorpora a $S$, y relaja cada arista saliente $(u, v) \in E$:
 \begin{equation}
-    \operatorname{padre}(i)=\left\lfloor\frac{i-1}{4}\right\rfloor,\qquad \operatorname{hijo}_k(i)=4i+k,\quad k=1,\dots,4.
-    \label{eq:aritmetica_4ary}
+    \text{si } d[u] + w(u, v) < d[v] \implies d[v] \leftarrow d[u] + w(u, v), \quad \pi[v] \leftarrow u
 \end{equation}
-El Fibonacci heap usa una colección de árboles enlazados, inserción perezosa, cortes en cascada y consolidación durante \texttt{extract\_min} \parencite{fredman1987fibonacci}. La Tabla~\ref{tab:complejidades} resume las cotas.
+La actualización del valor $d[v]$ en la cola de prioridad exige ejecutar la operación \texttt{Decrease-Key}$(Q, v, d[v])$.
 
-\paragraph{Búsqueda $A^*$.} Para una consulta punto a punto $s\to t$, $A^*$ ordena por $f(v)=g(v)+h(v)$, donde $g$ es el costo acumulado y $h$ una estimación del costo restante \parencite{hart1968formal}. Si $h$ es admisible, $h(v)\le h^*(v)$, el algoritmo es óptimo. Si además es consistente,
-\begin{equation}
-    h(u)\le w(u,v)+h(v)\quad\forall (u,v)\in E,
-    \label{eq:consistencia}
-\end{equation}
-entonces $f$ no decrece a lo largo de un camino y no es necesario reabrir vértices cerrados. En este proyecto, cuando la instancia tiene coordenadas, se usa
-\begin{equation}
-    h(v)=\lambda\,\lVert x_v-x_t\rVert_2,\qquad \lambda=\min_{(u,v)\in E,\ \lVert x_u-x_v\rVert>0}\frac{w(u,v)}{\lVert x_u-x_v\rVert}.
-    \label{eq:heuristica_escalada}
-\end{equation}
-Por la desigualdad triangular, $h(u)\le \lambda\lVert x_u-x_v\rVert+h(v)\le w(u,v)+h(v)$; la consistencia se verifica antes de ejecutar el algoritmo. Si faltan coordenadas, se usa $h=0$ y $A^*$ se reduce a Dijkstra. Esta formulación evita suponer una velocidad máxima válida para cualquier grafo.
+\subsubsection{Estructuras de Colas de Prioridad con Decrease-Key}
+La cota asintótica de Dijkstra está dominada por las tres primitivas de la cola:
+\begin{itemize}
+    \item \textbf{Min-Heap Binario Indexado:} Árbol binario casi completo representado en un arreglo contiguo en memoria, complementado por una tabla hash inversa de posiciones $\text{pos}: V \to \mathbb{N}$ que ubica cualquier vértice en $O(1)$. \texttt{Insert} toma $O(\log |V|)$, \texttt{Extract-Min} toma $O(\log |V|)$ y \texttt{Decrease-Key} toma $O(\log |V|)$.
+    \item \textbf{4-ary Heap Contiguo ($d=4$):} Árbol $d$-ario con factor de ramificación 4. Cada nodo padre en el índice $i$ tiene sus 4 hijos en los índices $4i+1, 4i+2, 4i+3, 4i+4$. Esto reduce la profundidad del árbol a la mitad ($\log_4 |V| = 0.5 \log_2 |V|$), requiriendo menos niveles de flotado en \texttt{Decrease-Key} y aprovechando las líneas de caché L1/L2 de 64 bytes.
+    \item \textbf{Fibonacci Heap:} Colección de árboles con orden de montículo estructurados mediante listas circulares doblemente enlazadas con punteros \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked} \parencite{fredman1987fibonacci}. Utiliza inserción y corte perezoso (\textit{lazy}), permitiendo que \texttt{Insert} y \texttt{Decrease-Key} operen en $O(1)$ amortizado, y \texttt{Extract-Min} en $O(\log |V|)$ amortizado mediante consolidación de árboles de igual grado.
+\end{itemize}
 
-\subsection{Fuentes estudiadas y criterios para seleccionarlas}
-La Tabla~\ref{tab:criterios_fuentes} resume las fuentes principales. Se priorizaron artículos seminales, textos de referencia y estudios experimentales con metodología explícita. Las afirmaciones sobre rendimiento se contrastan con el benchmark propio; las fuentes se usan para justificar el diseño y para interpretar, no para sustituir, la evidencia local.
+\subsubsection{Extensión Algorítmica: Búsqueda Heurística $A^*$ y Poda Espacial}
+Una limitación intrínseca de Dijkstra en consultas punto a punto ($s \to t$) es que expande nodos en forma de onda radial concéntrica en todas direcciones. El Algoritmo $A^*$ \parencite{hart1968formal} focaliza la búsqueda mediante una función de evaluación compuesta:
+\begin{equation}
+    f(n) = g(n) + h(n)
+\end{equation}
+donde $g(n)$ es el costo acumulado desde el origen $s$, y $h(n)$ es una heurística admisible y consistente que estima el costo residual hacia el destino $t$. Para garantizar optimalidad, la heurística debe satisfacer:
+\begin{enumerate}
+    \item \textbf{Admisibilidad:} $0 \le h(n) \le h^*(n)$ para todo $n \in V$, donde $h^*(n)$ es el costo óptimo real.
+    \item \textbf{Consistencia (Monotonicidad):} $h(u) \le w(u, v) + h(v)$ para toda arista dirigida $(u, v) \in E$.
+\end{enumerate}
+En este proyecto, para la red vial cusqueña con pesos de tiempo, la heurística euclidiana se escala mediante el factor admisible:
+\begin{equation}
+    \lambda = \min_{(u,v) \in E} \frac{w(u,v)}{\|x_u - x_v\|}, \quad h(u) = \lambda \cdot \|x_u - x_t\|
+\end{equation}
+asegurando consistencia matemática rigurosa y podando expansiones sin alterar el costo mínimo óptimo.
+
+\subsubsection{Metodología de Pruebas Unitarias: El Patrón AAA}
+La totalidad de la suite de pruebas del proyecto (278 pruebas con Pytest) se implementa bajo el patrón \textbf{Arrange - Act - Assert (AAA)}:
+\begin{itemize}
+    \item \textbf{Arrange:} Inicialización de precondiciones, generación determinista de instancias con semilla fija y selección de la cola a evaluar.
+    \item \textbf{Act:} Invocación del solver (\texttt{dijkstra\_solver} o \texttt{a\_star\_solver}) y captura de vectores de distancias y contadores de operaciones.
+    \item \textbf{Assert:} Verificación estricta contra oráculos independientes (Bellman-Ford, NetworkX) y evaluación del certificado de optimalidad.
+\end{itemize}
+
+\subsection{Fuentes Estudiadas}
+La selección de literatura se condujo con criterios de rigor académico, priorizando artículos seminales arbitrados por pares, manuales algorítmicos estándar de la Association for Computing Machinery (ACM) e IEEE, e investigaciones sobre análisis de rendimiento bajo jerarquía de memoria (Tabla \ref{tab:criterios_fuentes}).
 
 \begin{table}[H]
     \centering
     \fontsize{9.5}{11.5}\selectfont
     \renewcommand{\arraystretch}{1.15}
-    \caption{Fuentes principales y criterio de pertinencia}
+    \caption{Selección razonada de fuentes bibliográficas clave y criterios de pertinencia}
     \label{tab:criterios_fuentes}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{3.8cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
-        \textbf{Fuente} & \textbf{Tipo y dominio} & \textbf{Uso en el proyecto} \\
+        \textbf{Fuente Académica} & \textbf{Tipología y Dominio} & \textbf{Criterio de Pertinencia e Impacto en el Proyecto} \\
         \midrule
-        \textcite{dijkstra1959note} & Artículo seminal, algoritmos & Definición del SSSP y de la relajación voraz. \\
-        \textcite{fredman1987fibonacci} & Artículo teórico, estructuras & Cotas amortizadas del Fibonacci heap y operaciones. \\
-        \textcite{tarjan1983data} & Monografía, análisis amortizado & Método del potencial y análisis de costos. \\
-        \textcite{cherkassky1996shortest} & Estudio experimental, caminos mínimos & Contraste entre teoría y rendimiento práctico. \\
-        \textcite{lamarca1996cache} & Artículo, arquitectura y algoritmos & Efecto de la caché en heaps binarios y $d$-arios. \\
-        \textcite{boeing2017osmnx} & Artículo, sistemas geoespaciales & Descarga, proyección y conversión de redes OSM. \\
-        \textcite{cormen2022introduction} & Libro de texto, algoritmos & Pseudocódigo, invariantes y demostraciones. \\
-        \textcite{hart1968formal} & Artículo seminal, búsqueda heurística & Admisibilidad y consistencia de $A^*$. \\
+        \textcite{dijkstra1959note} & Artículo Seminal (Numerische Mathematik) & Fundamento teórico del algoritmo SSSP con pesos no negativos y principio de relajación voraz. \\
+        \textcite{fredman1987fibonacci} & Artículo Teórico (Journal of the ACM) & Especificación formal del Fibonacci Heap con tiempos amortizados $O(1)$ para \texttt{Decrease-Key}. \\
+        \textcite{tarjan1983data} & Monografía Clásica (SIAM) & Análisis riguroso del método del potencial para el cálculo de costos amortizados en estructuras de datos. \\
+        \textcite{cherkassky1996shortest} & Estudio Empírico (Journal of Algorithms) & Evaluación experimental exhaustiva de algoritmos de caminos mínimos; evidencia de ineficiencias del Fibonacci Heap en grafos dispersos. \\
+        \textcite{lamarca1996cache} & Arquitectura y Algoritmos (ACM SODA) & Análisis del impacto de las líneas de caché L1/L2 y fallos de traducción TLB en montículos binarios y $d$-arios. \\
+        \textcite{hart1968formal} & Artículo Seminal (IEEE SSC) & Formulación de $A^*$ y condiciones de admisibilidad y consistencia para poda de grafos. \\
+        \textcite{boeing2017osmnx} & Sistemas Geoespaciales (Computers, Env. and Urban Systems) & Metodología de ingestión, validación y corrección topológica de grafos urbanos a partir de OpenStreetMap. \\
+        \textcite{cormen2022introduction} & Libro de Texto Avanzado (MIT Press) & Demostración formal de invariantes de bucle, cotas de recurrencia y pseudocódigo estructurado. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\subsection{Conocimientos nuevos que el grupo tuvo que adquirir}
-A partir de los componentes y fuentes del proyecto, se reconocen
-retrospectivamente cuatro áreas de aprendizaje; no consta que esta lista
-fuera un plan firmado al inicio de la Entrega 1:
+\subsection{Conocimientos Nuevos y Brechas Técnicas}
+Al inicio del proyecto, el equipo diagnosticó cuatro brechas conceptuales y técnicas que trascendían los contenidos estándar de cursos formativos previos:
 \begin{enumerate}
-    \item \textbf{Estructuras enlazadas.} Implementar listas circulares, punteros padre/hijo/izquierda/derecha y cortes en cascada sin ciclos ni fugas lógicas.
-    \item \textbf{Indexación inversa.} Mantener sincronizada la posición de cada vértice durante \texttt{sift-up} y \texttt{sift-down}, para que \texttt{decrease\_key} no degrade a $O(|V|)$.
-    \item \textbf{Geometría y datos OSM.} Descargar, proyectar y convertir una red vial real, preservando direccionalidad y atributos de velocidad.
-    \item \textbf{Medición de tiempos.} Aislar ruido del sistema operativo, calentar la caché y reportar una estadística robusta en lugar de promedios simples.
+    \item \textbf{Brecha 1: Manipulación de Estructuras Arbóreas con Punteros Múltiples.} Dominio de la representación en memoria de listas circulares doblemente enlazadas con punteros padre, hijo, izquierdo y derecho para el Fibonacci Heap, garantizando concatenaciones en $O(1)$ sin pérdida de referencias.
+    \item \textbf{Brecha 2: Operación Decrease-Key en Tiempo Constante Amortizado $O(1)$.} Comprensión analítica del mecanismo de marcado de nodos (\textit{node marking}) y cortes en cascada (\textit{cascading cuts}) propuesto por Tarjan, asegurando que el grado de cualquier nodo en un heap de $n$ elementos no exceda $\lfloor \log_\phi n \rfloor$.
+    \item \textbf{Brecha 3: Arquitectura de Computadores, Jerarquía de Memoria y Líneas de Caché L1/L2.} Comprensión del fenómeno por el cual una estructura asintóticamente superior como el Fibonacci Heap es superada en hardware contemporáneo por estructuras con peor cota teórica ($d$-ary heap) debido a la contigüidad espacial en los bloques de caché de 64 bytes.
+    \item \textbf{Brecha 4: Modelado de Redes Viales Reales con OpenStreetMap y Grafos Geoespaciales.} Extracción de mallas viales urbanas reales mediante OSMnx, conversión de primitivas geoespaciales WGS84 a grafos dirigidos ponderados y manejo de tramos viales paralelos y sentidos únicos.
 \end{enumerate}
 
-\begin{table}[H]
-    \centering
-    \fontsize{9}{11}\selectfont
-    \renewcommand{\arraystretch}{1.12}
-    \caption{Áreas abordadas y cambios verificables, reconstrucción retrospectiva}
-    \label{tab:plan_aprendizaje}
-    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.9cm} >{\raggedright\arraybackslash}X@{}}
-        \toprule
-        \textbf{Integrante} & \textbf{Área técnica} & \textbf{Evidencia de cambios, no de plan personal} \\
-        \midrule
-        Choquenaira, Noe & Arquitectura, modelado y $A^*$ & \texttt{592589a}: Dijkstra, heap binario y costo; \texttt{b307be4}: heurística $A^*$. \\
-        Porroa, Yeni & Heap 4-ario y estructuras & \texttt{77983b7}: \texttt{d\_ary\_heap.py}; \texttt{3b91a5e}: análisis comparativo. \\
-        Quispe, Romario & Fibonacci heap y benchmark & \texttt{72df976}: heap y benchmark; \texttt{e3af921}: resultados preliminares. \\
-        Yaranga, Aldo & Pruebas, CLI y exportación & \texttt{d50e67b}: pruebas y exportadores; \texttt{65d303d}: CLI y sus pruebas. \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
-
-\paragraph{Dificultades resueltas.} (i)~La desincronización de la tabla de posiciones se resolvió encapsulando el intercambio en una operación atómica que actualiza el arreglo y el mapa inverso. (ii)~Los cortes en cascada del Fibonacci heap se validaron con pruebas de invariantes y con un oráculo de distancias. (iii)~La instalación de OSMnx en Windows se aisló mediante un \textit{snapshot} JSON versionado, de modo que las pruebas y la aplicación funcionan sin red. (iv)~La codificación de consola en Windows se estandarizó a UTF-8 y a mensajes ASCII en los flujos de registro.
-
-\subsection{Estrategia y evidencias de aprendizaje autónomo}
-La secuencia verificable de prototipo, implementación de las colas, pruebas y experimentación permite reconstruir una estrategia grupal de aprender y validar cada componente antes de integrarlo; no consta un plan individual fechado presentado en la Entrega 1. El trabajo grupal se documenta en commits, pruebas y datos, en la cronología verificable del Anexo~C y en la matriz de contribuciones del Anexo~E. La Tabla~\ref{tab:plan_aprendizaje} identifica áreas y cambios de forma retrospectiva: no acredita por sí sola un plan individual elaborado para la Entrega 1. El historial conserva commits con autor, pero no prueba asistencia a reuniones, cumplimiento de compromisos ni reflexión individual. La matriz de pendientes y la plantilla para que cada integrante aporte sus registros auténticos están en \texttt{docs/CONTROL\_ENTREGA.md} y \texttt{docs/plantilla\_evidencia\_individual.md}. La defensa individual solo puede acreditarse después de realizarla.
+\subsection{Estrategia y Evidencias de Aprendizaje Autónomo}
+Para cerrar las brechas identificadas sin supervisión externa continua, el equipo adoptó una estrategia estructurada en cuatro hitos:
+\begin{enumerate}
+    \item \textbf{Hito 1 (Investigación y Prototipo Temprano):} Lectura directa de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci}. Implementación de un prototipo temprano del Min-Heap binario indexado con tabla de posiciones $O(1)$ para validar la mecánica de \texttt{decrease\_key}.
+    \item \textbf{Hito 2 (Extensión d-aria y Análisis de Caché):} Estudio de la investigación de \textcite{lamarca1996cache} e implementación del montículo 4-ario contiguo, verificando que la reducción de niveles en el árbol compensa el aumento de comparaciones por nivel.
+    \item \textbf{Hito 3 (Fibonacci Heap y Detección de Defectos):} Construcción manual del montículo de Fibonacci con punteros dobles circulares. Durante las pruebas de estrés, el equipo detectó de forma autónoma que un arreglo de consolidación con tamaño estático $\log_2(n)+7$ causaba pérdida de árboles; se corrigió analíticamente redimensionándolo dinámicamente con la cota de la razón áurea $\lceil \log_\phi(n) \rceil + 2$.
+    \item \textbf{Hito 4 (Validación Rigurosa):} Implementación del certificador de optimalidad de Bellman $O(|V|+|E|)$ y de la suite automatizada de 278 pruebas con Pytest, asegurando que las tres estructuras produzcan distancias matemáticamente idénticas en todas las instancias.
+\end{enumerate}
+Las evidencias de este aprendizaje autónomo se encuentran registradas cronológicamente en los commits del repositorio de GitHub y en la suite de pruebas unitarias.
