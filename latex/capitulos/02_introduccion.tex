@@ -2,9 +2,9 @@
 \label{sec:introduccion}
 
 \subsection{Contexto y Motivación}
-La determinación eficiente de rutas mínimas en redes viales urbanas representa uno de los problemas fundamentales y de mayor impacto práctico en la ciencia de la computación, la ingeniería de transporte y la logística de atención a emergencias. En entornos metropolitanos contemporáneos, los sistemas de despacho para ambulancias, unidades de bomberos y patrullaje policial requieren calcular trayectorias óptimas en fracciones de segundo para minimizar los tiempos de respuesta, donde reducciones marginales de tiempo se traducen directamente en la preservación de vidas humanas.
+Para estudiar rutas mínimas en una red vial no basta con conocer la distancia entre dos puntos: también importan el sentido de las calles y el costo asignado a cada tramo. En este trabajo comparamos el tiempo de cómputo de tres colas de prioridad dentro de Dijkstra. La red de Cusco sirve como caso de estudio, no como prueba de tiempos de respuesta de servicios de emergencia.
 
-La ciudad del Cusco, ubicada en la sierra sur del Perú a una altitud media de 3,399 m s. n. m., presenta una morfología urbana singular. Su Centro Histórico, declarado Patrimonio de la Humanidad por la UNESCO en 1983, superpone una traza urbana incaica y colonial caracterizada por calzadas sumamente angostas, pasajes adoquinados, alta densidad de giros obligatorios y severas pendientes topográficas que oscilan con frecuencia entre el 5\% y más del 15\%. En este contexto geográfico, la distancia euclidiana o la longitud puramente física de un tramo vial resultan insuficientes como métrica de optimización. Un trayecto físicamente más corto pero con un gradiente positivo pronunciado impone un esfuerzo motriz severo sobre un vehículo pesado de emergencia, reduciendo drásticamente su velocidad operativa y aumentando el riesgo de demoras críticas. Por ende, resulta imperativo formular modelos de costo generalizado que integren la topografía andina y evaluar algoritmos de caminos mínimos capaces de procesar mallas viales a gran escala con alta eficiencia temporal y espacial.
+Cusco aporta un ejemplo concreto de calles dirigidas. Se trabajó con una instancia didáctica de seis nodos, cuyas longitudes y pendientes son supuestos, y con un recorte OSM para conducción, que incluye sentidos y longitudes pero no pendientes ni tráfico medidos por arista. Esta separación evita atribuir al caso OSM condiciones que el archivo no registra.
 
 \subsection{Planteamiento del Problema}
 En este trabajo usamos el algoritmo de Dijkstra \parencite{dijkstra1959note} para resolver el problema de caminos mínimos desde un origen único (\textit{Single-Source Shortest Path}, SSSP) en grafos dirigidos con pesos no negativos ($w(e) \ge 0$). La complejidad asintótica depende de la estructura de datos que usamos para administrar los vértices tentativos:
@@ -12,22 +12,22 @@ En este trabajo usamos el algoritmo de Dijkstra \parencite{dijkstra1959note} par
     T(|V|, |E|) = O(|V| \cdot T_{\text{Extract-Min}} + |E| \cdot T_{\text{Decrease-Key}} + |V| \cdot T_{\text{Insert}})
 \end{equation}
 
-La obra fundacional de \textcite{fredman1987fibonacci} establece la cota asintótica de $O(|E| + |V| \log |V|)$ para Fibonacci Heap. En nuestro estudio contrastamos esa cota con mediciones directas en Python, considerando la asignación de objetos, la manipulación de punteros y el acceso a memoria. No presentamos estudios antiguos como evidencia de rendimiento actual: esa evidencia proviene de nuestro benchmark reproducible y del entorno descrito en la Sección~\ref{sec:metodologia}.
+La cota amortizada de $O(|E| + |V| \log |V|)$ para Fibonacci Heap se basa en \textcite{fredman1987fibonacci}. La contrastamos con tiempos de ejecución y conteos de operaciones en Python. No instrumentamos asignaciones ni accesos a caché; las mediciones y el equipo se describen en la Sección~\ref{sec:metodologia}.
 
-El problema central que aborda este proyecto radica en investigar, implementar y contrastar cuantitativamente el comportamiento empírico y teórico de distintas colas de prioridad acopladas al algoritmo de Dijkstra, evaluando su desempeño real sobre la red vial urbana del Cusco bajo una función de costo generalizado con impedancia topográfica.
+El problema de investigación es cómo cambia el tiempo de Dijkstra al sustituir la cola, manteniendo la misma instancia y el mismo algoritmo. Se comparan grafos sintéticos y una consulta vial OSM con tiempo nominal de viaje.
 
 \subsection{Objetivos del Proyecto}
 
 \subsubsection{Objetivo General}
-Diseñar, implementar y evaluar experimentalmente una solución computacional modular para el cálculo de rutas mínimas en la red vial urbana de la ciudad del Cusco, contrastando el desempeño en tiempo de ejecución, operaciones elementales y consumo de memoria del Algoritmo de Dijkstra instrumentado con tres estructuras de colas de prioridad: Min-Heap Binario Indexado, $d$-ary Heap y Fibonacci Heap, verificando formalmente la optimalidad de las soluciones.
+Implementar y comparar Dijkstra con heap binario indexado, heap 4-ario y Fibonacci Heap en grafos sintéticos y en una consulta OSM de Cusco. Se miden tiempos y operaciones y se comprueban las distancias; no se reporta consumo de memoria medido.
 
 \subsubsection{Objetivos Específicos}
 Siguiendo la metodología de ingeniería de software y análisis de algoritmos, los objetivos específicos se ordenan en cuatro fases secuenciales e integradas:
 \begin{enumerate}
-    \item \textbf{OE1 (Modelar):} Formular el modelo matemático del grafo vial dirigido del Centro Histórico del Cusco y su extensión a la red metropolitana OpenStreetMap, definiendo una función de costo generalizado (impedancia andina) que cuantifique el impacto de calles de un solo sentido, calles angostas coloniales, pasajes peatonales y gradientes altitudinales positivos.
-    \item \textbf{OE2 (Diseñar e Implementar):} Diseñar e implementar bajo una arquitectura desacoplada en cuatro capas lógicas el algoritmo de Dijkstra parametrizado, integrando tres alternativas de colas de prioridad puras con soporte formal para \texttt{Decrease-Key}: Min-Heap Binario Indexado, 4-ary Heap ($d=4$) optimizado para líneas de caché L1/L2, y Fibonacci Heap amortizado, extendiendo el sistema hacia búsqueda heurística $A^*$.
+    \item \textbf{OE1 (Modelar):} Diferenciar el grafo didáctico con pendientes supuestas del \textit{snapshot} OSM con tiempos de viaje nominales y sentidos viales.
+    \item \textbf{OE2 (Implementar):} Construir Dijkstra con tres colas intercambiables y una extensión $A^*$ para consultas punto a punto.
     \item \textbf{OE3 (Verificar):} Validar analíticamente la correctitud del algoritmo mediante traza manual paso a paso, certificado formal de optimalidad independiente en $O(|V|+|E|)$ y una suite automatizada de pruebas unitarias bajo el patrón Arrange-Act-Assert (AAA), contrastando los resultados contra oráculos canónicos de referencia (NetworkX y Bellman-Ford).
-    \item \textbf{OE4 (Evaluar e Investigar):} Evaluar experimentalmente la escalabilidad asintótica, el consumo de operaciones elementales y los tiempos de CPU en redes viales sintéticas controladas y en la red vial real OSM de Cusco, contrastando la teoría asintótica clásica frente a la localidad espacial de memoria caché en hardware contemporáneo.
+    \item \textbf{OE4 (Evaluar):} Registrar tiempos de pared y operaciones en redes sintéticas y en una consulta OSM; comparar los resultados con las cotas teóricas, sin atribuir diferencias a caché no medida.
 \end{enumerate}
 
 \subsection{Alcance y Delimitación}
@@ -56,7 +56,7 @@ La Sección~\ref{sec:implementacion} detalla la arquitectura modular del softwar
 La Sección~\ref{sec:pruebas} especifica la estrategia de pruebas unitarias (AAA), oráculos y certificado de optimalidad.
 La Sección~\ref{sec:metodologia} formula las hipótesis, variables y el protocolo de experimentación reproducible.
 La Sección~\ref{sec:resultados} documenta los resultados computacionales del benchmark canónico y la red real OSM.
-La Sección~\ref{sec:discusion} analiza críticamente los hallazgos empíricos y el impacto de la jerarquía de memoria.
+La Sección~\ref{sec:discusion} contrasta cotas y mediciones, incluidas las limitaciones para explicar las causas de hardware.
 La Sección~\ref{sec:conclusiones} sintetiza las conclusiones en respuesta a los objetivos planteados y propone trabajo futuro.
 La Sección~\ref{sec:referencias} lista las fuentes académicas bajo norma APA 7ma edición.
-Finalmente, la Sección~\ref{sec:anexos} recopila manuales de instalación y uso, bitácoras y matrices de contribución.
+Finalmente, la Sección~\ref{sec:anexos} reúne instrucciones, cronología de Git y matriz de contribuciones; no contiene bitácoras individuales.

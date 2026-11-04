@@ -32,7 +32,7 @@ de esos componentes. Seguimiento y defensa individual: [control de entrega](docs
 
 * **[latex/main.pdf](latex/main.pdf):** informe académico con 14 partes, referencias y anexos.
 * **[GUIA.md](GUIA.md):** guía breve de sustentación con respuestas y comandos.
-* **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** requisitos, evidencias individuales pendientes y calendario interno hasta el 04/11/2026.
+* **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** estado técnico al 04/11/2026 y evidencias individuales pendientes; sin calendario retrospectivo de reuniones.
 * **[docs/DATOS_Y_MODELO.md](docs/DATOS_Y_MODELO.md):** procedencia, unidades y alcance de la web y del experimento canónico.
 * **[python/app.py](python/app.py):** aplicación Streamlit integrada con mapas cartográficos OpenStreetMap.
 * **[python/scripts/reproduce_canonical.py](python/scripts/reproduce_canonical.py):** regeneración del benchmark, del caso OSM, de las tablas y de las figuras.

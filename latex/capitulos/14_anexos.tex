@@ -3,7 +3,7 @@
 
 \subsection*{Anexo A: Instalación y configuración}
 \label{anexo:instalacion}
-El proyecto se ejecutó con Python 3.12.8 en Windows 11. Los comandos siguientes reproducen el entorno desde la raíz del repositorio:
+Los resultados guardados se obtuvieron con Python 3.12.8 en Windows 11. Desde la raíz del repositorio se puede preparar el entorno con estos comandos; la instalación en un equipo limpio debe comprobarse por separado:
 \begin{lstlisting}[language=bash, caption={Clonación, entorno virtual e instalación}]
 git clone https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC.git
 cd PROYECTO_Algoritmos-Avanzados-UNSAAC
@@ -35,6 +35,14 @@ La web no toma automáticamente la variable ni archivos locales: exige introduci
 ..\.venv\Scripts\python.exe main.py compare
 ..\.venv\Scripts\python.exe main.py astar --input data/processed/cusco_osm_drive.json
 \end{lstlisting}
+El siguiente ejemplo recorre generación, validación, ejecución, exportación y verificación. Escribe dos archivos de ejemplo en \texttt{python/}, sin alterar los resultados guardados:
+\begin{lstlisting}[language=bash, caption={Ciclo de prueba con una instancia generada}]
+..\.venv\Scripts\python.exe main.py generate --type random --nodes 40 --seed 3 -o ejemplo.json
+..\.venv\Scripts\python.exe main.py run -i ejemplo.json -q binary -o resultado.json
+..\.venv\Scripts\python.exe main.py verify -i ejemplo.json -r resultado.json
+..\.venv\Scripts\python.exe main.py compare -i ejemplo.json
+\end{lstlisting}
+\texttt{graph\_io.py} acepta JSON, TXT, CSV o aristas en línea; \texttt{run} exporta distancias, rutas y contadores en JSON. Una entrada con peso negativo se rechaza antes de ejecutar Dijkstra. Las mediciones comparativas se obtienen por separado con \texttt{reproduce\_canonical.py}.
 
 \noindent\textbf{Aplicación web.} Desde \texttt{python/}:
 \begin{lstlisting}[language=bash, caption={Ejecución de la aplicación Streamlit}]
@@ -47,6 +55,7 @@ La aplicación tiene cinco secciones visibles. En Ruta se seleccionan costo, rec
 .\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
 \end{lstlisting}
 El comando anterior reutiliza \texttt{benchmark\_results.json} y \texttt{applied\_results.json} y escribe tablas en \texttt{latex/tablas/} y figuras en \texttt{latex/figuras/}. Sin las opciones de omisión, el script repite las mediciones y \emph{sobrescribe} ambos JSON; ejecutar el protocolo completo solo en una copia separada. La red OSM y el clima ya almacenados no se descargan de nuevo.
+El piloto del 04/11/2026 se conserva aparte en \texttt{pilot\_benchmark\_results.json}. Para regenerar únicamente su figura desde las muestras guardadas, ejecutar desde la raíz \texttt{python python/scripts/reproduce\_pilot.py --plot-only}. La imagen se guarda en \texttt{latex/figuras/piloto\_mediciones.png} y aparece en la Sección~\ref{sec:metodologia}.
 
 \noindent\textbf{Compilación del informe.} Desde \texttt{latex/}:
 \begin{lstlisting}[language=bash, caption={Compilación con pdflatex y biber}]
@@ -55,14 +64,14 @@ El comando anterior reutiliza \texttt{benchmark\_results.json} y \texttt{applied
 
 \subsection*{Anexo C: Cronología verificable del repositorio}
 \label{anexo:bitacora}
-La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git. Cada fecha es la del commit y cada autor es el registrado en Git; no se deducen reuniones, horas de dedicación, fuentes personales ni dificultades resueltas en una fecha anterior al commit. La bitácora de aprendizaje individual requerida por AG\_C06.01 sigue pendiente de documentación por sus autores.
+La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 04/11/2026. Cada fecha y autor corresponden al commit, no necesariamente al momento de trabajo o a la persona que redactó cada línea. No se deducen reuniones, horas de dedicación ni lecturas individuales. La bitácora de aprendizaje por estudiante sigue sin constancia en el repositorio.
 
 \begin{table}[H]
     \centering
     \fontsize{8.5}{10.5}\selectfont
     \renewcommand{\arraystretch}{1.12}
     \setlength{\tabcolsep}{3.5pt}
-    \caption{Cronología de aportes individuales comprobables en Git}
+    \caption{Cambios fechados comprobables en Git}
     \label{tab:bitacora_detallada}
     \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.65cm} >{\centering\arraybackslash}p{1.55cm} >{\raggedright\arraybackslash}p{1.35cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
@@ -80,19 +89,23 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git. Cada fec
         Porroa, Yeni & 23/10/2026 & \texttt{3b91a5e} & Capítulo de diseño algorítmico y análisis de estructuras. \\
         Quispe, Romario & 23/10/2026 & \texttt{e3af921} & Actualización de \texttt{benchmark\_results.json}; el snapshot canónico se integró después como commit grupal. \\
         Yaranga, Aldo & 23/10/2026 & \texttt{65d303d} & \texttt{cli.py} y \texttt{test\_cli.py}. \\
+        \midrule
+        Grupo 5 & 28/10/2026 & \texttt{7922f52} & \textit{Snapshots} OSM y clima, banco de 1,350 tiempos y caso aplicado. \\
+        \midrule
+        Grupo 5 & 03/11/2026 & \texttt{4025f8f} & Revisión de estructura e índice del informe, PDF compilado. \\
+        \midrule
+        Grupo 5 & 04/11/2026 & \texttt{ced0b82} & Ajustes metodológicos y vista de referencia OSM. \\
+        \midrule
+        Grupo 5 & 04/11/2026 & \texttt{c119aa6} & Piloto reproducible, figura y síntesis comparativa revisada. \\
         \bottomrule
     \end{tabularx}
 \end{table}
-
-\subsection*{Anexo D: Matriz de trazabilidad}
-\label{anexo:trazabilidad}
-La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia verificable.
 
 \begin{table}[H]
     \centering
     \fontsize{9}{11}\selectfont
     \renewcommand{\arraystretch}{1.15}
-    \caption{Trazabilidad entre objetivos, componentes y evidencia}
+    \caption{Anexo D: matriz de trazabilidad entre objetivos, componentes y evidencia}
     \label{tab:matriz_trazabilidad}
     \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
@@ -132,7 +145,6 @@ La Tabla~\ref{tab:matriz_trazabilidad} vincula cada objetivo con su evidencia ve
 
 \subsection*{Anexo F: Estado del seguimiento}
 \label{anexo:seguimiento}
-No se encontraron actas de seguimiento ni planes con meta, responsable, fecha comprometida y resultado verificable para cada estudiante. Por ello, no se afirma que hubo sesiones en fechas concretas ni que los compromisos fueron cumplidos. El hito grupal \texttt{7922f52} (28/10/2026) contiene los \textit{snapshots} OSM y meteorológico, las mediciones canónicas y la aplicación. En los JSON, la descarga OSM figura a las 17:29 UTC y el snapshot de clima se guardó a las 17:33 UTC. Estos registros no equivalen a un acta de reunión. Cada estudiante debe aportar sus planes, compromisos y reflexión originales y confirmar la correspondencia con las entregas. La plantilla y la matriz requisito--evidencia están en \texttt{docs/plantilla\_evidencia\_individual.md} y \texttt{docs/CONTROL\_ENTREGA.md}; no sustituyen los originales.
+Al 04/11/2026 hay código integrado, pruebas automatizadas, análisis de complejidad, datos del banco y de la consulta OSM, tablas y figuras, instrucciones de reproducción y un PDF del informe. El piloto de 18 muestras se guardó el 04/11, \emph{después} de las mediciones canónicas del 28/10; no se presenta como una etapa previa que no ocurrió. Las muestras cronometradas de los JSON se expresan en microsegundos; los 387.197 segundos del caso OSM corresponden al costo estimado de viaje de la ruta.
 
-\noindent\textbf{Calendario de cierre propuesto, no evidencia de ejecución.}\\[0.15cm]
-El 04/11/2026 es la fecha objetivo comunicada por el equipo; el PDF del proyecto remite la fecha oficial al docente. El 30/10 se revisan modelo y datos (Choquenaira y Quispe); el 31/10, certificado y pruebas (Yaranga y Porroa); el 01/11, cada integrante aporta su evidencia individual auténtica; el 02/11 se validan manuales y presentación en una copia limpia (Choquenaira y Yaranga); el 03/11 se compila el PDF y los cuatro ensayan la demostración. Ninguno de estos hitos futuros se marca aquí como cumplido. La defensa individual solo se acredita cuando se realiza.
+No se localizaron bitácoras originales de fuentes, actividades y aprendizajes por integrante, ni actas con compromisos fechados. Tampoco hay constancia de recepción de la segunda entrega o de una presentación ante el docente. El equipo debe confirmar la instalación en un entorno limpio, conservar una salida reciente de la suite de pruebas y aportar sus registros individuales auténticos si existen. El 04/11 es una fecha objetivo comunicada por el equipo, no una fecha oficial ni una entrega acreditada en el repositorio. La matriz de pendientes y la plantilla están en \texttt{docs/CONTROL\_ENTREGA.md} y \texttt{docs/plantilla\_evidencia\_individual.md}; no sustituyen esas evidencias.

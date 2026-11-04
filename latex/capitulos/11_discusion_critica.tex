@@ -2,52 +2,47 @@
 \label{sec:discusion}
 
 \subsection{Contraste entre Teoría Asintótica y Desempeño Empírico}
-La literatura algorítmica clásica establece una jerarquía teórica categórica en favor del Fibonacci Heap:
+La cota amortizada de Dijkstra con Fibonacci Heap mejora la dependencia respecto de $|E|$ frente a un heap binario:
 \begin{equation}
     T_{\text{Fib}} = O(|E| + |V| \log |V|) \quad \text{frente a} \quad T_{\text{Bin}} = O((|V| + |E|) \log |V|)
     \label{eq:asintotica_comparativa}
 \end{equation}
-En redes donde el número de aristas domina asintóticamente a los vértices ($|E| \gg |V|$), la cota amortizada $O(1)$ para la primitiva \texttt{Decrease-Key} confiere al Fibonacci Heap una ventaja formal incuestionable. No obstante, los resultados empíricos sistemáticos de esta investigación demuestran que, en un entorno de ejecución contemporáneo bajo Python 3.12, dicha superioridad teórica no se materializa en menor tiempo de reloj de pared (\textit{wall-clock time}): el Fibonacci Heap resultó entre 1.05 y 1.59 veces más lento que el Min-Heap Binario Indexado en las 10 escalas sintéticas evaluadas.
+Esa diferencia asintótica importa cuando crece el número de aristas, pero no fija las constantes de una implementación. En las diez escalas sintéticas medidas en Python 3.12, el Fibonacci Heap registró medianas entre 1.05 y 1.59 veces las del binario.
 
-Este resultado proviene de nuestras mediciones y no de una extrapolación de estudios antiguos. La notación asintótica $O(\cdot)$ no incluye las constantes de implementación ni el comportamiento de la memoria. En nuestra implementación, cada inserción y corte en cascada del Fibonacci Heap crea o manipula objetos enlazados. Durante \texttt{extract\_min}, el recorrido de listas circulares añade trabajo que supera el ahorro de comparaciones observado.
+El Fibonacci Heap manipula nodos enlazados y consolida árboles al extraer el mínimo. Es una posible fuente de sobrecosto, pero no se perfilaron asignaciones ni memoria; los tiempos y contadores de operaciones no permiten cuantificarla.
 
-\subsection{Análisis del Comportamiento del Montículo 4-ario y Localidad de Caché}
-El montículo 4-ario indexado (\texttt{DAryHeap}, $d=4$) demostró ser la estructura más competitiva en la mayoría de las escalas sintéticas (obteniendo la menor mediana en 7 de las 10 escalas), alcanzando un \textit{speedup} mediano de entre 3.6\% y 4.6\% frente al heap binario. Este desempeño responde a dos factores fundamentales de diseño:
-\begin{enumerate}
-    \item \textbf{Aplanamiento de la profundidad arbórea:} Al adoptar $d=4$, la altura del montículo se reduce exactamente a la mitad ($\lceil \log_4 |V| \rceil = 0.5 \lceil \log_2 |V| \rceil$). En consecuencia, cada invocación a \texttt{decrease\_key} realiza a lo sumo la mitad de los intercambios de memoria (\textit{swaps}) hacia la raíz.
-    \item \textbf{Alineación con líneas de caché de CPU:} En la operación \texttt{sift-down}, el nodo padre debe identificar el mínimo entre sus cuatro descendientes. Puesto que los cuatro hijos se ubican en posiciones contiguas del arreglo ($4i+1, 4i+2, 4i+3, 4i+4$), dicha lectura de 32 a 64 bytes se transfiere íntegramente a una única línea de caché L1/L2 del procesador en un único ciclo de acceso a memoria, minimizando los fallos de traducción.
-\end{enumerate}
-A pesar de esta ventaja estructural, el solapamiento de los intervalos intercuartílicos (IQR) en todas las escalas impide declarar al 4-ary heap como un ganador universal incontrovertible, confirmando que la variabilidad intrínseca del sistema operativo es del mismo orden que la mejora del algoritmo.
+\subsection{Montículo 4-ario: cotas y mediciones}
+El 4-ario obtuvo la menor mediana en 7 de 10 escalas sintéticas. La mediana de las razones 4-ario/binario fue 0.964 en el perfil disperso y 0.954 en el denso. Su menor profundidad teórica puede reducir el recorrido de \texttt{decrease\_key}; \texttt{extract\_min}, en cambio, compara hasta cuatro hijos por nivel. Los elementos están contiguos en el arreglo, pero no medimos fallos de caché. Además, los IQR de ambos montículos se solapan en las diez escalas: estos datos no bastan para atribuir la diferencia a la caché ni para afirmar una ventaja general del 4-ario.
 
 \subsection{Desempeño del Montículo Binario en la Red Real de Cusco}
-En la consulta aplicada sobre la red vial real de Cusco (891 intersecciones y 2,139 aristas), el Min-Heap Binario Indexado fue la alternativa más rápida (15.65 ms, frente a 19.87 ms del 4-ary y 26.09 ms del Fibonacci Heap). En mallas viales urbanas de escala moderada ($N < 1,000$), la ruta óptima punto a punto converge tempranamente tras explorar un subconjunto restringido del grafo. Bajo este régimen de baja escala, la simplicidad de la aritmética de índices binaria ($2i+1, 2i+2$) y la nula sobrecarga de gestión de punteros otorgan al montículo binario una ventaja tangible frente al costo de inicialización y mayor complejidad de saltos del montículo 4-ario.
+En la consulta OSM de Cusco (891 intersecciones y 2,139 aristas), el binario registró la menor mediana de cómputo: 15.65 ms, frente a 19.87 ms del 4-ario y 26.09 ms del Fibonacci. Se trata de un par origen--destino en una sola red; no prueba que el binario sea siempre más rápido por debajo de mil vértices. En particular, el 4-ario tuvo menor mediana en algunas escalas sintéticas menores que mil.
 
 \subsection{Influencia de la Densidad del Grafo y Operaciones Decrease-Key}
-Las redes viales urbanas son grafos intrínsecamente planares y dispersos, donde el grado medio de conectividad por intersección oscila típicamente entre 2.0 y 3.5 aristas salientes. En el caso real de Cusco, la densidad es de $|E|/|V| = 2.40$. El conteo de operaciones elementales reveló que, de los 10,415 intentos de relajación ejecutados en $|V|=5000$, únicamente 6,695 (el 64.2\%) correspondieron a decrementos efectivos de distancia; en el perfil denso, apenas el 11.7\% de las relajaciones provocó una actualización en cola. Dado que la inmensa mayoría de las inspecciones de aristas concluyen sin alterar la prioridad, el impacto de una primitiva \texttt{Decrease-Key} amortizada en $O(1)$ queda drásticamente mitigado en la práctica vial.
+En el recorte OSM se registran 2.40 aristas dirigidas por vértice. Para $|V|=5000$ disperso, el banco contabilizó 6,695 decrementos de clave entre 10,415 intentos de relajación (64.3\%). Este recuento depende de la instancia; por sí solo no explica la diferencia de tiempos entre colas.
 
 \subsection{Evaluación de la Poda Espacial con Búsqueda Heurística \texorpdfstring{$A^*$}{A*}}
-La extensión del ruteo mediante el algoritmo $A^*$ con heurística euclidiana escalada consistente demostró una reducción del 7.2\% en las expansiones de nodos (823 frente a 887) garantizando la misma distancia óptima (387.197 s). La magnitud moderada de la poda espacial refleja las particularidades de la traza urbana colonial del Cusco: calles empinadas, pasajes peatonales y sentidos obligatorios obligan a los vehículos a dar rodeos que distancian la ruta real de la línea recta euclidiana, limitando el poder discriminatorio de cotas inferiores geométricas conservadoras.
+En el mismo par OSM, $A^*$ expandió 823 vértices frente a 887 de Dijkstra (7.2\% menos) y devolvió el mismo costo de viaje, 387.197 s. No se midió el tiempo de cómputo de $A^*$ como parte de la comparación de colas; reducir expansiones no demuestra por sí solo una reducción de tiempo. Tampoco se evaluaron pendientes ni pasajes peatonales en el \textit{snapshot} vial.
 
 \subsection{Análisis de Sensibilidad de Factores Ambientales e Invariancia de Ruta}
-La evaluación del modelo meteorológico ($m_{\text{clima}} = 1.0691$) verificó una propiedad matemática crucial:
+La simulación con el factor uniforme $m_{\text{clima}} = 1.0691$ conserva el orden de costos entre caminos:
 \begin{equation}
     w_{\text{clima}}(e) = m_{\text{clima}} \cdot w(e), \quad \forall e \in E \implies \sum_{e \in P_1} w_{\text{clima}}(e) < \sum_{e \in P_2} w_{\text{clima}}(e) \iff \sum_{e \in P_1} w(e) < \sum_{e \in P_2} w(e)
     \label{eq:invariancia_clima}
 \end{equation}
-Al escalar todos los pesos por un factor estrictamente positivo uniforme, el orden relativo de los caminos dirigidos no experimenta cambio alguno. En consecuencia, la ruta óptima de 17 intersecciones calculada para el centro de Cusco es idéntica en condiciones de lluvia o tiempo seco, incrementándose exclusivamente el tiempo estimado total de desplazamiento.
+El costo calculado pasó de 387.197 s a 413.952 s y la ruta de 17 vértices permaneció igual. Es un escenario uniforme basado en una observación meteorológica guardada, no una medición de tráfico ni una estimación calibrada por tramo.
 
 \subsection{Guía Práctica y Marco de Decisión para Selección de Colas}
-Con base en la evidencia empírica acumulada, se formula la siguiente guía técnica de decisión:
+Para esta implementación en Python, las mediciones sugieren lo siguiente:
 \begin{enumerate}
-    \item \textbf{Opción por defecto (Min-Heap Binario Indexado):} Recomendado para redes viales pequeñas y medianas ($|V| \le 1,000$), microcontroladores o sistemas embebidos donde la simplicidad, robustez y baja huella de memoria sean prioritarias.
-    \item \textbf{Candidato de alto rendimiento (4-ary Heap Contiguo):} Recomendado para redes viales metropolitanas extensas ($|V| \ge 1,000$) y procesadores multinúcleo con jerarquías de caché L1/L2 estructuradas en líneas de 64 bytes.
-    \item \textbf{Uso teórico restringido (Fibonacci Heap):} Desaconsejado para redes viales en entornos de lenguajes interpretados; su adopción solo se justifica en grafos hiper-densos ($|E| \ge 20|V|$) implementados en C/C++ donde la alocación de memoria sea extremadamente eficiente.
-    \item \textbf{Ruteo punto a punto ($A^*$ con heurística consistente):} Indispensable para navegación vehicular y despacho de ambulancias hacia destinos específicos donde se cuente con coordenadas geoespaciales.
+    \item \textbf{Binario:} Punto de partida sencillo; tuvo la menor mediana en la consulta OSM y en tres escalas sintéticas.
+    \item \textbf{4-ario:} Conviene incluirlo al repetir mediciones en otras redes; registró menor mediana en siete escalas sintéticas, con IQR solapados frente al binario.
+    \item \textbf{Fibonacci:} Conserva el interés por su cota amortizada, aunque no ganó ninguna de las escalas medidas aquí. No extrapolamos este resultado a C++ ni a otros tipos de grafo.
+    \item \textbf{$A^*$:} Permite explorar menos vértices en la consulta OSM evaluada sin cambiar el costo; sus tiempos requieren una medición aparte.
 \end{enumerate}
 
 \subsection{Limitaciones del Estudio y Amenazas a la Validez}
 \begin{itemize}
-    \item \textbf{Intérprete y lenguaje:} Las mediciones se realizaron exclusivamente en Python 3.12.8 sobre un procesador AMD Ryzen 5 5600H; si bien las dinámicas de caché son universales, los tiempos absolutos reflejan la sobrecarga del entorno de ejecución.
+    \item \textbf{Intérprete y lenguaje:} Los tiempos se midieron en Python 3.12.8 sobre un AMD Ryzen 5 5600H. Otros equipos e intérpretes pueden dar resultados distintos.
     \item \textbf{Ausencia de mediciones físicas de memoria:} Las comparaciones espaciales se fundamentan en las cotas teóricas de punteros y estructuras de datos, al no haberse instrumentado un perfilador residente de asignación a nivel de sistema operativo.
     \item \textbf{Escenarios ambientales uniformes:} Los multiplicadores climáticos y de congestión operan como factores de sensibilidad homogéneos; futuros estudios requerirán calibrar coeficientes empíricos diferenciados por segmento vial a partir de aforos vehiculares en campo.
 \end{itemize}

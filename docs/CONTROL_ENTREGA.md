@@ -1,10 +1,9 @@
 # Control de requisitos y cierre del Grupo 5
 
 Referencia: `Descripcion del proyecto.pdf`, apartados 5, 6, 8, 9 y 12.
-Fecha de revisión: **01/11/2026**. El **04/11/2026** es la fecha objetivo
-indicada por el equipo; el PDF remite las fechas oficiales al docente. El
-trabajo de cierre se planifica hasta el **03/11/2026**, sin adjudicar como
-realizadas actividades futuras.
+Estado revisado al **04/11/2026**. Esta es la fecha objetivo comunicada por
+el equipo, no una fecha oficial ni constancia de recepción. Las fechas
+históricas citadas abajo proceden de commits o registros guardados.
 
 ## Alcance comprobable
 
@@ -20,10 +19,10 @@ realizadas actividades futuras.
   demostración y defensa individual. Los archivos de los avances se retiraron
   del árbol actual; el historial Git conserva versiones. La presentación y
   defensas no están verificadas en este repositorio.
-- **Apartado 9:** `latex/main.tex` incluye las 14 partes con los títulos del
-  índice del docente. El informe incluye tablas y tres figuras derivadas de
-  JSON; la presencia de una parte
-  no demuestra por sí sola el cumplimiento individual del apartado 12.
+- **Apartado 9:** `latex/main.tex` contiene las secciones requeridas. Las
+  tablas y figuras de resultados usan JSON guardados; la captura OSM es solo
+  referencia visual. El piloto figura en el informe y su JSON es del 04/11.
+  La presencia de una sección no demuestra el trabajo individual del apartado 12.
 
 ## Apartado 12: evidencia frente a requisito
 
@@ -47,7 +46,7 @@ No transformar registros retrospectivos en actas antiguas.
 | AG-C06.02 | Dificultades y soluciones, manual reproducible | **Parcial**: capítulo 4 y anexo A/B; enlazar evidencia fechada y confirmar comandos en copia limpia. |
 | AG-C06.03 | Fuentes razonadas y comparación | **Presente** en capítulos 3, 4 y referencias. |
 | AG-C06.03 | Supuestos, métricas y experimento reproducible | **Presente** para benchmark y clima en capítulos 5 y 9 y JSON; **no** para tráfico canónico. |
-| AG-C06.03 | Tablas, gráficos, teoría, límites y conclusiones | **Presente** para comparativa principal; retirar cifras de tráfico sin respaldo y matizar causas no medidas. |
+| AG-C06.03 | Tablas, gráficos, teoría, límites y conclusiones | **Presente** para la comparativa principal; la caché y las asignaciones son explicaciones posibles, no mediciones del proyecto. |
 | Transversal | Presentación, demostración, defensa individual | **Pendiente de acreditación**: preparar y realizar con cada integrante; solo el docente puede evaluar la defensa. |
 
 El peso de AG-C06.01, AG-C06.02 y AG-C06.03 es 40 %, 40 % y 20 %. No se
@@ -62,38 +61,34 @@ anteriores no tenían actas comprobables y no se presentan como hechos. En
 particular, el snapshot OSM está fechado el **28/10**, no el 05/10.
 
 Los archivos locales `ficha_aprendizaje_grupo5.tex` y
-`guia_ficha_aprendizaje.tex` están ignorados por Git y redactados como
-instrucciones de «lo que debes colocar». Sus fechas y actividades no se
-corroboraron con constancias originales: **son borradores**, no planes o
-bitácoras firmadas. No incorporarlos a la entrega como hechos sin
-confirmación de cada autor.
+`guia_ficha_aprendizaje.tex` están ignorados por Git y contienen indicaciones
+para completar registros. No acreditan planes ni bitácoras firmadas.
 
-| Persona | Commit fechado y alcance comprobable | Responsabilidad propuesta para el cierre |
+| Persona | Commit fechado y alcance registrado en Git |
+| --- | --- |
+| Noe Choquenaira | `592589a` (02/10): Dijkstra y heap binario; `b307be4` y `f0799bf` (23/10): A* e informe. |
+| Yeni Porroa | `77983b7` (04/10): heap 4-ario; `3b91a5e` (23/10): comparativa de montículos. |
+| Romario Quispe | `72df976` (04/10): Fibonacci y escalabilidad; `e3af921` (23/10): benchmark. |
+| Aldo Yaranga | `d50e67b` (04/10): pruebas; `65d303d` (23/10): suite y CLI. |
+
+Los cambios grupales posteriores tienen esta cronología verificable:
+
+| Fecha | Archivo o commit | Alcance comprobable |
 | --- | --- | --- |
-| Noe Choquenaira | `592589a` (02/10): arquitectura, modelo y Dijkstra; `b307be4` (23/10): A*; `f0799bf` (23/10): informe. | Contrastar formulación y alcance, revisar informe y exposición. |
-| Yeni Porroa | `77983b7` (04/10): heap 4-ario; `3b91a5e` (23/10): comparativa de montículos. | Verificar contrato de colas, figuras y explicación de complejidad. |
-| Romario Quispe | `72df976` (04/10): Fibonacci y escalabilidad; `e3af921` (23/10): benchmark. | Comprobar protocolo, datos, semilla y reproducibilidad. |
-| Aldo Yaranga | `d50e67b` (04/10): pruebas; `65d303d` (23/10): suite y CLI. | Verificar regresiones, instalación y manuales. |
+| 28/10 | `7922f52` y `benchmark_results.json` | Integración OSM, clima, aplicación y banco de 1,350 muestras. |
+| 30/10–01/11 | Secciones históricas de verificación abajo | Pruebas y revisión descritas en los registros; no son actas individuales. |
+| 03/11 | `4025f8f` | Índice e informe revisados; PDF incluido en el commit. |
+| 04/11 | `ced0b82`, `c119aa6` y `pilot_benchmark_results.json` | Referencia OSM, piloto de 18 muestras y figura; el piloto es posterior al banco canónico. |
 
-Asignación **propuesta**, no acta ni aprobación de cada estudiante:
-
-| Fecha | Meta antes del 04/11 | Quién valida / evidencia de cierre |
-| --- | --- | --- |
-| 30/10 | Alinear informe, código y snapshots; registrar ausencias sin completar datos ficticios. | Noe y Romario; diferencias anotadas en `DATOS_Y_MODELO.md`. |
-| 31/10 | Revisar certificado, ejecutar pruebas y contrastar todas las cifras y figuras. | Aldo y Yeni; salida de pytest y JSON. |
-| 01/11 | Recoger **de cada persona** plan original si existe, reflexión propia y registros auténticos de seguimiento. | Los cuatro autores; usar `plantilla_evidencia_individual.md`. |
-| 02/11 | Validar manuales, bibliografía, presentación y comandos desde copia limpia. | Noe y Aldo; rutas, salida y responsable identificados. |
-| 03/11 | Compilar PDF, revisar páginas/referencias, ensayar demostración individual y cerrar paquete. | Los cuatro; verificación final firmada por el equipo. |
-| 04/11 | Fecha objetivo de entrega comunicada por el usuario, sujeta a calendario del docente. | Confirmar recepción real; no marcar anticipadamente como cumplida. |
+No se reconstruyen reuniones ni compromisos cumplidos a partir de estas fechas.
 
 ## Criterios de cierre
 
 1. `python -m pytest python/tests -q` termina sin fallos; guardar fecha, Python
    usado y conteo real. Los casos adversos deben rechazar ciclos de peso cero
    desconectados y caminos reportados incompletos.
-2. En copia limpia están disponibles `latex/`, `colab/`, datos y el PDF.
-   Actualmente `latex/` y `colab/` están sin seguimiento Git: preparar la
-   inclusión **sin descartar** los archivos previos del equipo. El PDF de
+2. `latex/`, `colab/`, datos y el PDF figuran en el árbol seguido por Git.
+   El PDF de
    requisitos (`Descripcion del proyecto.pdf`) está ignorado en Git: confirmar
    si el docente exige adjuntarlo por un canal separado.
 3. `python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied`
@@ -122,8 +117,9 @@ metas del calendario. Con el entorno Python disponible:
   avisos de normalización LF/CRLF de Git.
 
 La copia independiente reutilizó el entorno Python ya instalado. **No** se
-ha comprobado instalación de dependencias en una máquina sin ellas, ni se ha
-publicado el árbol sin seguimiento Git; ambas comprobaciones siguen abiertas.
+ha comprobado instalación de dependencias en una máquina sin ellas. La nota
+sobre archivos sin seguimiento Git corresponde a ese momento y no al estado
+actual.
 
 ## Actualización de la web e informe (31/10–01/11/2026)
 
@@ -159,3 +155,21 @@ añade la relación entre medianas sin afirmar significación estadística.
 El botón de despliegue de Streamlit se oculta mediante configuración de
 cliente y estilo de la aplicación. Última suite: **278 pruebas aprobadas**;
 el PDF sigue exigiendo evidencias individuales que la interfaz no genera.
+
+## Comprobación del 04/11/2026
+
+- El piloto de 18 tiempos se guardó el 04/11; el banco de 1,350 tiempos es
+  del 28/10. El primero comprueba el procedimiento, no precede al segundo.
+- Desde la raíz, con `.venv/Scripts/python.exe -B -m pytest python/tests -q
+  -p no:cacheprovider`: **278 pruebas aprobadas en 34.95 s**. Este tiempo es
+  la duración de la suite en el entorno de revisión, no un tiempo de ruta
+  ni un resultado del benchmark.
+- `c119aa6` incluye el JSON, la figura y el PDF del piloto. La fecha del
+  commit no acredita horas de dedicación ni una presentación.
+- `latex/compilar.ps1` generó `latex/main.pdf` de **62 páginas**. Se revisaron
+  visualmente las páginas finales; el log no registra referencias indefinidas
+  ni cajas desbordadas. El ciclo CLI generar--ejecutar--verificar--comparar
+  funcionó con archivos de prueba fuera del repositorio.
+- Sigue sin comprobarse la instalación limpia y sin constancia de bitácoras
+  individuales, actas, recepción de la segunda entrega o defensa. Confirmar
+  además la revocación de la clave expuesta indicada arriba.

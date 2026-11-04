@@ -2,14 +2,14 @@
 \label{sec:fundamentos}
 
 \subsection{Conceptos y Algoritmos Requeridos}
-El desarrollo del proyecto descansa sobre cinco pilares conceptuales y metodológicos de las ciencias de la computación y la ingeniería de software: la teoría de grafos viales dirigidos y redes cuasi-planas, el principio de optimalidad de Bellman acoplado a la relajación voraz (\textit{greedy}) de Dijkstra, el diseño formal de colas de prioridad con clave disminuible, la búsqueda heurística informada con poda espacial ($A^*$), y la metodología de pruebas de software estructurada bajo el patrón \textbf{Arrange-Act-Assert (AAA)} complementada por oráculos independientes de verificación formal.
+El proyecto combina grafos dirigidos, Dijkstra con colas que admiten \texttt{Decrease-Key}, la búsqueda $A^*$ y pruebas automatizadas. Esta sección describe los conceptos y su uso en el repositorio, sin atribuir el aprendizaje personal de cada integrante.
 
 \subsubsection{Grafos Viales Urbanos y Propiedad de Red Cuasi-Plana}
-Una red vial urbana se modela formalmente como un grafo dirigido ponderado $G = (V, E, W)$, donde $V$ representa el conjunto de intersecciones viales o discontinuidades geométricas, $E \subseteq V \times V$ representa los tramos viales orientados según el sentido reglamentario de circulación vehicular, y $W: E \to \mathbb{R}^+$ asigna un costo no negativo a cada tramo. A diferencia de grafos generales o redes sociales complejas que exhiben propiedades de mundo pequeño y densidades cuadráticas ($|E| = \Theta(|V|^2)$), las redes viales urbanas presentan restricciones espaciales físicas que las convierten en grafos cuasi-planos de densidad lineal extremadamente baja:
+Una red vial se representa como un grafo dirigido ponderado $G=(V,E,W)$: los vértices son puntos de conexión, las aristas son tramos permitidos y $W:E\to\mathbb{R}_{\ge 0}$ asigna un costo no negativo. La relación entre aristas y vértices depende del recorte y de cómo se representan las intersecciones. En el caso OSM se midió:
 \begin{equation}
-    |E| \approx k \cdot |V|, \quad \text{donde } 2.0 \le k \le 3.5
+    |E|/|V| = 2139/891 \approx 2.40.
 \end{equation}
-En el recorte vial de OpenStreetMap de la ciudad del Cusco procesado en este proyecto ($|V|=891, |E|=2139$), la razón de conectividad media es $|E|/|V| = 2.40$. Esta dispersión topológica condiciona de forma determinante el comportamiento asintótico y el perfil de accesos a memoria de los algoritmos de optimización de rutas.
+El grafo sintético disperso tiene cuatro aristas por vértice; el denso se generó con aproximadamente el 8\% de las aristas dirigidas posibles. Estas densidades se comparan con el recorte OSM sin inferir a partir de ellas accesos físicos a memoria.
 
 \subsubsection{Algoritmo de Dijkstra e Invariante de Subestructura Óptima}
 El algoritmo de Dijkstra \parencite{dijkstra1959note} resuelve el problema de caminos mínimos desde un origen único (\textit{Single-Source Shortest Path}, SSSP) en grafos con pesos no negativos ($w(e) \ge 0$). El algoritmo explora el espacio de estados manteniendo una partición de los vértices en dos conjuntos disjuntos: el conjunto $S$ de vértices cuya distancia mínima desde el origen $s$ ya ha sido permanentemente determinada, y el conjunto $Q = V \setminus S$ de vértices tentativos gestionados dinámicamente en una cola de prioridad. En cada iteración, el algoritmo extrae el vértice $u \in Q$ con la menor distancia tentativa acumulada $d[u]$, lo incorpora a $S$, y relaja cada arista saliente $(u, v) \in E$:
@@ -26,12 +26,12 @@ La cota de complejidad temporal de Dijkstra está gobernada por las tres operaci
 En este trabajo se seleccionaron e implementaron puramente tres estructuras con mecánicas internas contrastantes:
 \begin{itemize}
     \item \textbf{Min-Heap Binario Indexado (\texttt{IndexedMinHeap}):} Estructura arbórea binaria casi completa dispuesta en un arreglo contiguo en memoria, complementada por una tabla hash inversa de posiciones $\text{pos}: V \to \mathbb{N}$ que ubica cualquier identificador de vértice en tiempo $O(1)$. Las operaciones \texttt{Insert}, \texttt{Extract-Min} y \texttt{Decrease-Key} operan en $O(\log |V|)$ mediante flotado (\textit{sift-up}) y hundimiento (\textit{sift-down}).
-    \item \textbf{4-ary Heap Contiguo (\texttt{DAryHeap}, $d=4$):} Árbol $d$-ario con factor de ramificación 4. Cada nodo padre en el índice $i$ almacena a sus cuatro descendientes en los índices contiguos $4i+1, 4i+2, 4i+3, 4i+4$. Esta disposición reduce la profundidad del árbol a la mitad respecto al binario ($\log_4 |V| = 0.5 \log_2 |V|$). En nuestro benchmark observamos menos saltos en \texttt{Decrease-Key}; no medimos líneas de caché ni transferencias de bloques, por lo que no presentamos esa explicación como resultado experimental.
+    \item \textbf{4-ary Heap (\texttt{DAryHeap}, $d=4$):} Sus hijos ocupan índices contiguos $4i+1,\ldots,4i+4$ en un arreglo. Su profundidad logarítmica es aproximadamente la mitad de la del binario, pero cada extracción puede comparar más hijos. El banco registró tiempos y contadores de operaciones, no accesos a caché.
     \item \textbf{Fibonacci Heap (\texttt{FibonacciHeap}):} Colección de árboles con orden de montículo estructurados mediante listas circulares doblemente enlazadas con múltiples punteros por nodo (\texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}) \parencite{fredman1987fibonacci}. Utiliza inserción y corte perezoso (\textit{lazy}), logrando que \texttt{Insert} y \texttt{Decrease-Key} operen en tiempo constante amortizado $O(1)^*$ mediante el método del potencial de Tarjan \parencite{tarjan1983data}, mientras que \texttt{Extract-Min} toma $O(\log |V|)^*$ amortizado mediante consolidación dinámica de árboles de igual grado.
 \end{itemize}
 
 \subsubsection{Extensión Algorítmica: Búsqueda Heurística $A^*$ y Poda Espacial}
-El algoritmo de Dijkstra expande nodos en forma de onda radial concéntrica en todas direcciones, lo que genera exploraciones redundantes en consultas punto a punto ($s \to t$). El Algoritmo $A^*$ \parencite{hart1968formal} focaliza la búsqueda evaluando los vértices mediante la función:
+Para una consulta punto a punto, $A^*$ \parencite{hart1968formal} ordena los vértices según el costo ya recorrido y una cota del costo restante:
 \begin{equation}
     f(n) = g(n) + h(n)
 \end{equation}
@@ -44,50 +44,30 @@ En la red vial de Cusco, con pesos definidos en unidades de tiempo (segundos), l
 \begin{equation}
     \lambda = \min_{(u,v) \in E} \frac{w(u,v)}{\|x_u - x_v\|}, \quad h(u) = \lambda \cdot \|x_u - x_t\|
 \end{equation}
-asegurando admisibilidad y consistencia estricta, lo que garantiza poda espacial sin comprometer la optimalidad del camino mínimo.
+Con coordenadas y escala compatibles con los pesos, la desigualdad triangular da una heurística consistente. Esto conserva la optimalidad; no garantiza reducir expansiones en todos los grafos.
 
 \subsubsection{Metodología de Pruebas Unitarias: Definición Formal del Patrón Arrange-Act-Assert (AAA)}
 \label{sec:fundamentos_aaa}
-La validación rigurosa de algoritmos avanzados sobre estructuras de datos no lineales requiere una metodología formal de pruebas que reduzca la ambigüedad y mantenga el determinismo. En este proyecto adoptamos el \textbf{patrón Arrange-Act-Assert (AAA)} para separar la preparación, la ejecución y la comprobación de cada caso.
+El patrón \textbf{Arrange--Act--Assert (AAA)} ayuda a separar preparación, ejecución y comprobación en las pruebas. La suite contiene casos de varios tipos; no se afirma que todos sigan exactamente la misma plantilla.
 
-El patrón AAA descompone cada caso de prueba en tres pasos secuenciales, independientes y claramente delimitados:
-\begin{enumerate}
-    \item \textbf{Arrange (Disponer / Preparar):}
-    \begin{itemize}
-        \item \textit{Definición conceptual:} Consiste en inicializar las precondiciones, aislar el estado del sistema y configurar el entorno previo a la ejecución. Aquí se define inequívocamente el estado conocido sobre el cual operará la prueba, garantizando que el caso sea autónomo e independiente de cualquier otra ejecución previa.
-        \item \textit{Aplicación concreta en el proyecto:} Se instancian los grafos dirigidos $G=(V, E, w)$ con topologías controladas; se fijan semillas pseudoaleatorias estrictas (\texttt{seed=42}) para la generación determinista de pesos; se instancian las colas de prioridad puras bajo ensayo (\texttt{IndexedMinHeap}, \texttt{DAryHeap}, \texttt{FibonacciHeap}); se definen los nodos de origen $s$ y destino $t$; y se preparan los vectores de valores esperados provenientes de oráculos canónicos.
-    \end{itemize}
-    
-    \item \textbf{Act (Actuar / Ejecutar):}
-    \begin{itemize}
-        \item \textit{Definición conceptual:} Consiste en invocar la unidad de código bajo prueba (\textit{System Under Test}, SUT). Debe constar preferentemente de una única acción observable que desencadena el comportamiento evaluado, evitando la ejecución de código secundario que contamine la medición o disperse la causa de una posible falla.
-        \item \textit{Aplicación concreta en el proyecto:} Se ejecuta el resolvedor algorítmico invocando \texttt{dijkstra\_solver(graph, source, queue\_type)} o \texttt{a\_star\_solver(graph, source, target, heuristic)}, o bien se invoca directamente una primitiva de la estructura de datos (\texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key}). Durante esta acción se capturan los valores de salida: el vector de distancias mínimas $d$, el árbol de predecesores $\pi$ y los contadores de telemetría de operaciones elementales.
-    \end{itemize}
-    
-    \item \textbf{Assert (Aseverar / Verificar):}
-    \begin{itemize}
-        \item \textit{Definición conceptual:} Consiste en evaluar las poscondiciones e invariantes. Se formulan aserciones booleanas estrictas para contrastar los resultados obtenidos frente a las hipótesis y criterios de corrección predefinidos. Si cualquier aserción falla, el framework de pruebas interrumpe la ejecución y emite un informe diagnóstico con el estado exacto del fallo.
-        \item \textit{Aplicación concreta en el proyecto:} Se comprueba la igualdad numérica estricta entre las distancias producidas por el solver y las calculadas por los oráculos independientes con una tolerancia de punto flotante $\epsilon = 10^{-6}$; se valida la preservación de los invariantes de montículo (orden y completitud); se verifica la consistencia topológica del camino reconstruido; y se comprueba el cumplimiento estricto del certificado de optimalidad de Bellman.
-    \end{itemize}
-\end{enumerate}
-
-\paragraph{Justificación teórica del patrón AAA en la investigación algorítmica.} La adopción del patrón AAA es indispensable por tres fundamentos técnicos:
-\begin{itemize}
-    \item \textbf{Aislamiento de causas de falla:} Si una prueba unitaria falla, la separación nítida permite discernir de inmediato si el error se debe a una precondición mal formada (\textit{Arrange}), a un fallo en el lazo de relajación del resolvedor (\textit{Act}), o a una desviación numérica en la estructura de datos (\textit{Assert}).
-    \item \textbf{Determinismo y reproducibilidad científica:} Al fijar explícitamente el estado en la fase \textit{Arrange}, cada una de las 278 pruebas automatizadas produce resultados idénticos en cualquier entorno de hardware o sistema operativo, satisfaciendo el criterio de reproducibilidad exigido por la rúbrica del curso.
-    \item \textbf{Evidencia de rigor profesional:} Constituye la base metodológica para evidenciar el indicador de desempeño AG-C06.01, demostrando la capacidad del equipo de estructurar suites de pruebas profesionales sin supervisión externa.
-\end{itemize}
+El patrón ayuda a localizar qué falla en un caso concreto:
+\begin{description}
+    \item[Arrange:] Se prepara un grafo y su origen; cuando se generan instancias aleatorias, se fija la semilla.
+    \item[Act:] Se invoca una operación de cola o un solver, por ejemplo \texttt{dijkstra\_solver(nodes, adj, source, queue\_type=...)}.
+    \item[Assert:] Se comprueban distancias, invariantes de las colas o propiedades del certificado. La comparación numérica usa tolerancia, no igualdad exacta de valores de coma flotante.
+\end{description}
+Las entradas fijas permiten repetir los casos, no asegurar tiempos idénticos en equipos distintos. La suite compartida tampoco acredita por sí sola el aprendizaje autónomo individual de AG-C06.01.
 
 \subsubsection{Teoría de Oráculos de Prueba y Verificación Formal de Corrección}
 En la teoría de pruebas de software, un \textbf{oráculo de prueba} es un mecanismo independiente y confiable capaz de determinar si la salida de un programa para una entrada dada es correcta o incorrecta. En este proyecto se formalizaron tres oráculos de verificación independientes:
 \begin{enumerate}
     \item \textbf{Oráculo analítico (traza manual):} Verificación paso a paso sobre la red nuclear de seis nodos del Centro Histórico del Cusco y sobre la instancia de caminos mínimos presentada por Cormen et al. (2022, figura 24.6, p. 659), comprobando los vectores de distancia y los contenidos de la cola.
-    \item \textbf{Oráculo Algorítmico Independiente (Redundancia de Implementación):} Implementación redundante del algoritmo de Bellman-Ford y contraste contra la biblioteca estándar NetworkX (\texttt{nx.single\_source\_dijkstra}), garantizando que ninguna suposición errónea compartida falsee la validación.
-    \item \textbf{Oráculo Algebraico de Bellman (Certificado en Tiempo Lineal):} Verificación matemática directa de las condiciones de holgura complementaria en tiempo $O(|V|+|E|)$:
+    \item \textbf{Oráculos algorítmicos:} Bellman-Ford se usa en pruebas de la suite; NetworkX (\texttt{nx.single\_source\_dijkstra\_path\_length}) se contrasta antes del banco sintético. Son comprobaciones en contextos distintos, no dos verificaciones de cada muestra temporal.
+    \item \textbf{Certificado de optimalidad:} Comprueba distancias, aristas y cadenas de predecesores en $O(|V|+|E|)$ cuando no se pasan caminos explícitos:
     \begin{equation}
         d[s] = 0, \quad d[v] \le d[u] + w(u, v) \quad \forall (u, v) \in E
     \end{equation}
-    Este oráculo no depende de ningún algoritmo de caminos mínimos, sino únicamente del grafo original y del vector de distancias devuelto, constituyendo una prueba formal intrínseca de optimalidad.
+    También comprueba que cada cadena de predecesores llegue al origen y use aristas ajustadas. Si se proporcionan caminos explícitos, hay que sumar el costo de recorrerlos; las desigualdades de distancias por sí solas no prueban optimalidad.
 \end{enumerate}
 
 \subsection{Fuentes Estudiadas y Criterios para Seleccionarlas}
@@ -99,7 +79,7 @@ Priorizamos fuentes publicadas entre 2021 y 2026 para describir herramientas, da
 \begin{enumerate}
     \item \textbf{C1: Arbitraje por Pares y Nivel Académico:} Se priorizaron publicaciones seminales indexadas en las principales sociedades científicas (ACM, IEEE, SIAM, Springer), excluyendo blogs informales o tutoriales no validados.
     \item \textbf{C2: Relevancia Teórica y Demostración Formal:} Inclusión obligatoria de las obras clásicas que demostraron la correctitud y las cotas asintóticas de caminos mínimos y análisis amortizado \parencite{dijkstra1959note,fredman1987fibonacci,tarjan1983data,cormen2022introduction}.
-    \item \textbf{C3: Arquitectura de Computadores y Jerarquía de Memoria:} Evaluamos directamente la localidad de memoria y el costo de las operaciones en nuestro benchmark, sin presentar estudios anteriores a 2021 como evidencia de rendimiento actual.
+    \item \textbf{C3: Arquitectura de computadores:} Se revisó la diferencia entre cotas y tiempos medidos. El banco no midió localidad física de memoria ni fallos de caché.
     \item \textbf{C4: Estándares Geoespaciales y Datos Topográficos Abiertos:} Seleccionamos una metodología reciente para ingerir y modelar mallas viales reproducibles desde OpenStreetMap \parencite{boeing2025osmnx,openstreetmap2026}.
     \item \textbf{C5: Metodología de Calidad de Software y Reproducibilidad:} Aplicamos el patrón Arrange-Act-Assert y pruebas automatizadas como decisiones metodológicas del equipo; las evidencias de calidad se encuentran en nuestra suite y en el protocolo reproducible.
 \end{enumerate}
@@ -129,46 +109,46 @@ La Tabla~\ref{tab:criterios_fuentes} sistematiza la bibliografía fundamental es
 
 \subsection{Conocimientos Nuevos que el Grupo Tuvo que Adquirir}
 \label{sec:conocimientos_nuevos}
-Al inicio del proyecto, el equipo identificó cinco áreas fundamentales de conocimiento avanzado que trascendían los contenidos formativos previos y que requirieron un proceso deliberado de autoaprendizaje e investigación independiente:
+En el código y las pruebas se distinguen cinco temas de estudio. La documentación disponible no permite fechar cuándo los identificó cada integrante ni sustituye su registro personal de aprendizaje:
 
 \subsubsection{Metodología de Pruebas Unitarias AAA y Oráculos de Verificación}
-El equipo pasó de pruebas informales a 278 pruebas unitarias y de integración parametrizadas con \texttt{pytest}. Definimos precondiciones deterministas en \textit{Arrange}, invocamos los solvers en \textit{Act} y formulamos aserciones en \textit{Assert} contra Bellman-Ford, NetworkX y el certificado de optimalidad en $O(|V|+|E|)$.
+La suite reúne 278 casos unitarios y de integración con \texttt{pytest}. Sus aserciones comprueban distancias frente a Bellman-Ford y NetworkX, así como propiedades del certificado de optimalidad. No todas las pruebas utilizan ambos oráculos.
 
 \subsubsection{Manipulación Dinámica de Estructuras Arbóreas con Múltiples Punteros}
-Dominar la representación en memoria y manipulación dinámica de listas circulares doblemente enlazadas con múltiples punteros por nodo (\texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}) para el Fibonacci Heap, garantizando concatenaciones, inserciones y eliminaciones en tiempo $O(1)$ sin incurrir en fugas de memoria ni desreferenciación nula.
+El Fibonacci Heap utiliza enlaces circulares y referencias \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}. Su contrato se comprueba en las pruebas de estructuras; no se midieron fugas de memoria.
 
 \subsubsection{Cálculo de Costos Amortizados y Mecanismo de Cortes en Cascada}
-Comprender formalmente la teoría del método del potencial de \textcite{tarjan1983data} y el funcionamiento de la operación \texttt{Decrease-Key} en el Fibonacci Heap. El equipo asimiló la necesidad del marcado de nodos (\textit{node marking}) y los cortes en cascada (\textit{cascading cuts}) para preservar la cota de grado $\lfloor \log_\phi n \rfloor$ en cada raíz arbórea.
+El análisis amortizado descrito por \textcite{tarjan1983data} ayuda a explicar el marcado y los cortes en cascada de \texttt{Decrease-Key}. La implementación y las pruebas ejercitan estos casos, sin que ello documente el proceso individual de aprendizaje.
 
-\subsubsection{Jerarquía de Memoria Física y Optimización en Líneas de Caché L1/L2}
-El equipo comprobó que una estructura con mejor cota amortizada ($O(1)$ para \texttt{Decrease-Key} en Fibonacci Heap) puede ser más lenta en la práctica que un montículo 4-ario contiguo. También comprobamos la reducción teórica del 50\% en la profundidad del árbol; no medimos directamente la caché del procesador.
+\subsubsection{Cotas amortizadas y tiempos observados}
+En las instancias medidas, el Fibonacci Heap tuvo mayor mediana que las otras colas pese a su cota amortizada para \texttt{Decrease-Key}. La menor profundidad teórica del 4-ario es una propiedad de la estructura, no una medición de caché.
 
 \subsubsection{Modelado de Redes Viales Reales y Normalización con OSMnx}
-El equipo aprendió a extraer y procesar mallas viales urbanas mediante OSMnx \parencite{boeing2025osmnx}, convirtiendo datos geoespaciales WGS84 en grafos dirigidos ponderados y conservando aristas paralelas y sentidos de circulación.
+El cargador OSMnx \parencite{boeing2025osmnx} guarda nodos con coordenadas WGS84 y tramos dirigidos, incluidas aristas paralelas en el \textit{snapshot}. Al construir la instancia del algoritmo, selecciona el menor peso entre tramos que comparten origen y destino.
 
 \subsection{Estrategia y Evidencias de Aprendizaje Autónomo}
 \label{sec:estrategia_evidencias}
-Para dominar e integrar estos nuevos conocimientos sin supervisión externa continua, el equipo diseñó y ejecutó una estrategia metodológica articulada en cuatro hitos secuenciales:
+El historial Git permite ordenar cuatro componentes del desarrollo. Describe cambios de código y documentos, no reuniones ni una planificación original:
 
 \subsubsection{Hito 1: Investigación y Prototipado del Min-Heap Binario Indexado}
-Lectura directa de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci}. Implementación de un prototipo temprano del Min-Heap binario indexado con tabla de posiciones $O(1)$ para validar la mecánica de \texttt{decrease\_key}. Se construyeron las primeras pruebas unitarias bajo el patrón AAA para verificar el orden de extracción y los invariantes de montículo.
+El commit \texttt{592589a} (02/10/2026) incluye Dijkstra y el montículo binario indexado; las referencias de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci} sustentan el análisis. No se dispone de una bitácora que feche las lecturas personales.
 
-\subsubsection{Hito 2: Extensión d-aria y Análisis de Localidad en Memoria Caché}
-Estudio de la estructura 4-aria e implementación del montículo contiguo. Contrastamos experimentalmente el número de operaciones elementales frente al heap binario y observamos el efecto de la menor profundidad del árbol al evaluar cuatro descendientes por nodo. No medimos directamente la caché del procesador.
+\subsubsection{Hito 2: Extensión 4-aria}
+El commit \texttt{77983b7} (04/10/2026) contiene el heap 4-ario. El banco posterior registra sus operaciones y tiempos frente al binario; no registra fallos de caché.
 
-\subsubsection{Hito 3: Fibonacci Heap y Corrección Autónoma de Consolidación}
-Construcción manual del montículo de Fibonacci con punteros dobles circulares. Durante las pruebas de estrés intensivo con grafos aleatorios, el equipo detectó de forma autónoma una falla crítica: un arreglo de consolidación con dimensionamiento estático $\log_2(n)+7$ provocaba desbordamientos y pérdida de árboles; se corrigió analíticamente redimensionándolo dinámicamente mediante la cota formal de la razón áurea:
+\subsubsection{Hito 3: Fibonacci Heap y consolidación}
+El commit \texttt{72df976} (04/10/2026) incluye el montículo Fibonacci. El código actual amplía el arreglo de consolidación cuando lo necesita y reserva grados según una cota basada en la razón áurea. Sin un registro fechado del fallo original, no se atribuye a una sesión concreta ni a una resolución individual:
 \begin{equation}
     D(n) = \lfloor \log_\phi(n) \rfloor + 2, \quad \text{donde } \phi = \frac{1 + \sqrt{5}}{2} \approx 1.618034
 \end{equation}
 
 \subsubsection{Hito 4: Verificación Integral mediante Suite AAA y Certificado de Bellman}
-Implementación del certificador de optimalidad de Bellman en tiempo lineal $O(|V|+|E|)$ y consolidación de la suite completa de 278 pruebas automatizadas con \texttt{pytest}. Cada prueba verifica deterministamente que las tres estructuras de colas de prioridad produzcan vectores de distancia idénticos sobre grafos sintéticos, instancias extremas y el grafo real de Cusco.
+La suite actual contiene 278 casos que cubren contratos de colas, validación de entradas y comprobación de distancias, entre otros módulos. El certificado opera en $O(|V|+|E|)$ para distancias y predecesores, más el costo de recorrer los caminos explícitos cuando se proporcionan. Los resultados sintéticos y OSM se guardaron en el commit \texttt{7922f52} del 28/10/2026.
 
 \subsubsection{Evidencias Verificables de Logro del Atributo AG\_C06}
-El cumplimiento del atributo del graduado se sustenta con evidencias objetivas auditables:
+El repositorio permite verificar componentes técnicos, pero no todas las actividades individuales exigidas por el atributo:
 \begin{itemize}
-    \item \textbf{Indicador AG-C06.01 (Iniciativa y Autonomía - 40\%):} Bitácora de aprendizaje resumida en el Anexo C, registro de 278 pruebas unitarias estructuradas bajo el patrón AAA, resolución autónoma del error de consolidación del Fibonacci Heap sin asistencia docente, e historial trazable de commits en el repositorio Git.
-    \item \textbf{Indicador AG-C06.02 (Adaptación a Tecnologías Emergentes - 40\%):} Justificación del stack tecnológico en la Sección~\ref{sec:stack}, adopción exitosa de OSMnx para ingestión cartográfica, integración del framework \texttt{pytest}, e implementación de la aplicación web interactiva con Streamlit y Plotly.
-    \item \textbf{Indicador AG-C06.03 (Pensamiento Crítico y Síntesis Compleja - 20\%):} Matriz comparativa multicriterio, evaluación empírica de la discrepancia entre la teoría asintótica y el rendimiento en memoria física real (Sección~\ref{sec:discusion}), formulación de la impedancia andina y delimitación honesta de amenazas a la validez.
+    \item \textbf{AG-C06.01 (40\%):} El Anexo C recoge autoría y fechas de commits. Faltan las bitácoras individuales de fuentes, actividades y aprendizajes, así como actas de seguimiento.
+    \item \textbf{AG-C06.02 (40\%):} El capítulo de stack describe las herramientas usadas. La instalación desde cero y la reflexión personal de cada estudiante siguen sin acreditarse.
+    \item \textbf{AG-C06.03 (20\%):} Los JSON, tablas y discusión permiten contrastar cotas y tiempos observados; los efectos físicos de memoria no fueron medidos.
 \end{itemize}

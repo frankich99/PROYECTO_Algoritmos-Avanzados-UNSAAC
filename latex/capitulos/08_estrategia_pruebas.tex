@@ -2,11 +2,11 @@
 \label{sec:pruebas}
 
 \subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
-Para garantizar la confiabilidad, correctitud matemática y robustez del software, el proyecto descansa sobre una suite automatizada de pruebas implementada con el framework \texttt{pytest}. La totalidad de las 278 pruebas se estructuran formalmente bajo el patrón \textbf{Arrange - Act - Assert (AAA)}, cuyos fundamentos teóricos y justificación metodológica fueron formalizados en la Sección~\ref{sec:fundamentos_aaa}:
+La suite con \texttt{pytest} contiene 278 casos. El patrón \textbf{Arrange--Act--Assert (AAA)} ayuda a distinguir preparación, ejecución y comprobación en los casos; no se verificó que cada uno de los 278 esté escrito con esa misma estructura. La Sección~\ref{sec:fundamentos_aaa} explica el patrón:
 \begin{itemize}
     \item \textbf{Arrange (Organizar):} Configuración del entorno determinista, definición de semillas pseudoaleatorias fijas, instanciación del grafo de prueba o cola concreta y declaración explícita de los valores esperados.
     \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{dijkstra\_solver}, \texttt{a\_star\_solver}, operaciones primitivas de cola o comandos de la CLI).
-    \item \textbf{Assert (Afirmar):} Comprobación determinista mediante aserciones de igualdad de distancias con tolerancia flotante $\epsilon = 10^{-6}$, preservación de invariantes, captura de excepciones y códigos de salida.
+    \item \textbf{Assert (Comprobar):} Comparación de distancias con tolerancia numérica, invariantes de colas, excepciones esperadas y códigos de salida según el caso.
 \end{itemize}
 
 \begin{lstlisting}[language=bash, caption={Comando de ejecución de la suite automatizada completa}]
@@ -14,7 +14,7 @@ python -m pytest python/tests -q
 \end{lstlisting}
 
 \subsection{Tipología y Cobertura de la Suite Automatizada (278 Pruebas)}
-La suite reúne 278 pruebas automatizadas que cubren exhaustivamente las cuatro capas de la arquitectura (Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}).
+La suite reúne 278 pruebas automatizadas en las categorías de las Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}. Esta clasificación no equivale a un porcentaje de cobertura de código, que no se midió.
 
 \begin{table}[H]
     \centering
@@ -59,44 +59,44 @@ La suite reúne 278 pruebas automatizadas que cubren exhaustivamente las cuatro 
         \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas (mediana e IQR) y estructura del benchmark. \\
         \texttt{test\_applied\_analysis.py} & 3 & Consulta sobre la red real de Cusco y sensibilidad ambiental. \\
         \midrule
-        \textbf{Total} & \textbf{278} & Suite completa de pruebas automatizadas aprobadas. \\
+        \textbf{Total} & \textbf{278} & Casos documentados; comprobar la ejecución en el entorno de evaluación. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \subsection{Metodología de Verificación y Oráculos Independientes}
-Para evitar sesgos algorítmicos derivados de errores compartidos entre implementaciones del mismo equipo, la exactitud de las soluciones se verifica contra cuatro oráculos independientes de referencia:
+La suite emplea varias referencias en casos distintos; el banco sintético contrasta además con NetworkX antes de cronometrar. No se ejecutan todos los oráculos por cada muestra de tiempo:
 \begin{enumerate}
     \item \textbf{Algoritmo de Bellman-Ford:} Implementación pura de $O(|V||E|)$ tolerante a costos negativos y capaz de diagnosticar ciclos negativos. Se utiliza en 40 grafos aleatorios con topologías y densidades diversas.
     \item \textbf{Dijkstra sobre Arreglo no Ordenado:} Algoritmo determinista $O(|V|^2+|E|)$ que no emplea estructuras de árbol ni montículos, confirmando que la lógica de prioridades no perturba las distancias.
-    \item \textbf{Librería Canónica NetworkX 3.7:} Empleada exclusivamente como oráculo externo de referencia (\textit{ground truth}) sobre mallas cuadrículas dirigidas de $8 \times 8$.
+    \item \textbf{NetworkX:} Referencia externa para distancias en pruebas y en las 30 instancias sintéticas del banco, antes de medirlas.
     \item \textbf{Instancias resueltas analíticamente a mano:} Contraste contra la traza de seis nodos de Cusco (Sección~\ref{sec:formulacion}) y la instancia presentada por Cormen et al. (2022, figura 24.6, p. 659).
 \end{enumerate}
 
-\subsection{Certificado Formal de Optimalidad de Bellman $O(|V|+|E|)$}
-Para validar la optimalidad sin reejecutar un solver completo, se implementó un certificador lineal que comprueba cuatro condiciones matemáticas necesarias y suficientes:
+\subsection{Certificado de Optimalidad de Bellman}
+Para comprobar la salida sin repetir Dijkstra, el certificador examina distancias, aristas y predecesores; si se suministran caminos explícitos, también los recorre:
 \begin{enumerate}
     \item \textbf{Distancia al origen:} $d[s] = 0.0$.
-    \item \textbf{Ausencia de relajaciones pendientes:} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se satisface estrictamente:
+    \item \textbf{Ausencia de relajaciones pendientes:} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se comprueba, dentro de la tolerancia numérica:
     \begin{equation}
         d[v] \le d[u] + w(u, v)
     \end{equation}
-    garantizando que ninguna distancia tentativa esté sobreestimada.
-    \item \textbf{Conexión estricta de predecesores al origen:} Para todo vértice alcanzable $v \ne s$, existe una cadena finita acíclica de aristas ajustadas ($d[v] = d[\pi[v]] + w(\pi[v], v)$) que converge al origen $s$, detectando y rechazando ciclos desconectados de costo cero.
-    \item \textbf{Consistencia de trayectorias:} Cada camino explícito reconstruido conecta $s$ con $v$, utiliza únicamente tramos existentes en $E$ y su costo sumado coincide de forma exacta con $d[v]$.
+    de modo que no quede una arista que reduzca el costo registrado.
+    \item \textbf{Predecesores:} Para cada vértice alcanzable $v\ne s$, la cadena de aristas ajustadas ($d[v]\approx d[\pi[v]]+w(\pi[v],v)$) debe terminar en $s$ y no formar ciclos.
+    \item \textbf{Trayectorias, si se incluyen:} Se comprueban extremos, aristas existentes y costo, con tolerancia numérica frente a $d[v]$.
 \end{enumerate}
-La verificación de las desigualdades y el árbol de predecesores opera en tiempo estricto $O(|V|+|E|)$.
+La comprobación sin caminos explícitos cuesta $O(|V|+|E|)$. Si se entregan caminos para todos los destinos, cuesta además $O(L)$, donde $L$ es la suma de sus longitudes.
 
 \subsection{Casos Límite, Condiciones Adversas y Pruebas de Regresión}
 La suite de pruebas incluye escenarios extremos diseñados para someter al sistema a condiciones no nominales:
 \begin{itemize}
     \item \textbf{Casos límite:} Grafos unitarios ($|V|=1, |E|=0$), orígenes aislados sin aristas salientes, componentes disjuntas inalcanzables ($d[v]=\infty$), lazos dirigidos ($(u, u)$), aristas paralelas múltiples con distintos costos, aristas de costo cero y aristas con pesos extremos ($10^{12}$ y $10^{-9}$).
     \item \textbf{Casos adversos:} Entradas con pesos negativos, grafos con ciclos negativos (detectados por Bellman-Ford y rechazados por Dijkstra), JSONs con sintaxis rota, claves NaN, cadenas de texto o nulas, e intentos de incremento de clave en \texttt{decrease\_key}.
-    \item \textbf{Prueba de regresión de $A^*$:} Detección y rechazo de heurísticas inadmisibles producidas por coordenadas geográficas inconsistentes o proyecciones distorsionadas, forzando la degradación segura hacia Dijkstra ($h=0$).
+    \item \textbf{Pruebas de $A^*$:} Se rechazan heurísticas personalizadas negativas, no finitas o inconsistentes; si faltan coordenadas para la heurística automática, se usa $h=0$.
 \end{itemize}
 
 \subsection{Pruebas de Integración y Funcionamiento Desconectado}
-Para asegurar que el sistema sea completamente reproducible y resiliente en ambientes sin conexión a Internet, 11 pruebas de integración verifican: la ingesta de \textit{snapshots} locales de OpenStreetMap sin descargas en vivo, el aislamiento de llamadas meteorológicas mediante respuestas locales simuladas (\texttt{mocking}), la renderización de mapas vectoriales en Streamlit mediante \texttt{AppTest} y la protección de claves de API en memoria sin persistencia en archivos versionados.
+La suite incluye pruebas de carga del \textit{snapshot} OSM, clientes meteorológicos simulados y una prueba de humo de la aplicación mediante \texttt{AppTest}. Estas comprobaciones no sustituyen una instalación limpia ni una prueba de APIs externas en vivo.
 
 \subsection{Criterios de Aceptación y Calidad del Software}
-Una versión del prototipo se califica como aprobada únicamente cuando: (1) Las 278 pruebas unitarias e integrales finalizan con estado \texttt{PASSED}; (2) El certificado formal de optimalidad se satisface al 100\% en todas las corridas experimentales; (3) Las tres colas de prioridad producen distancias matemáticamente indistinguibles ($\epsilon < 10^{-6}$); y (4) Tanto la CLI como la plataforma web Streamlit son totalmente operativas en modo desconectado.
+El control técnico requiere ejecutar \texttt{python -m pytest python/tests -q}, comprobar los certificados y la equivalencia de distancias, y probar CLI y aplicación sin red. En el banco, la verificación de la instancia precede al cronometraje; no se certifica de nuevo cada muestra temporal. La bitácora y la presentación requieren evidencias distintas de una salida de pruebas.

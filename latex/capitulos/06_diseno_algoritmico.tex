@@ -16,7 +16,9 @@ El Algoritmo de Dijkstra es el método canónico para la resolución del problem
     \STATE $\pi[v]\leftarrow\text{NIL}$
 \ENDFOR
 \STATE $d[s]\leftarrow 0.0$
-\STATE $Q.\text{insert}(s, 0.0)$ \COMMENT{O inserción global de $V$ con claves iniciales}
+\FORALL{$v\in V$}
+    \STATE $Q.\text{insert}(v, d[v])$ \COMMENT{La implementación inserta todos los vértices}
+\ENDFOR
 \STATE $S\leftarrow\emptyset$ \COMMENT{Conjunto de vértices con distancia permanente cerrada}
 \WHILE{\textbf{not} $Q.\text{is\_empty}()$}
     \STATE $(d_u, u)\leftarrow Q.\text{extract\_min}()$ \COMMENT{// [L9-L10] Extracción del vértice con menor distancia tentativa}
@@ -28,11 +30,7 @@ El Algoritmo de Dijkstra es el método canónico para la resolución del problem
         \IF{$v\notin S$ \textbf{and} $d_u + w(u,v) < d[v]$}
             \STATE $d[v]\leftarrow d_u + w(u,v)$ \COMMENT{// [L15-L18] Relajación voraz de la arista}
             \STATE $\pi[v]\leftarrow u$
-            \IF{$v\in Q$}
-                \STATE $Q.\text{decrease\_key}(v, d[v])$ \COMMENT{// [L19-L21] Disminución de prioridad en $Q$}
-            \ELSE
-                \STATE $Q.\text{insert}(v, d[v])$
-            \ENDIF
+            \STATE $Q.\text{decrease\_key}(v, d[v])$ \COMMENT{Disminución de prioridad en $Q$}
         \ENDIF
     \ENDFOR
 \ENDWHILE
@@ -41,7 +39,7 @@ El Algoritmo de Dijkstra es el método canónico para la resolución del problem
 \end{algorithm}
 
 \subsubsection{Correspondencia entre Pseudocódigo e Implementación}
-Para asegurar la trazabilidad estricta entre la literatura algorítmica y el paquete ejecutable, cada bloque relevante en \texttt{python/src/algorithms/dijkstra.py} implementa fielmente las líneas del Algoritmo~\ref{alg:dijkstra_generico}, como se sintetiza en la Tabla~\ref{tab:pseudo_codigo}.
+La Tabla~\ref{tab:pseudo_codigo} relaciona el pseudocódigo con \texttt{python/src/algorithms/dijkstra.py}. El solver también acepta una parada opcional al llegar al destino y puede reconstruir caminos después del intervalo principal.
 
 \begin{table}[H]
     \centering
@@ -50,14 +48,14 @@ Para asegurar la trazabilidad estricta entre la literatura algorítmica y el paq
     \label{tab:pseudo_codigo}
     \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{5.0cm} X@{}}
         \toprule
-        \textbf{Etapa Algorítmica} & \textbf{Pseudocódigo [Lk]} & \textbf{Código Python (\texttt{dijkstra.py})} \\
+        \textbf{Etapa} & \textbf{Pseudocódigo} & \textbf{Código Python (\texttt{dijkstra.py})} \\
         \midrule
         Inicialización & $d[v]\leftarrow\infty$, $\pi[v]\leftarrow\text{NIL}$, $d[s]\leftarrow0$ & Diccionarios \texttt{dist}, \texttt{prev} y asignación \texttt{dist[s]=0.0}. \\
-        Construcción de $Q$ & $Q.\text{insert}(s, 0)$ o $Q.\text{build}(V, d)$ & Factoría \texttt{create\_queue(queue\_type)} e inserción controlada. \\
+        Construcción de $Q$ & Insertar cada $v\in V$ con clave $d[v]$ & \texttt{create\_queue(queue\_type)} y \texttt{heap.insert} para cada nodo. \\
         Extracción del mínimo & $(d_u,u)\leftarrow Q.\text{extract\_min}()$ & Invocación polimórfica \texttt{d\_u, u = heap.extract\_min()}. \\
         Criterio de corte & \textbf{if} $d_u = \infty$ \textbf{then break} & \texttt{if d\_u == INF: break} (componentes disjuntas). \\
-        Relajación voraz & $d_u + w(u,v) < d[v]$ & Comprobación \texttt{candidate = d\_u + weight < dist[v]}. \\
-        Actualización de cola & \texttt{decrease\_key} o \texttt{insert} & \texttt{heap.decrease\_key(v, dist[v])} si está en cola; si no, \texttt{insert}. \\
+        Relajación voraz & $d_u + w(u,v) < d[v]$ & \texttt{candidate\_d = d\_u + weight}; comparar con \texttt{dist[v]}. \\
+        Actualización de cola & \texttt{decrease\_key} & \texttt{heap.decrease\_key(v, candidate\_d)} para un nodo no visitado. \\
         Reconstrucción & Retorno de $(d,\pi)$ y traza & Módulo \texttt{reconstruct\_path(prev, s, t)} y telemetría de operaciones. \\
         \bottomrule
     \end{tabularx}
@@ -67,20 +65,20 @@ Para asegurar la trazabilidad estricta entre la literatura algorítmica y el paq
 La corrección formal del algoritmo descansa sobre el siguiente invariante inductivo:
 
 \subsubsection{Invariante de Bucle Fundamental}
-Al inicio de cada iteración del ciclo \texttt{while} (línea 8):
+Al inicio de cada iteración del ciclo \texttt{while}:
 \begin{enumerate}
     \item Para todo vértice permanente $u \in S$, el valor estimado coincide con la distancia mínima real: $d[u] = \delta(s, u)$.
-    \item Para todo vértice no permanente $v \in Q = V \setminus S$, $d[v]$ es la longitud del camino más corto desde $s$ hasta $v$ que transita exclusivamente por vértices pertenecientes al conjunto $S$.
+    \item Para $v\in Q=V\setminus S$, $d[v]$ es el menor costo descubierto hasta $v$ mediante aristas salientes de vértices procesados en $S$; vale $\infty$ si aún no se descubrió un camino. El origen inicia con $d[s]=0$.
 \end{enumerate}
 
 \subsubsection{Demostración por Inducción Matemática de Optimalidad}
 \begin{itemize}
-    \item \textbf{Base ($|S|=0$):} Antes de la primera iteración, $S = \emptyset$. Para el origen, $d[s] = 0 = \delta(s, s)$ dado que no existen aristas con pesos negativos ($w(e) \ge 0$). Para todo $v \ne s$, $d[v] = \infty$, lo cual satisface la cota superior sobre caminos sin vértices intermedios en $S$.
+    \item \textbf{Base ($|S|=0$):} Al comenzar, $d[s]=0$ y las otras distancias valen $\infty$. Aún no se han procesado aristas salientes; la segunda propiedad describe precisamente el estado descubierto hasta entonces.
     \item \textbf{Paso inductivo:} Supóngase que el invariante se satisface para $|S| = k$. El algoritmo selecciona el vértice $u \in Q$ con $d_u = \min_{z \in Q} d[z]$ y lo incorpora a $S$. Si existiese un camino dirigido $P$ desde $s$ hasta $u$ estrictamente más corto que $d[u]$ ($w(P) < d[u]$), dicho camino debe salir de $S$ hacia $Q$ por primera vez a través de alguna arista $(x, y)$, con $x \in S$ y $y \in Q$. La longitud acumulada hasta $y$ satisface:
     \begin{equation}
-        w(P) \ge \delta(s, x) + w(x, y) = d[y]
+        w(P) \ge \delta(s, x) + w(x, y) \ge d[y]
     \end{equation}
-    dado que $x \in S$ cumple la hipótesis inductiva y $(x, y)$ ya fue relajada al incorporar $x$. Puesto que $u$ minimiza $Q$ y los costos son no negativos ($w \ge 0$), se tiene $d[y] \ge d[u]$, lo cual implica $w(P) \ge d[u]$, contradiciendo la existencia de un camino más corto. Por ende, $d[u] = \delta(s, u)$. Tras relajar las aristas salientes de $u$, la segunda propiedad del invariante se restaura para la siguiente iteración.
+    porque al procesar $x$ se consideró $(x,y)$, y la continuación de $P$ desde $y$ tiene peso no negativo. Como $u$ tiene la menor clave pendiente, $d[y]\ge d[u]$, contradiciendo $w(P)<d[u]$. Por tanto, $d[u]=\delta(s,u)$. Relajar las aristas salientes de $u$ actualiza las claves descubiertas para la siguiente iteración.
     \item \textbf{Terminación:} Cuando $Q = \emptyset$ o los vértices restantes tienen distancia $\infty$, $S$ contiene todos los nodos alcanzables desde $s$, garantizando que $d[v] = \delta(s, v)$ y que el árbol de predecesores $\pi$ codifica las rutas óptimas.
 \end{itemize}
 
@@ -100,7 +98,7 @@ El montículo 4-ario generaliza el heap binario adoptando un factor de ramificac
     \text{padre}(i) = \left\lfloor \frac{i - 1}{4} \right\rfloor, \quad \text{hijo}_k(i) = 4i + k, \quad k \in \{1, 2, 3, 4\}
     \label{eq:aritmetica_4ary}
 \end{equation}
-Esta formulación reduce la profundidad teórica del árbol: $\lceil \log_4 |V| \rceil = 0.5 \lceil \log_2 |V| \rceil$. En \texttt{decrease\_key}, el número máximo de intercambios también disminuye. Durante \texttt{extract\_min}, \texttt{sift-down} compara cuatro descendientes contiguos; en nuestro trabajo analizamos esta ventaja estructural, pero no medimos directamente líneas de caché.
+Esta formulación reduce aproximadamente a la mitad la profundidad del árbol: $\log_4 |V| = \tfrac{1}{2}\log_2 |V|$ (al redondear al entero superior, la igualdad exacta no siempre se conserva). \texttt{decrease\_key} puede recorrer menos niveles; \texttt{extract\_min} debe comparar hasta cuatro hijos por nivel. La disposición contigua es una propiedad del arreglo, pero no medimos los accesos a caché.
 
 \subsubsection{Fibonacci Heap (\texttt{FibonacciHeap})}
 El Fibonacci Heap \parencite{fredman1987fibonacci} mantiene una colección de árboles con orden de montículo estructurados mediante listas circulares doblemente enlazadas con punteros \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y el bit de marcado \texttt{marked}.
@@ -131,7 +129,7 @@ La Tabla~\ref{tab:complejidades} expone la comparación de cotas asintóticas te
         \bottomrule
     \end{tabularx}
     \par\vspace{0.1cm}
-    \raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} $^*$Cota amortizada. Para $d$ fijo, $\log_d |V| = O(\log |V|)$; las discrepancias empíricas provienen de las constantes de indirección y la jerarquía de memoria física.
+    \raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} $^*$Cota amortizada. Para $d$ fijo, $\log_d |V| = O(\log |V|)$; la tabla no determina por sí sola los tiempos observados.
 \end{table}
 
 Las cotas temporales de la Tabla~\ref{tab:complejidades} consideran hasta $|V|$ inserciones y extracciones y hasta $|E|$ relajaciones: son cotas de peor caso para los montículos binario y 4-ario, y amortizadas para Fibonacci (una extracción aislada puede costar $O(|V|)$). No se asigna una cota de caso promedio sin definir una distribución de grafos y costos. La columna de espacio corresponde a la \emph{cola}: Dijkstra requiere además $O(|V|)$ de memoria auxiliar para distancias, predecesores y visitados, sobre una entrada de $O(|V|+|E|)$. La implementación reconstruye por defecto la ruta a cada destino; almacenar y construir todas esas rutas puede añadir $O(|V|^2)$ espacio y tiempo en el peor caso. Las cotas temporales de la tabla describen el núcleo sin esa reconstrucción (\texttt{build\_paths=False}); la traza opcional también incrementa la memoria utilizada.
@@ -149,13 +147,13 @@ La Tabla~\ref{tab:guia_seleccion} sintetiza el marco de selección tecnológica 
         \toprule
         \textbf{Alternativa} & \textbf{Escenario Recomendado} & \textbf{Justificación Técnica y Evidencia} \\
         \midrule
-        Dijkstra + Heap Binario & Redes viales pequeñas y medianas ($|V| \le 1,000$), donde se prioriza simplicidad y mínima sobrecarga. & Menor constante de inicialización; obtuvo el menor tiempo en la red real OSM de Cusco (15.65 ms) y en 3 de 10 escalas sintéticas. \\
+        Dijkstra + Heap Binario & Opción inicial para esta implementación; contrastar con la red de interés. & Menor mediana en la consulta OSM de Cusco (15.65 ms) y en 3 de 10 escalas sintéticas. \\
         \addlinespace
-        Dijkstra + Heap 4-ario & Redes viales metropolitanas extensas ($|V| \ge 1,000$) sobre procesadores con líneas de caché de 64 bytes. & Menor mediana en 7 de 10 escalas sintéticas (ventaja mediana de 4--5\%); aprovecha la reducción de niveles y la contigüidad espacial. \\
+        Dijkstra + Heap 4-ario & Alternativa para repetir la comparación con otras escalas y grafos. & Menor mediana en 7 de 10 escalas sintéticas; los IQR frente al binario se solapan en todas. \\
         \addlinespace
-        Dijkstra + Fibonacci & Grafos hiper-densos ($|E| \gg |V| \log |V|$) o entornos de bajo costo de asignación en memoria (C puro). & En Python no resultó competitivo (1.12--1.59 veces más lento); la constante de punteros domina frente al ahorro en comparaciones. \\
+        Dijkstra + Fibonacci & Interés teórico por su cota amortizada; falta evaluar otras implementaciones. & En estas 10 escalas fue entre 1.05 y 1.59 veces más lento que el binario; no se midieron las causas de hardware. \\
         \addlinespace
-        $A^*$ con heurística consistente & Consultas punto a punto ($s \to t$) para navegación y vehículos de emergencia con coordenadas WGS84. & Reduce las expansiones de nodos en un 7.2\% en la red OSM sin degradar la optimalidad de la ruta. \\
+        $A^*$ con heurística consistente & Consultas punto a punto con coordenadas y pesos compatibles. & En el par OSM probado expandió 7.2\% menos vértices con el mismo costo; no se comparó su tiempo con las tres colas. \\
         \addlinespace
         Bellman-Ford & Oráculo de validación cruzada y verificación de ausencia de ciclos negativos. & Complejidad $O(|V||E|)$; opera como juez independiente para validar la suite de pruebas unitarias. \\
         \bottomrule

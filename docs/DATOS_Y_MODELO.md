@@ -1,7 +1,7 @@
 # Datos, unidades y alcance del modelo
 
-Documento de referencia para el informe y la entrega del Grupo 5. Corte de
-revisión: 30 de octubre de 2026. No convierte supuestos en observaciones.
+Referencia para el informe del Grupo 5. Revisado al 04/11/2026: los datos
+canónicos siguen fechados el 28/10. No convierte supuestos en observaciones.
 
 ## Tres problemas distintos
 
@@ -85,6 +85,10 @@ automáticamente por existir una fórmula.
   histórica `certificado O(V+E)` omite el costo de leer caminos explícitos;
   se conserva intacta para no alterar retrospectivamente el registro. La
   versión actual de `certificate.py` añade la detección de ciclos falsos.
+- `python/data/processed/pilot_benchmark_results.json`: **18** muestras
+  guardadas el 04/11. Es un piloto posterior al banco canónico; su figura
+  `latex/figuras/piloto_mediciones.png` se incluye en metodología y no se usa
+  para decidir el rendimiento de las colas.
 - `python/data/processed/applied_results.json`: consulta OSM, tres colas,
   extensión A* y **solo** sensibilidad climática; no incluye tráfico.
 - `python/scripts/reproduce_canonical.py`: genera tablas en `latex/tablas/` y

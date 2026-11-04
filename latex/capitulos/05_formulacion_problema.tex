@@ -38,7 +38,7 @@ Bajo el enfoque de optimización en redes, se define para cada arista dirigida $
 El sistema calcula dos estructuras fundamentales:
 \begin{enumerate}
     \item El vector de distancias mínimas definitivas $d: V \to \mathbb{R}_{\ge 0} \cup \{\infty\}$, donde $d[v] = \delta(s, v)$ representa el costo óptimo desde $s$ hasta $v$.
-    \item El vector de predecesores $\pi: V \to V \cup \{\text{NIL}\}$, que permite reconstruir de forma invertida la secuencia única de intersecciones del camino óptimo:
+    \item El vector de predecesores $\pi: V \to V \cup \{\text{NIL}\}$, que permite reconstruir el camino encontrado por el algoritmo; pueden existir otros caminos con el mismo costo:
     \begin{equation}
         P(s, t) = \langle s = v_0, v_1, v_2, \dots, v_k = t \rangle
     \end{equation}
@@ -58,7 +58,7 @@ sujeto a las restricciones de integridad y no negatividad de costos:
 \begin{equation}
     x_{uv} \in \{0, 1\}, \quad w(u, v) \ge 0, \quad \forall (u, v) \in E
 \end{equation}
-La condición $w(u, v) \ge 0$ garantiza que el algoritmo de Dijkstra sea rigurosamente aplicable, puesto que la subestructura óptima se preserva y los ciclos dirigidos tienen costo no negativo, garantizando que ningún camino elemental contenga bucles.
+La no negatividad de $w$ permite aplicar Dijkstra. Con costos cero puede haber varios caminos óptimos; basta escoger un camino simple.
 
 \subsection{Función Objetivo y Modelo de Costo con Impedancia Andina}
 La función objetivo minimiza el costo total acumulado del recorrido:
@@ -68,7 +68,7 @@ La función objetivo minimiza el costo total acumulado del recorrido:
 \end{equation}
 
 \subsubsection{Formulación de la Impedancia Vial Andina}
-Es metodológicamente imprescindible distinguir tres escalas de instancias: la red manual didáctica de seis nodos (cuyas pendientes y longitudes son supuestos didácticos del equipo), el benchmark sintético (con pesos generados), y la consulta sobre la red real de OpenStreetMap (cuyos pesos proceden del \textit{snapshot} congelado). Para modelar la circulación vehicular en el contexto topográfico cusqueño, se formula el siguiente modelo de impedancia generalizada:
+Se usan tres instancias distintas: la red didáctica de seis nodos, con longitudes y pendientes supuestas; el banco sintético, con pesos generados sin unidad física; y el recorte OSM, con longitudes y tiempos nominales guardados. La siguiente fórmula se aplica a los tiempos del ejemplo didáctico. No se aplica a los pesos sintéticos ni a la consulta OSM, que no incorpora pendientes por arista:
 \begin{equation}
     w(u, v) = \frac{L(u, v)}{v_{\text{nom}}(\tau(u, v))} \cdot \Bigl(1 + \alpha \max\bigl(0, \theta(u, v)\bigr)\Bigr) \cdot m_{\text{clima}} \cdot c_{\text{tráfico}}(\tau(u, v)),
     \label{eq:costo}
@@ -77,9 +77,9 @@ donde:
 \begin{itemize}
     \item $L(u, v)$ es la longitud física del segmento vial en metros.
     \item $\tau(u, v)$ representa la tipología de la vía (avenida, calle centro, calle residencial, peatonal restringida).
-    \item $v_{\text{nom}}(\tau)$ es la velocidad nominal de diseño reglamentaria (Tabla~\ref{tab:velocidades}).
+    \item $v_{\text{nom}}(\tau)$ es la velocidad supuesta por tipo de vía para el ejemplo didáctico (Tabla~\ref{tab:velocidades}); no equivale a un límite legal ni a velocidad observada.
     \item $\theta(u, v)$ es la pendiente longitudinal expresada como fracción decimal (por ejemplo, $0.03$ para una gradiente del $3\%$).
-    \item $\alpha = 2.5$ es el coeficiente de penalización por esfuerzo motriz en pendiente ascendente. El operador $\max(0, \theta)$ garantiza que los descensos no descuenten tiempo de forma irreal.
+    \item $\alpha = 2.5$ es un coeficiente supuesto para el ejemplo; $\max(0, \theta)$ deja sin penalización las pendientes no positivas.
     \item $m_{\text{clima}} \ge 1$ es el factor de sensibilidad meteorológica.
     \item $c_{\text{tráfico}}(\tau) \ge 1$ es el coeficiente de congestión vehicular.
 \end{itemize}
@@ -87,7 +87,7 @@ donde:
 \begin{table}[H]
     \centering
     \fontsize{9.5}{11.5}\selectfont
-    \caption{Velocidades nominales por tipología de vía en Cusco}
+    \caption{Velocidades supuestas para la instancia didáctica; no usadas en la consulta OSM}
     \label{tab:velocidades}
     \begin{tabular}{@{}lrr@{}}
         \toprule
@@ -107,7 +107,7 @@ El multiplicador $m_{\text{clima}}$ procesa variables atmosféricas mediante el 
     m_{\text{clima}} = 1 + c_p \min\left(\frac{P}{P_{\text{ref}}}, 1\right) + c_h \max\left(0, \frac{H - H_0}{100 - H_0}\right) + c_v \left(1 - \min\left(\frac{V}{V_{\text{ref}}}, 1\right)\right) + c_w \min\left(\frac{W}{W_{\text{ref}}}, 1\right),
     \label{eq:clima_integral}
 \end{equation}
-donde $P$ es la precipitación acumulada en mm ($P_{\text{ref}}=10$ mm, $c_p=0.20$), $H$ es la humedad relativa en \% ($H_0=65\%$, $c_h=0.08$), $V$ es la visibilidad horizontal en metros ($V_{\text{ref}}=10\,000$ m, $c_v=0.15$) y $W$ es la ráfaga de viento en km/h ($W_{\text{ref}}=80$ km/h, $c_w=0.10$). La observación histórica canónica guardada en \texttt{applied\_results.json} (28/10/2026 a las 12:30 hora de Lima) registra $P=0.1$ mm, $V=8920$ m y $W=40.7$ km/h, produciendo un factor de escenario de $m_{\text{clima}} = 1.0691$ ($+6.91\%$).
+donde $P$ es la precipitación en mm por intervalo ($P_{\text{ref}}=10$ mm, $c_p=0.20$), $H$ es la humedad relativa en \% ($H_0=65\%$, $c_h=0.08$), $V$ es la visibilidad en metros ($V_{\text{ref}}=10\,000$ m, $c_v=0.15$) y $W$ es la ráfaga en km/h ($W_{\text{ref}}=80$ km/h, $c_w=0.10$). Los coeficientes son supuestos de sensibilidad, no calibración vial. La respuesta de modelo guardada en \texttt{applied\_results.json} indica 28/10/2026 a las 12:30 (hora de Lima), $P=0.1$ mm, $V=8920$ m y $W=40.7$ km/h. No contiene humedad medida: el cargador usa 50\% por defecto, sin efecto sobre el factor resultante $m_{\text{clima}}=1.0691$. El valor proviene de un punto de grilla de Open-Meteo, no de una estación en la ciudad.
 
 \subsubsection{Modelo de Congestión Horaria Hipotético}
 El servicio \texttt{traffic.py} formula multiplicadores por franja y tipo de vía según supuestos analíticos:
@@ -115,10 +115,10 @@ El servicio \texttt{traffic.py} formula multiplicadores por franja y tipo de ví
     c_{\text{tráfico}}(\tau) = 1 + \bigl(c_{\text{base}}(t) - 1\bigr) \cdot s(\tau) \cdot \gamma_{\text{sinergia}},
     \label{eq:trafico}
 \end{equation}
-donde $c_{\text{base}}(t) \in \{1.00, 1.25, 1.65, 2.20\}$ modela la hora pico; $s(\tau)$ pondera la capacidad vial ($1.35$ para calle céntrica, $1.15$ para avenida, $0.95$ para residencial); y $\gamma_{\text{sinergia}} = 1 + 0.20(m_{\text{clima}} - 1)$. En la consulta sobre OpenStreetMap, para evitar sesgos no calibrados en campo, la red opera con los tiempos de viaje base del \textit{snapshot} (\texttt{travel\_time\_sec}) y el factor de avenida se evalúa como multiplicador global de sensibilidad.
+donde $c_{\text{base}}(t) \in \{1.00, 1.25, 1.65, 2.20\}$ representa niveles horarios supuestos; $s(\tau)$ vale 1.35 para calle céntrica, 1.15 para avenida y 0.95 para residencial; y $\gamma_{\text{sinergia}}=1+0.20\max(0,m_{\text{clima}}-1)$. La consulta OSM guardada usa solo \texttt{travel\_time\_sec} y sensibilidad climática uniforme: no incluye un resultado experimental de congestión.
 
 \subsubsection{Supuestos del Modelo}
-(i) Los costos del benchmark y de la red OSM son estrictamente deterministas y no negativos. (ii) Las velocidades nominales representan límites operacionales seguros de diseño. (iii) La penalización por gradiente se aplica exclusivamente a pendientes positivas ($\theta > 0$). (iv) Los factores de clima y tráfico constituyen escenarios de sensibilidad uniforme que no alteran el orden topológico de las rutas en la red OSM. (v) La instancia de seis nodos es una abstracción docente para verificación analítica manual.
+Las semillas y los archivos locales fijan los pesos de cada instancia, pero no sus tiempos de cómputo. Las velocidades de la tabla y el coeficiente de pendiente son supuestos didácticos. En OSM, los tiempos base proceden del \textit{snapshot}; el factor climático uniforme cambia el costo calculado sin cambiar el orden de los caminos. No se evaluó tráfico por tramo en esa consulta.
 
 \subsection{Ejemplo Ilustrativo Resuelto Analíticamente (Red Nuclear de 6 Nodos)}
 Para validar analíticamente el comportamiento del algoritmo, se diseñó la instancia representativa del Centro Histórico del Cusco mostrada en la Figura~\ref{fig:grafo_tikz} y formalizada en la Tabla~\ref{tab:aristas_cusco}, con $|V|=6$ intersecciones y $|E|=9$ tramos viales dirigidos.
@@ -196,7 +196,7 @@ A continuación, se desarrolla analíticamente la traza paso a paso desde el ori
 
 \input{tablas/tabla_traza_detallada.tex}
 
-A partir del vector de predecesores $\pi = \{\text{A}: \text{NIL}, \text{B}: \text{A}, \text{C}: \text{A}, \text{D}: \text{B}, \text{E}: \text{D}, \text{F}: \text{C}\}$, se reconstruyen unívocamente las rutas mínimas desde la Plaza Mayor (A):
+Con el vector de predecesores $\pi = \{\text{A}: \text{NIL}, \text{B}: \text{A}, \text{C}: \text{A}, \text{D}: \text{B}, \text{E}: \text{D}, \text{F}: \text{C}\}$ se reconstruyen estas rutas mínimas desde A:
 \begin{align}
     \text{Ruta hacia Mercado San Pedro (E):} & \quad \text{A} \to \text{B} \to \text{D} \to \text{E} \quad (180 + 220 + 250 = 650.0\text{ m}), \\
     \text{Ruta hacia Plazoleta Limacpampa (F):} & \quad \text{A} \to \text{C} \to \text{F} \quad (450 + 350 = 800.0\text{ m}).
@@ -209,4 +209,4 @@ Bajo la métrica de tiempo efectivo con impedancia topográfica (Tabla~\ref{tab:
 Para comprobar la adhesión a la literatura clásica, el sistema incluye la instancia de caminos mínimos presentada por Cormen et al. (2022, figura 24.6, p. 659). El orden de extracción obtenido por el software es $\langle s, y, z, t, x \rangle$, con distancias definitivas $\langle 0, 5, 7, 8, 9 \rangle$, idénticas a la solución teórica.
 
 \subsection{Red Vial Urbana Real de Cusco (OpenStreetMap)}
-La red metropolitana real fue extraída mediante OSMnx 2.1.1 en torno al centro urbano de Cusco ($-13.5165, -71.9788$) con un radio de 1,500 metros en modalidad \texttt{drive}. La topología serializada en \texttt{cusco\_osm\_drive.json} contiene 891 intersecciones y 2,139 tramos viales dirigidos, arrojando una densidad de $|E|/|V| = 2.40$ característica de mallas viales dispersas. Sobre esta red, la consulta canónica entre el centroide y el nodo alcanzable más lejano abarca 17 intersecciones, 2,810.6 metros y un tiempo base óptimo de 387.197 segundos.
+El recorte OSM de conducción se descargó con OSMnx 2.1.1 alrededor de $(-13.5165,-71.9788)$, en un radio de 1,500 m. El \textit{snapshot} \texttt{cusco\_osm\_drive.json} guarda 891 nodos y 2,139 aristas dirigidas (2.40 aristas por vértice). El origen de la consulta es el nodo más próximo al centro indicado, no el centroide del grafo; el destino es el nodo alcanzable de mayor costo base desde ese origen. La ruta calculada contiene 17 vértices, suma 2,810.6 m y tiene un costo estimado de viaje de 387.197 s. Este costo no es el tiempo de cómputo de Dijkstra.

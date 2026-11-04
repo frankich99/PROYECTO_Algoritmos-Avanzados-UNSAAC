@@ -2,7 +2,7 @@
 
 Implementación modular en Python de Dijkstra con tres colas de prioridad intercambiables, $A^*$ con heurística consistente, un certificado de optimalidad y un caso aplicado sobre OpenStreetMap.
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](tests/)
 [![Datos](https://img.shields.io/badge/snapshots-OSM%20%2B%20clima-informational.svg)](data/processed/)
 
@@ -28,17 +28,19 @@ La comparación principal usa el mismo solver Dijkstra y la misma instancia para
 
 ## 2. Instalación
 
-Requiere Python 3.10 o superior (verificado en 3.12.8):
+Requiere Python 3.10 o superior (las mediciones guardadas se obtuvieron con 3.12.8). Desde la raíz del repositorio:
 
 ```bash
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r python/requirements.txt
 ```
 
 ---
 
 ## 3. CLI
+
+Los comandos siguientes se ejecutan desde `python/`. Se admiten archivos JSON, TXT y CSV de aristas, además de `--inline`. Los pesos para Dijkstra deben ser finitos y no negativos; `--source` elige un nodo existente. Un resultado exportado con `run -o` contiene distancias, rutas y contadores en JSON; `verify` comprueba ese resultado contra la misma instancia.
 
 ```bash
 # Alternativas disponibles
@@ -58,6 +60,11 @@ python main.py run -i data/instances/clrs_24_6.txt --trace
 
 # Grafo dictado en vivo
 python main.py run --inline "A B 4; A C 1; C B 2; B D 5; C D 8" -s A -q all
+
+# Ciclo generación, ejecución y verificación (archivos de ejemplo en python/)
+python main.py generate --type random --nodes 40 --seed 3 -o ejemplo.json
+python main.py run -i ejemplo.json -q binary -o resultado.json
+python main.py verify -i ejemplo.json -r resultado.json
 
 # Exportar Graphviz
 python main.py graphviz --target E
@@ -88,6 +95,7 @@ Cinco secciones visibles: **Ruta** (OSM, Dijkstra/$A^*$, tres colas, plano offli
 | `data/processed/cusco_osm_drive.json` | Snapshot OSM: 891 vértices y 2139 aristas dirigidas, con coordenadas y metadatos. |
 | `data/processed/benchmark_results.json` | Protocolo, entorno, muestras, medianas, IQR y operaciones por escala. |
 | `data/processed/applied_results.json` | Consulta OSM, tiempos por cola, $A^*$ y sensibilidad climática. |
+| `data/processed/pilot_benchmark_results.json` | Piloto del 04/11/2026: 18 muestras, posterior al banco canónico del 28/10/2026. |
 | `data/processed/weather_cusco.json` | Lectura local posterior de OpenWeatherMap; la observación Open-Meteo del informe está en `applied_results.json`. |
 
 Desde la raíz del repositorio, regenerar tablas y figuras preservando los
@@ -105,6 +113,15 @@ Para repetir el protocolo completo, hacerlo **en una copia separada**:
 
 El comando completo sobrescribe `benchmark_results.json` y
 `applied_results.json` con nuevas mediciones, que pueden diferir del 28/10.
+Para reconstruir solo la figura del piloto a partir de su JSON, desde la raíz:
+
+```bash
+.\.venv\Scripts\python.exe python/scripts/reproduce_pilot.py --plot-only
+```
+
+La imagen se guarda en `latex/figuras/piloto_mediciones.png`. Los archivos del
+piloto y del banco separan tiempo de cómputo en microsegundos del tiempo
+estimado de viaje de la consulta OSM, expresado en segundos.
 
 ---
 

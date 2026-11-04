@@ -57,13 +57,13 @@ Se usaron cuatro criterios ponderados: C1 expresividad algorítmica (30\%), C2 i
 \end{enumerate}
 
 \subsection{Procedimiento de Aprendizaje e Integración}
-Como equipo organizamos el trabajo en tres momentos. Primero construimos un prototipo mínimo con el heap binario y la instancia de seis nodos. Después añadimos el heap 4-ario, el Fibonacci heap y el certificado de optimalidad. Finalmente integramos OSMnx, el benchmark canónico, la aplicación Streamlit y el servicio meteorológico con caché. Cada momento dejó pruebas y datos versionados, y registramos las decisiones que cambiaron el diseño en el repositorio.
+El historial registra primero el prototipo con heap binario (02/10), luego las otras colas (04/10) y, el 28/10, los datos OSM y el banco completo. El piloto reducido se guardó el 04/11, después de esas mediciones. Estas fechas son de commits y archivos; no documentan cuándo estudió cada integrante ni acreditan sesiones de seguimiento.
 
 \subsection{Dificultades de Adopción y Soluciones Aplicadas}
 \begin{itemize}
-    \item \textbf{Dependencias geoespaciales en Windows.} La instalación de GDAL y OSMnx puede fallar por binarios incompatibles. Se exportó la red a JSON; las pruebas usan el \textit{snapshot}, no la descarga. \texttt{requirements.txt} declara versiones mínimas, no versiones exactas; el entorno de la medición está anotado en la Sección~\ref{sec:metodologia}.
+    \item \textbf{Dependencias geoespaciales en Windows.} OSMnx depende de bibliotecas geoespaciales cuya instalación puede variar entre equipos. Las pruebas de carga usan el \textit{snapshot} JSON, sin repetir la descarga. \texttt{requirements.txt} fija versiones mínimas, no un entorno idéntico al de medición; falta comprobar una instalación desde cero.
     \item \textbf{Codificación de consola.} La consola CP1252 producía errores con caracteres Unicode. Se forzó UTF-8 en archivos y se usaron mensajes ASCII en los registros de la CLI.
-    \item \textbf{Reproducibilidad temporal.} Las primeras mediciones usaban promedios y no aislaban el recolector de basura. Se adoptó \texttt{perf\_counter\_ns}, \textit{warm-up}, \texttt{gc.disable()} durante la muestra y mediana/IQR.
+    \item \textbf{Reproducibilidad de tiempos.} El banco guardado usa \texttt{perf\_counter\_ns}, calentamientos y mediana/IQR, con el recolector desactivado durante cada muestra. No se asume que una repetición produzca los mismos tiempos de pared.
     \item \textbf{Interfaz y estado.} Streamlit reejecuta el script en cada interacción. Se separaron cálculo y visualización; se cachea la carga del grafo y del benchmark por fecha de modificación y se mantiene el resultado de la consulta en sesión. Las consultas meteorológicas requieren una acción explícita y no se cachean como si fueran actuales.
-    \item \textbf{Clima sin API oficial de SENAMHI y latencia de claves.} Al no existir una API pública libre de SENAMHI, se adoptó Open-Meteo y la integración con OpenWeatherMap. Para mitigar la latencia de entre 2 horas y 2 días en la activación de claves de OpenWeatherMap (error \texttt{HTTP 401}), el cliente notifica al usuario e implementa respaldo automático en \textit{snapshots} locales.
+    \item \textbf{Consulta meteorológica opcional.} Se integraron Open-Meteo y OpenWeatherMap. Cuando una clave falla o no hay red, se debe identificar como tal la respuesta guardada, sin presentarla como observación nueva. No se midieron tiempos de activación de claves.
 \end{itemize}

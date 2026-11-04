@@ -4,7 +4,7 @@
 **Curso:** Algoritmos Avanzados (UNSAAC, 2026-II) · **Grupo 5**  
 **Docente:** Ing. Héctor Eduardo Ugarte Rojas
 
-Esta guía resume qué afirmar, qué no afirmar y qué comandos ejecutar. Las cifras proceden de los JSON en `python/data/processed/`. Consultar [`docs/DATOS_Y_MODELO.md`](docs/DATOS_Y_MODELO.md) para unidades y campos faltantes y [`docs/CONTROL_ENTREGA.md`](docs/CONTROL_ENTREGA.md) para el cierre anterior al 04/11/2026 y las evidencias individuales pendientes.
+Esta guía resume qué afirmar y qué comandos ejecutar. Las cifras proceden de los JSON en `python/data/processed/`. Consultar [`docs/DATOS_Y_MODELO.md`](docs/DATOS_Y_MODELO.md) para unidades y campos faltantes y [`docs/CONTROL_ENTREGA.md`](docs/CONTROL_ENTREGA.md) para el estado al 04/11/2026 y las evidencias individuales pendientes.
 
 ---
 

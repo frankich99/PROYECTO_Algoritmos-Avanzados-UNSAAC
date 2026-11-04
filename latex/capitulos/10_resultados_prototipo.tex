@@ -2,10 +2,10 @@
 \label{sec:resultados}
 
 \subsection{Verificación de Corrección y Equivalencia de Distancias}
-En la totalidad de las instancias evaluadas en el benchmark (1,350 ejecuciones) y en la red metropolitana de Cusco, las tres estructuras de colas de prioridad produjeron vectores de distancias matemáticamente idénticos, con una discrepancia máxima inferior al umbral de tolerancia numérica de precisión simple ($|d_1 - d_2| < 10^{-6}$). La validación cruzada frente a la librería externa NetworkX 3.7 y el oráculo canónico de Bellman-Ford confirmó una tasa de concordancia del 100\%. Asimismo, la totalidad de las soluciones satisfizo formalmente las cuatro condiciones del Certificado de Optimalidad de Bellman (Sección~\ref{sec:pruebas}), verificando que ninguna arista admite relajación pendiente y que todo árbol de predecesores converge acíclicamente al origen $s$.
+Antes de medir, se resolvieron las 30 instancias sintéticas con las tres colas y se comprobaron sus distancias entre sí y frente a NetworkX. Una de las soluciones por instancia pasó el certificado de optimalidad. En la consulta OSM se verificaron la equivalencia y los certificados de las tres colas. Las 1,350 muestras del banco corresponden a tiempos de ejecución, no a 1,350 verificaciones independientes; Bellman-Ford se usa como oráculo en la suite de pruebas (Sección~\ref{sec:pruebas}).
 
 \subsection{Benchmark Canónico en Instancias Sintéticas (Perfiles Disperso y Denso)}
-Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan las medianas temporales y los intervalos intercuartílicos (IQR) calculados a partir de 45 muestras por celda experimental (3 instancias independientes $\times$ 15 réplicas de medición). La Figura~\ref{fig:benchmark_canonico} ilustra las curvas de rendimiento en escala logarítmica para ambos perfiles.
+Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan medianas e intervalos intercuartílicos (IQR) de 45 muestras por escala y cola (3 instancias generadas $\times$ 15 mediciones por instancia). La Figura~\ref{fig:benchmark_canonico} muestra ambos perfiles en escala logarítmica.
 
 \input{tablas/benchmark_canonico.tex}
 
@@ -17,13 +17,13 @@ Las Tablas~\ref{tab:benchmark_sparse} y~\ref{tab:benchmark_dense} presentan las 
 \end{figure}
 
 \subsubsection{Análisis del Perfil Disperso ($|E| = 4|V|$)}
-El montículo 4-ario (\texttt{DAryHeap}) obtuvo la menor mediana en 3 de las 5 escalas evaluadas ($|V| \in \{500, 1000, 5000\}$), alcanzando ventajas de 24.4\% en $|V|=500$, 3.6\% en $|V|=1000$ y 16.5\% en $|V|=5000$ respecto al montículo binario. El heap binario indexado resultó ligeramente más rápido en las escalas $|V|=100$ ($+1.5\%$) y $|V|=2500$ ($+0.5\%$). En el agregado del perfil disperso, la razón mediana de tiempos entre el heap 4-ario y el binario fue de $0.964$ (una ventaja global del 3.6\% a favor del 4-ario). No obstante, los intervalos intercuartílicos de ambas estructuras se solapan en las cinco escalas, demostrando que la variabilidad natural del sistema es comparable a la magnitud de la diferencia observada.
+El montículo 4-ario (\texttt{DAryHeap}) obtuvo la menor mediana en 3 de las 5 escalas ($|V| \in \{500, 1000, 5000\}$): 24.4\%, 3.6\% y 16.5\% menos tiempo que el binario, respectivamente. El binario registró la menor mediana con $|V|=100$ y $|V|=2500$. La mediana de las cinco razones 4-ario/binario fue $0.964$; no es una razón de tiempos agregados. Los IQR se solapan en las cinco escalas, por lo que estas diferencias se describen como observaciones, no como una ventaja demostrada para cualquier instancia dispersa.
 
 \subsubsection{Análisis del Perfil Denso ($|E| = 0.08\,|V|(|V|-1)$)}
-En el régimen denso, el montículo 4-ario superó al binario en 4 de las 5 escalas ($|V| \in \{50, 100, 200, 400\}$), con ventajas relativas del 2.1\%, 4.6\%, 5.6\% y 5.6\%, respectivamente, cediendo únicamente en $|V|=800$ por una diferencia marginal del 0.7\%. La razón mediana global en este perfil fue de $0.954$ (4.6\% más rápido para el 4-ario). Al igual que en el caso disperso, el solapamiento constante de los intervalos IQR evidencia una competencia técnica sumamente ajustada entre ambas colas de arreglo contiguo.
+En el perfil denso, el 4-ario registró la menor mediana en cuatro escalas ($|V| \in \{50, 100, 200, 400\}$); el binario lo hizo en $|V|=800$. La mediana de las cinco razones 4-ario/binario fue $0.954$. También aquí los IQR se solapan en todas las escalas.
 
 \subsubsection{Desempeño Comparativo del Fibonacci Heap}
-El \texttt{FibonacciHeap} no obtuvo la menor mediana en ninguna de las 10 escalas evaluadas, situándose sistemáticamente como la alternativa más lenta. En el perfil disperso, requirió entre 1.12 y 1.59 veces más tiempo que el heap binario; en el perfil denso, la penalización osciló entre 1.05 y 1.44 veces. En 8 de las 10 escalas, su intervalo IQR se solapa parcialmente con el del heap binario, confirmando que, a pesar de su óptima cota teórica, la constante de sobrecarga de indirección y la manipulación de punteros degradan de forma determinante su rendimiento práctico en Python.
+El \texttt{FibonacciHeap} tuvo la mayor mediana en las diez escalas: entre 1.12 y 1.59 veces la del binario en el perfil disperso, y entre 1.05 y 1.44 en el denso. En ocho escalas sus IQR se solapan con los del binario. Sus operaciones sobre nodos enlazados podrían contribuir al costo observado; no se midieron asignaciones ni fallos de caché para separar esas causas.
 
 \input{tablas/sintesis_colas.tex}
 
@@ -39,17 +39,17 @@ La Figura~\ref{fig:operaciones} expone el desglose de primitivas computacionales
     \label{fig:operaciones}
 \end{figure}
 
-El conteo de comparaciones revela un fenómeno clave: en $|V|=5000$ disperso, el Fibonacci Heap ejecutó 101,303 comparaciones frente a las 125,776 del heap binario (un 19.5\% menos), pero fue 12.2\% más lento en tiempo de pared. De forma análoga, en $|V|=800$ denso, el Fibonacci Heap realizó 19,848 comparaciones frente a 21,280 del binario (6.7\% menos) y resultó 28.8\% más lento. Esta discrepancia cuantitativa prueba que el ahorro en comparaciones de clave es ampliamente rebasado por el costo de alocación de objetos de nodo, cortes en cascada y consolidación de listas enlazadas en memoria heap.
+En $|V|=5000$ disperso, el Fibonacci Heap ejecutó 101,303 comparaciones frente a 125,776 del binario (19.5\% menos), pero su mediana de tiempo fue 12.2\% mayor. Con $|V|=800$ denso, registró 19,848 frente a 21,280 comparaciones (6.7\% menos) y una mediana 28.8\% mayor. Menos comparaciones no implicaron menos tiempo en estas instancias; los contadores no separan el costo de asignaciones, cortes y accesos a memoria.
 
 \subsection{Caso de Estudio Aplicado: Red Vial Real de Cusco (OpenStreetMap)}
-La red metropolitana del Cusco procesada contiene 891 intersecciones y 2,139 aristas dirigidas. La consulta canónica de evaluación conectó el centroide urbano (vértice \texttt{30972889}) con el extremo alcanzable más distante (vértice \texttt{5996728243}). La trayectoria óptima resultante comprende 17 intersecciones, una distancia acumulada de 2,810.6 metros y un tiempo base de desplazamiento de 387.197 segundos. La Figura~\ref{fig:ruta_osm} ilustra el trazado cartográfico del camino mínimo sobre la malla vial cusqueña.
+El recorte vial OSM de Cusco contiene 891 nodos y 2,139 aristas dirigidas. El origen es el nodo más próximo al centro elegido para la descarga (\texttt{30972889}); el destino, el nodo alcanzable de mayor tiempo nominal desde él (\texttt{5996728243}). La ruta obtenida contiene 17 vértices, suma 2,810.6 metros y tiene un costo estimado de 387.197 segundos. La Figura~\ref{fig:ruta_osm} muestra su trazado sobre el grafo guardado.
 
 Como referencia geográfica del área consultada, usamos la vista de OpenStreetMap disponible en \href{https://www.openstreetmap.org/directions?to=cusco\#map=19/-13.517131/-71.978632}{este enlace}. La captura muestra las calles y lugares del Centro Histórico que sirven para ubicar visualmente la zona; no constituye la salida del algoritmo ni reemplaza el \textit{snapshot} utilizado en las mediciones.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.86\textwidth]{figuras/ruta_osm_cusco.png}
-    \caption{Ruta mínima óptima calculada sobre la red vial OpenStreetMap del Cusco. La línea resalta el itinerario de emergencia y los marcadores señalan el origen y destino evaluados.}
+    \caption{Ruta de menor tiempo nominal sobre el recorte OpenStreetMap de Cusco. La línea representa el camino calculado y los marcadores señalan origen y destino.}
     \label{fig:ruta_osm}
 \end{figure}
 
@@ -62,14 +62,14 @@ La captura de referencia se incorpora en la Figura~\ref{fig:referencia_osm_cusco
     \label{fig:referencia_osm_cusco}
 \end{figure}
 
-La Tabla~\ref{tab:benchmark_osm} resume los tiempos de ejecución de la consulta real. El Min-Heap Binario Indexado obtuvo la menor mediana con 15.65 ms, superando al 4-ary Heap (19.87 ms, +26.9\%) y al Fibonacci Heap (26.09 ms, +66.7\%). En esta escala moderada, la simplicidad del montículo binario y la ausencia de aritmética de índices $d$-aria le otorgan una ventaja medible en tiempo real.
+La Tabla~\ref{tab:benchmark_osm} resume los tiempos de cómputo para esa consulta, no el tiempo de viaje de 387.197 segundos. El binario registró la menor mediana: 15.65 ms, frente a 19.87 ms del 4-ario (+26.9\%) y 26.09 ms del Fibonacci (+66.7\%). Los IQR del binario y el 4-ario se solapan; la posible ventaja por menor sobrecarga de índices no se midió por separado.
 
 \input{tablas/caso_osm.tex}
 
 \subsection{Extensión Algorítmica con Búsqueda Heurística \texorpdfstring{$A^*$}{A*}}
-Bajo la heurística euclidiana escalada consistente ($\lambda = 6484.687$), el algoritmo $A^*$ alcanzó exactamente la misma ruta óptima y el mismo costo acumulado de 387.197 segundos que Dijkstra, pero redujo el número de vértices expandidos de 887 a 823, logrando una poda espacial del 7.2\% (64 expansiones menos). La magnitud moderada de la poda se debe a que la heurística euclidiana actúa como una cota inferior conservadora en presencia de calles sinuosas y sentidos viales obligatorios propios de la traza colonial cusqueña.
+Con la heurística euclidiana escalada ($\lambda=6484.687$), $A^*$ devolvió el mismo costo para el par consultado que Dijkstra: 387.197 segundos. Expandió 823 vértices, frente a 887 de Dijkstra (64 menos, o 7.2\%). El JSON guarda la igualdad de costos y los contadores, no la ruta obtenida por $A^*$ ni su tiempo de cómputo dentro del banco de colas.
 
 \subsection{Análisis de Sensibilidad Meteorológica y Tráfico}
 La observación meteorológica canónica congelada en \texttt{applied\_results.json} (28/10/2026, 12:30 hora de Lima) registró $P=0.1$ mm, $V=8920$ m y ráfagas de viento de $40.7$ km/h. Con los coeficientes de escenario formulados en la Sección~\ref{sec:formulacion}, el multiplicador resultante fue de $m_{\text{clima}} = 1.0691$ ($+6.91\%$). Al aplicarse dicho factor sobre el tiempo base de 387.197 s, el tiempo estimado de viaje se incrementó a 413.952 s.
 
-Puesto que el multiplicador climático escala de forma uniforme todos los segmentos de la red vial, se verificó formalmente que la secuencia de 17 intersecciones de la ruta óptima permanece matemáticamente invariante, confirmando que la sensibilidad ambiental afecta la duración del viaje pero no altera el trazado del camino mínimo ante perturbaciones homogéneas.
+El script guardó \texttt{path\_unchanged=true}: para este par y el factor uniforme, la secuencia de 17 vértices no cambió. Un factor estrictamente positivo preserva los costos relativos de los caminos antes de los redondeos empleados al guardar los pesos; la observación no es una medición de viaje real.

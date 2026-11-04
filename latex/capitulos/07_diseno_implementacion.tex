@@ -2,7 +2,7 @@
 \label{sec:implementacion}
 
 \subsection{Arquitectura Modular del Sistema (4 Capas)}
-El sistema computacional ha sido concebido bajo una arquitectura desacoplada en cuatro capas con dependencias estrictamente unidireccionales y descendentes (Figura~\ref{fig:arquitectura}). El núcleo de cálculo de caminos mínimos es completamente independiente de la interfaz gráfica web, de los mecanismos de almacenamiento en disco y de la estructura concreta de cola de prioridad empleada. La inyección abstracta de colas permite evaluar y sustituir componentes sin modificar el algoritmo de Dijkstra ni reescribir los módulos de ruteo.
+La Figura~\ref{fig:arquitectura} agrupa módulos por función: datos, colas, algoritmos y pruebas/interfaz. Es un esquema de componentes, no un diagrama literal de llamadas: Dijkstra recibe directamente el grafo y usa la cola elegida. El cálculo no necesita Streamlit ni una consulta web para las instancias locales.
 
 \begin{figure}[H]
     \centering
@@ -21,25 +21,24 @@ El sistema computacional ha sido concebido bajo una arquitectura desacoplada en 
     \node[anchor=north, yshift=-4pt, text=green!50!black, font=\scriptsize\bfseries] at (L3.north) {3. ALGORITMOS Y VERIFICACIÓN FORMAL};
     \node[box] at (-5.0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{dijkstra.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont SSSP Parametrizado}};
     \node[box] at (0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{a\_star.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont $A^*$ con Heurística Consistente}};
-    \node[box] at (5.0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{certificate.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Certificado Bellman $O(|V|+|E|)$}};
+    \node[box] at (5.0, 5.37) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{certificate.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Certificado $O(|V|+|E|+L)$}};
 
     \node[layer, fill=orange!6, draw=orange!75!black] (L2) at (0, 2.90) {};
     \node[anchor=north, yshift=-4pt, text=orange!85!black, font=\scriptsize\bfseries] at (L2.north) {2. ESTRUCTURAS DE DATOS Y COLAS DE PRIORIDAD};
     \node[box] at (-5.0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{IndexedMinHeap}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Min-Heap Binario Indexado}};
-    \node[box] at (0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{DAryHeap} ($d=4$)}}\\[1pt]{\fontsize{7.3}{9}\selectfont Montículo 4-ario en Caché}};
+    \node[box] at (0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{DAryHeap} ($d=4$)}}\\[1pt]{\fontsize{7.3}{9}\selectfont Montículo 4-ario en arreglo}};
     \node[box] at (5.0, 2.72) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{FibonacciHeap}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Cortes en Cascada $O(1)^*$}};
 
     \node[layer, fill=blue!5, draw=blue!70!black] (L1) at (0, 0.25) {};
     \node[anchor=north, yshift=-4pt, text=blue!85!black, font=\scriptsize\bfseries] at (L1.north) {1. DATOS TOPOGRÁFICOS, COSTOS Y SERVICIOS};
-    \node[box] at (-5.0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{GraphInstance} / \texttt{cost\_model}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Malla Vial e Impedancia}};
+    \node[box] at (-5.0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{GraphInstance} / \texttt{cost\_model}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Grafo y costo didáctico}};
     \node[box] at (0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{osm\_loader.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont OSMnx + Serialización JSON}};
     \node[box] at (5.0, 0.07) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{weather.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Doble Proveedor + Offline Snapshot}};
 
     \draw[arrow] (L4.south) -- (L3.north) node[midway, right=8pt, font=\scriptsize\itshape] {ejecuta e instrumenta};
     \draw[arrow] (L3.south) -- (L2.north) node[midway, right=8pt, font=\scriptsize\itshape] {invoca operaciones de cola};
-    \draw[arrow] (L2.south) -- (L1.north) node[midway, right=8pt, font=\scriptsize\itshape] {consume pesos y topología};
     \end{tikzpicture}
-    \caption{Arquitectura modular desacoplada del sistema en cuatro capas operativas}
+    \caption{Agrupación funcional de módulos; las flechas superiores indican llamadas, no un flujo exclusivo de datos}
     \label{fig:arquitectura}
 \end{figure}
 
@@ -50,18 +49,18 @@ El software se estructura modularmente dentro del directorio \texttt{python/}:
     \item \texttt{src/algorithms/a\_star.py}: Búsqueda heurística $A^*$ con precomputación del factor admisible $\lambda$, construcción de heurística consistente euclidiana escalada y métricas de poda.
     \item \texttt{src/algorithms/reference.py}: Oráculos de referencia independientes (Bellman-Ford y Dijkstra ingenuo sobre lista no ordenada).
     \item \texttt{src/datastructures/}: Implementación pura de \texttt{IndexedMinHeap}, \texttt{DAryHeap} ($d=4$) y \texttt{FibonacciHeap} bajo contrato polimórfico común.
-    \item \texttt{src/io/graph\_io.py}: Ingestión, parsing y validación de grafos en JSON, listas de adyacencia y formato de red vial andina.
-    \item \texttt{src/io/osm\_loader.py}: Ingestión, reproyección y serialización de redes OpenStreetMap mediante OSMnx, con soporte nativo de \textit{snapshots} desconectados.
+    \item \texttt{src/io/graph\_io.py}: Lectura y validación de instancias JSON, TXT, CSV y aristas en línea.
+    \item \texttt{src/io/osm\_loader.py}: Descarga y serialización de redes OpenStreetMap mediante OSMnx; el \textit{snapshot} guarda coordenadas WGS84 y se puede cargar sin red.
     \item \texttt{src/services/weather.py}: Servicio meteorológico desacoplado con arquitectura de doble proveedor (Open-Meteo REST API y OpenWeatherMap API v2.5), persistencia en \textit{snapshots} y respaldo ante fallos de conexión.
     \item \texttt{src/services/traffic.py}: Modelo de congestión vehicular horaria y coeficientes por clase de vía.
-    \item \texttt{src/verification/certificate.py}: Validador del certificado formal de optimalidad en $O(|V|+|E|)$ y clasificador de equivalencia de soluciones.
+    \item \texttt{src/verification/certificate.py}: Verifica distancias y predecesores en $O(|V|+|E|)$, más el recorrido de los caminos explícitos si se proporcionan; compara soluciones.
     \item \texttt{src/benchmarks/scalability\_benchmark.py}: Banco de experimentación sistemática para medir tiempos y primitivas en perfiles sintéticos dispersos y densos.
     \item \texttt{app.py}: Aplicación web interactiva desarrollada en Streamlit con visualizaciones geográficas Plotly y cinco módulos operativos.
     \item \texttt{main.py} y \texttt{src/cli.py}: Interfaz de línea de comandos para automatización y demostración en vivo.
 \end{enumerate}
 
 \subsection{Formatos y Estructura de Datos (Serialización JSON)}
-Todos los artefactos de datos se serializan en formato JSON estructurado y versionado, garantizando que las pruebas no dependan de APIs externas en vivo (Tabla~\ref{tab:formatos}).
+Los resultados y \textit{snapshots} principales se guardan en JSON (Tabla~\ref{tab:formatos}); la CLI también acepta instancias TXT, CSV y en línea. Las pruebas que usan los archivos locales no requieren consultar APIs en vivo.
 
 \begin{table}[H]
     \centering
@@ -73,10 +72,10 @@ Todos los artefactos de datos se serializan en formato JSON estructurado y versi
         \textbf{Archivo en Repositorio} & \textbf{Contenido y Propósito} \\
         \midrule
         \url{data/instances/cusco_centro.json} & Instancia nuclear didáctica (6 nodos, 9 aristas, longitudes, pendientes y tiempos). \\
-        \url{data/processed/cusco_osm_drive.json} & Snapshot oficial de Cusco OSM (891 nodos con lat/lon WGS84, 2,139 aristas dirigidas). \\
+        \url{data/processed/cusco_osm_drive.json} & Recorte OSM guardado (891 nodos con lat/lon WGS84, 2,139 aristas dirigidas); sin pendientes ni tráfico por tramo. \\
         \url{data/processed/benchmark_results.json} & Protocolo experimental, ambiente, muestras cronometradas, medianas e IQR de las 10 escalas. \\
         \url{data/processed/applied_results.json} & Mediciones de la consulta OSM, comparación de colas, poda de $A^*$ y sensibilidad climática. \\
-        \url{data/processed/weather_cusco.json} & Snapshot meteorológico local actualizado de contingencia. \\
+        \url{data/processed/weather_cusco.json} & Respuesta meteorológica posterior; no es la observación usada en \texttt{applied\_results.json}. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -117,12 +116,12 @@ Ambos clientes alimentan la función multiplicadora $\Omega_{\text{clima}} \ge 1
 \begin{equation}
     \Omega_{\text{clima}} = 1.0 + c_{\text{lluvia}} \min\left(\frac{p}{10}, 1.0\right) + c_{\text{vis}} \max\left(0, 1 - \frac{v}{10\,000}\right) + c_{\text{ráfaga}} \min\left(\frac{r}{80}, 1.0\right) + c_{\text{hum}} f(\text{HR})
 \end{equation}
-Si la conectividad a Internet falla o la clave presenta latencia de activación, el sistema opera sin interrupciones consumiendo los datos locales del \textit{snapshot}.
+El \textit{snapshot} local permite usar un dato guardado sin conexión. No se presenta como lectura meteorológica nueva ni como respaldo universal ante cualquier fallo del proveedor.
 
 \subsection{Decisiones de Implementación Relevantes y Justificación Técnica}
 \begin{itemize}
-    \item \textbf{Programación pura sin \texttt{heapq}:} Las tres colas se programaron desde cero en Python puro para garantizar que las mediciones reflejen las propiedades estructurales de los algoritmos y no optimizaciones escritas en lenguaje C.
+    \item \textbf{Colas propias:} Las tres colas se implementan en Python sin \texttt{heapq}. Esto permite comparar sus implementaciones aquí, no aislar por completo las constantes del intérprete.
     \item \textbf{Degeneración admisible de $A^*$:} Si un grafo no posee coordenadas geográficas, $A^*$ adopta $h(v)=0$, degenerando de manera admisible en el algoritmo canónico de Dijkstra sin romper la ejecución.
-    \item \textbf{Reproducibilidad sin dependencias en vivo:} La red vial urbana y los datos climáticos se congelan en archivos serializados en \texttt{data/processed/}, garantizando ejecuciones deterministas en cualquier computadora sin conexión a red.
-    \item \textbf{Separación estricta entre núcleo y visualización:} La capa matemática y algorítmica es 100\% agnóstica de Streamlit, asegurando que la suite de pruebas unitarias y los benchmarks se ejecuten sin sobrecargas de renderizado web.
+    \item \textbf{Datos locales:} La red y la observación climática del experimento se guardan en \texttt{data/processed/}. Las semillas reproducen las instancias sintéticas; los tiempos de ejecución varían según el equipo y la carga del sistema.
+    \item \textbf{Separación de visualización:} El banco llama directamente al solver; el renderizado web no forma parte del intervalo cronometrado.
 \end{itemize}

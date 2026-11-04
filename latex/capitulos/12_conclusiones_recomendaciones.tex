@@ -2,46 +2,46 @@
 \label{sec:conclusiones}
 
 \subsection*{Balance de Objetivos Específicos (OE1--OE4)}
-En cumplimiento de la metodología de investigación y desarrollo, se presenta el balance sistemático de los cuatro objetivos específicos formulados al inicio del proyecto:
+El trabajo permite resumir los cuatro objetivos así:
 \begin{enumerate}
-    \item \textbf{OE1 (Modelar): Cumplido satisfactoriamente.} Se formuló el modelo matemático riguroso del grafo vial urbano dirigido del Centro Histórico del Cusco y su extensión metropolitana mediante OpenStreetMap, estableciendo una función de costo generalizado con impedancia topográfica andina que penaliza gradientes positivos longitudinales y pondera escenarios ambientales y de tráfico sin vulnerar la restricción de no negatividad ($w(e) \ge 0$).
-    \item \textbf{OE2 (Diseñar e Implementar): Cumplido satisfactoriamente.} Se concibió e implementó una arquitectura desacoplada en cuatro capas lógicas en Python 3.12, integrando tres estructuras de datos de colas de prioridad puras (\texttt{IndexedMinHeap}, \texttt{DAryHeap} con $d=4$, y \texttt{FibonacciHeap} con consolidación dinámica), además del solver canónico de Dijkstra y la extensión heurística $A^*$ con factor admisible consistente.
-    \item \textbf{OE3 (Verificar): Cumplido satisfactoriamente.} Se construyó una suite de pruebas automatizadas con 278 casos bajo el patrón Arrange-Act-Assert (AAA), alcanzando una tasa de éxito del 100\% frente a oráculos independientes (Bellman-Ford y NetworkX) y satisfaciendo de forma determinista el Certificado Formal de Optimalidad de Bellman en tiempo lineal $O(|V|+|E|)$.
-    \item \textbf{OE4 (Evaluar e Investigar): Cumplido satisfactoriamente.} Se ejecutó un protocolo experimental exhaustivo de 1,350 muestras cronometradas bajo aislamiento del recolector de basura (\texttt{gc.disable()}) y reloj de nanosegundos, contrastando el rendimiento empírico frente a la teoría asintótica clásica y evaluando el caso aplicado sobre la red real de Cusco.
+    \item \textbf{OE1 (Modelar):} Se implementaron dos ámbitos distintos: una instancia didáctica con pendientes supuestas y un \textit{snapshot} OSM sin pendientes medidas ni congestión por arista. El escenario climático escala de manera uniforme los tiempos base.
+    \item \textbf{OE2 (Implementar):} Dijkstra utiliza tres colas intercambiables en Python; $A^*$ se evalúa aparte para la consulta punto a punto.
+    \item \textbf{OE3 (Verificar):} La suite documentada reúne 278 pruebas. El banco compara las tres colas y NetworkX antes de medir, y certifica una solución por instancia; Bellman-Ford se usa en las pruebas independientes. La ejecución de la suite debe comprobarse en el entorno en que se presente el sistema.
+    \item \textbf{OE4 (Evaluar):} El banco conservado tiene 1,350 muestras temporales y diez escalas sintéticas. La consulta OSM añade 30 mediciones por cola para un par origen--destino. Los resultados no permiten extrapolar el orden de rendimiento a otras máquinas o redes.
 \end{enumerate}
 
 \subsection*{Respuesta a las Preguntas de Investigación}
 \noindent\textbf{PI1. ¿Qué cola minimiza el tiempo de pared y cómo evoluciona con la escala?}\\[0.15cm]
-No existe una cola de prioridad universalmente superior para todas las escalas y densidades viales. En redes viales moderadas ($|V| \le 1,000$, incluida la red real de Cusco con 891 nodos), el Min-Heap Binario Indexado ofrece el menor tiempo de ejecución (15.65 ms) gracias a su simplicidad y nula sobrecarga de saltos. En redes extensas ($|V| \ge 1,000$), el 4-ary Heap ($d=4$) logra la menor mediana en el 70\% de las escalas sintéticas con una ventaja relativa del 3.6\% al 4.6\%, impulsado por la reducción a la mitad de la profundidad del árbol y el aprovechamiento de líneas de caché de CPU de 64 bytes.
+El 4-ario registró la menor mediana en 7 de 10 escalas sintéticas; el binario, en 3 de 10 y en la consulta OSM (15.65 ms). Los IQR de ambos se solapan en todas las escalas y en OSM. Ni el tamaño por sí solo ni la cota asintótica permiten fijar un ganador general. No se midieron fallos de caché.
 
 \noindent\textbf{PI2. ¿Se traduce la ventaja asintótica del Fibonacci Heap en tiempo de pared?}\\[0.15cm]
-No en la implementación evaluada en Python. El Fibonacci Heap fue sistemáticamente la estructura más lenta en todas las escalas (entre 1.05 y 1.59 veces más lento que el heap binario). A pesar de lograr una reducción del 19.5\% en comparaciones de claves en grafos de 5,000 nodos, la sobrecarga constante impuesta por la alocación dinámica de múltiples nodos enlazados, los cortes en cascada y los fallos de memoria caché en la consolidación anulan por completo su ventaja teórica $O(1)$.
+No en las escalas evaluadas con esta implementación Python. La mediana del Fibonacci Heap fue entre 1.05 y 1.59 veces la del binario. Con 5,000 vértices dispersos contó 19.5\% menos comparaciones de claves, pero eso no bastó para reducir el tiempo de cómputo. El origen exacto de la diferencia requiere perfilado adicional.
 
 \noindent\textbf{PI3. ¿Qué aportan la extensión $A^*$ y el análisis de sensibilidad climática?}\\[0.15cm]
-En la red metropolitana de Cusco, el algoritmo $A^*$ con heurística consistente logró reducir un 7.2\% las expansiones de nodos preservando con exactitud la distancia óptima. Por su parte, la sensibilidad climática evidenció que incrementos homogéneos en la impedancia vial aumentan el tiempo de traslado en un 6.91\% pero preservan intacta la topología de la ruta mínima óptima.
+En el par OSM evaluado, $A^*$ expandió 7.2\% menos vértices y conservó el costo de ruta de Dijkstra. El factor climático uniforme aumentó el tiempo de viaje calculado un 6.91\% sin cambiar la ruta; no representa congestión observada por tramo.
 
 \subsection*{Conclusión Principal y Síntesis de Contribuciones}
-La conclusión central del proyecto establece que \textbf{la selección de colas de prioridad en redes viales urbanas es una decisión de ingeniería condicionada y empírica}, donde la densidad planar del grafo ($|E| \approx 2.4|V|$), la jerarquía de memoria física de la CPU y la escala de la red ejercen un impacto superior al de las cotas asintóticas del peor caso. Las principales contribuciones del trabajo abarcan:
+Los tiempos observados dependen de la implementación, la instancia y el equipo de medición. Para volver a contrastarlos se conservan:
 \begin{itemize}
     \item Un núcleo algorítmico desacoplado, modular y reproducible en Python 3.12 con tres colas intercambiables y extensión $A^*$.
-    \item Un certificador formal de optimalidad en tiempo $O(|V|+|E|)$ que verifica aristas ajustadas y convergencia acíclica de predecesores al origen.
-    \item Una suite de 278 pruebas unitarias e integrales que garantiza robustez frente a condiciones adversas y fallos de conectividad.
+    \item Un certificado de optimalidad que comprueba aristas y predecesores; su costo es $O(|V|+|E|+L)$ si también se verifican caminos explícitos de longitud total $L$.
+    \item Una suite de 278 pruebas unitarias y de integración documentadas en \texttt{python/tests/}.
     \item Una aplicación interactiva web desarrollada en Streamlit que combina cálculos de ruteo, exploración cartográfica y telemetría de rendimiento.
 \end{itemize}
 
 \subsection*{Recomendaciones para la Práctica de Ingeniería}
 \begin{enumerate}
-    \item \textbf{Adopción de colas:} Emplear el Min-Heap Binario Indexado como estándar por defecto para redes pequeñas o medianas, y el 4-ary Heap para grafos metropolitanos masivos. Evitar el Fibonacci Heap en lenguajes de alto nivel con recolección automática de basura.
-    \item \textbf{Navegación punto a punto:} Utilizar el algoritmo $A^*$ escalado siempre que se disponga de coordenadas geoespaciales admisibles, asegurando la verificación estricta de la condición de monotonía.
-    \item \textbf{Protocolos de medición:} Rechazar promedios simples en evaluaciones de rendimiento; aislar el recolector de basura y reportar medianas e intervalos intercuartílicos (IQR) para garantizar reproducibilidad científica.
+    \item \textbf{Colas:} Empezar por el binario y medir también el 4-ario sobre las instancias concretas de uso. No descartar otras implementaciones de Fibonacci sin evaluarlas.
+    \item \textbf{Navegación punto a punto:} Comprobar la consistencia de la heurística antes de usar $A^*$ y medir su tiempo si se quiere comparar rendimiento.
+    \item \textbf{Medición:} Conservar muestras, semillas y entorno; usar mediana e IQR sin tratarlos como pruebas de significación estadística.
 \end{enumerate}
 
 \subsection*{Líneas de Trabajo Futuro y Posibles Extensiones}
 \begin{enumerate}
-    \item Replicar el banco experimental en lenguajes de bajo nivel compilados (C++20 y Rust) para cuantificar la influencia de la máquina virtual de Python frente a la jerarquía de memoria pura.
-    \item Instrumentar contadores físicos de rendimiento de hardware (\textit{hardware performance counters}) mediante herramientas como \texttt{perf} o Valgrind para medir fallos de caché L1/L2 y fallos TLB exactos.
+    \item Repetir el banco con implementaciones en otros lenguajes y equipos para comprobar si se mantiene el orden de tiempos observado en Python.
+    \item Perfilar asignaciones y accesos a memoria, y medir fallos de caché con herramientas apropiadas antes de atribuirles una diferencia de rendimiento.
     \item Calibrar coeficientes de impedancia meteorológica y congestión diferenciados por segmento vial a partir de aforos de tránsito en tiempo real en la ciudad del Cusco.
 \end{enumerate}
 
 \subsection*{Lecciones Aprendidas}
-El desarrollo del proyecto consolidó en el equipo Grupo 5 la comprensión profunda del principio de localidad espacial y temporal en arquitecturas contemporáneas, la importancia del diseño basado en contratos e inyección abstracta para la experimentación limpia, y la necesidad de validar formalmente la optimalidad mediante certificados matemáticos independientes antes de emitir afirmaciones sobre desempeño computacional.
+El análisis separa corrección, tiempo de cómputo y costo estimado de viaje. Los contadores de operaciones ayudan a interpretar los resultados, pero no reemplazan mediciones de memoria o caché. El aprendizaje de cada integrante requiere registros propios.
