@@ -27,6 +27,8 @@ El \texttt{FibonacciHeap} no obtuvo la menor mediana en ninguna de las 10 escala
 
 \input{tablas/sintesis_colas.tex}
 
+\noindent\textbf{Respuesta a la comparación.} En el banco sintético, el heap 4-ario obtuvo la menor mediana en 7 de 10 escalas; en la consulta OSM de Cusco, el binario registró la menor mediana (15.65 ms frente a 19.87 ms del 4-ario y 26.09 ms del Fibonacci). Fibonacci no obtuvo la menor mediana en ninguna escala. Estas son diferencias \emph{observadas por escenario}, no una victoria universal: los IQR del binario y el 4-ario se solapan en las diez escalas sintéticas y en la consulta OSM (Tablas~\ref{tab:sintesis_colas} y~\ref{tab:benchmark_osm}). El piloto de la Sección~\ref{sec:metodologia} verifica el procedimiento; la evaluación comparativa utiliza las 1,350 muestras del banco completo y las 30 réplicas del caso OSM.
+
 \subsection{Análisis Cuantitativo de Operaciones Elementales y Comparaciones}
 La Figura~\ref{fig:operaciones} expone el desglose de primitivas computacionales ejecutadas en el perfil disperso. En la mayor escala ($|V|=5000, |E|=20000$), las tres estructuras registraron exactamente 5,000 inserciones, 5,000 extracciones de mínimo y 6,695 decrementos efectivos de prioridad sobre un total de 10,415 intentos de relajación.
 

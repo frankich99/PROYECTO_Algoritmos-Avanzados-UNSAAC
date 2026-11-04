@@ -134,6 +134,8 @@ La Tabla~\ref{tab:complejidades} expone la comparación de cotas asintóticas te
     \raggedright\fontsize{8.5}{10.5}\selectfont\textit{Nota.} $^*$Cota amortizada. Para $d$ fijo, $\log_d |V| = O(\log |V|)$; las discrepancias empíricas provienen de las constantes de indirección y la jerarquía de memoria física.
 \end{table}
 
+Las cotas temporales de la Tabla~\ref{tab:complejidades} consideran hasta $|V|$ inserciones y extracciones y hasta $|E|$ relajaciones: son cotas de peor caso para los montículos binario y 4-ario, y amortizadas para Fibonacci (una extracción aislada puede costar $O(|V|)$). No se asigna una cota de caso promedio sin definir una distribución de grafos y costos. La columna de espacio corresponde a la \emph{cola}: Dijkstra requiere además $O(|V|)$ de memoria auxiliar para distancias, predecesores y visitados, sobre una entrada de $O(|V|+|E|)$. La implementación reconstruye por defecto la ruta a cada destino; almacenar y construir todas esas rutas puede añadir $O(|V|^2)$ espacio y tiempo en el peor caso. Las cotas temporales de la tabla describen el núcleo sin esa reconstrucción (\texttt{build\_paths=False}); la traza opcional también incrementa la memoria utilizada.
+
 \subsection{Guía Práctica de Selección según el Escenario}
 La Tabla~\ref{tab:guia_seleccion} sintetiza el marco de selección tecnológica deducido a partir de los fundamentos algorítmicos y el perfil de la red vial.
 

@@ -1,0 +1,262 @@
+{
+  "schema_version": 2,
+  "generated_at_utc": "2026-11-04T12:00:53.775126+00:00",
+  "protocol": {
+    "clock": "time.perf_counter_ns",
+    "gc": "desactivado durante cada muestra",
+    "warmup": 2,
+    "runs_per_instance": 3,
+    "instances_per_size": 1,
+    "seed": 12345,
+    "oracle": "NetworkX single_source_dijkstra_path_length + certificado O(V+E+longitud total de caminos)",
+    "primary_statistic": "mediana; dispersión IQR"
+  },
+  "environment": {
+    "python": "3.12.8",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD"
+  },
+  "queue_types": [
+    "binary_heap",
+    "4ary_heap",
+    "fibonacci_heap"
+  ],
+  "profiles": {
+    "sparse": {
+      "description": "E=4V",
+      "scales": [
+        100
+      ],
+      "data": {
+        "binary_heap": [
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              15445
+            ],
+            "mean_us": 1087.467,
+            "median_us": 1079.7,
+            "std_us": 26.579,
+            "q1_us": 1069.6,
+            "q3_us": 1101.45,
+            "iqr_us": 31.85,
+            "mad_us": 20.2,
+            "min_us": 1059.5,
+            "max_us": 1123.2,
+            "cv_pct": 2.444,
+            "sample_count": 3,
+            "samples_us": [
+              1079.7,
+              1059.5,
+              1123.2
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1368.0
+            },
+            "speedup_vs_binary": 1.0
+          }
+        ],
+        "4ary_heap": [
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              15445
+            ],
+            "mean_us": 1035.733,
+            "median_us": 1019.6,
+            "std_us": 53.008,
+            "q1_us": 1000.0,
+            "q3_us": 1063.4,
+            "iqr_us": 63.4,
+            "mad_us": 39.2,
+            "min_us": 980.4,
+            "max_us": 1107.2,
+            "cv_pct": 5.118,
+            "sample_count": 3,
+            "samples_us": [
+              980.4,
+              1019.6,
+              1107.2
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1385.0
+            },
+            "speedup_vs_binary": 1.0589
+          }
+        ],
+        "fibonacci_heap": [
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              15445
+            ],
+            "mean_us": 1649.067,
+            "median_us": 1658.3,
+            "std_us": 19.381,
+            "q1_us": 1640.2,
+            "q3_us": 1662.55,
+            "iqr_us": 22.35,
+            "mad_us": 8.5,
+            "min_us": 1622.1,
+            "max_us": 1666.8,
+            "cv_pct": 1.175,
+            "sample_count": 3,
+            "samples_us": [
+              1622.1,
+              1658.3,
+              1666.8
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1205.0
+            },
+            "speedup_vs_binary": 0.6511
+          }
+        ]
+      },
+      "winner_counts": {
+        "binary_heap": 0,
+        "4ary_heap": 1,
+        "fibonacci_heap": 0
+      }
+    },
+    "dense": {
+      "description": "E=0.08 V(V-1)",
+      "scales": [
+        100
+      ],
+      "data": {
+        "binary_heap": [
+          {
+            "nodes": 100,
+            "edges": 792,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              25445
+            ],
+            "mean_us": 1393.4,
+            "median_us": 1427.4,
+            "std_us": 79.649,
+            "q1_us": 1355.4,
+            "q3_us": 1448.4,
+            "iqr_us": 93.0,
+            "mad_us": 42.0,
+            "min_us": 1283.4,
+            "max_us": 1469.4,
+            "cv_pct": 5.716,
+            "sample_count": 3,
+            "samples_us": [
+              1469.4,
+              1283.4,
+              1427.4
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 171.0,
+              "relax_attempts": 437.0,
+              "comparisons": 1501.0
+            },
+            "speedup_vs_binary": 1.0
+          }
+        ],
+        "4ary_heap": [
+          {
+            "nodes": 100,
+            "edges": 792,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              25445
+            ],
+            "mean_us": 1192.667,
+            "median_us": 1197.6,
+            "std_us": 10.941,
+            "q1_us": 1187.55,
+            "q3_us": 1200.25,
+            "iqr_us": 12.7,
+            "mad_us": 5.3,
+            "min_us": 1177.5,
+            "max_us": 1202.9,
+            "cv_pct": 0.917,
+            "sample_count": 3,
+            "samples_us": [
+              1202.9,
+              1197.6,
+              1177.5
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 171.0,
+              "relax_attempts": 437.0,
+              "comparisons": 1508.0
+            },
+            "speedup_vs_binary": 1.1919
+          }
+        ],
+        "fibonacci_heap": [
+          {
+            "nodes": 100,
+            "edges": 792,
+            "instance_count": 1,
+            "runs_per_instance": 3,
+            "instance_seeds": [
+              25445
+            ],
+            "mean_us": 1855.7,
+            "median_us": 1860.0,
+            "std_us": 6.655,
+            "q1_us": 1853.15,
+            "q3_us": 1860.4,
+            "iqr_us": 7.25,
+            "mad_us": 0.8,
+            "min_us": 1846.3,
+            "max_us": 1860.8,
+            "cv_pct": 0.359,
+            "sample_count": 3,
+            "samples_us": [
+              1846.3,
+              1860.8,
+              1860.0
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 171.0,
+              "relax_attempts": 437.0,
+              "comparisons": 1316.0
+            },
+            "speedup_vs_binary": 0.7674
+          }
+        ]
+      },
+      "winner_counts": {
+        "binary_heap": 0,
+        "4ary_heap": 1,
+        "fibonacci_heap": 0
+      }
+    }
+  }
+}

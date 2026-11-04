@@ -335,11 +335,11 @@ def export_benchmark_summary_table(
         r"\fontsize{8.5}{10.5}\selectfont",
         r"\renewcommand{\arraystretch}{1.15}",
         r"\setlength{\tabcolsep}{4pt}",
-        r"\caption{Síntesis comparativa por perfil y consulta. Las razones usan la mediana; no se declara un ganador cuando los IQR se solapan.}",
+        r"\caption{Síntesis por perfil y consulta: conteo de menores medianas observadas, sin declarar diferencias concluyentes donde se solapan los IQR.}",
         r"\label{tab:sintesis_colas}",
         r"\begin{tabular}{@{}lrrrrr@{}}",
         r"\toprule",
-        r"\textbf{Perfil} & \textbf{4-ary/Binary} & \textbf{Fibonacci/Binary} & \textbf{Gana 4-ary} & \textbf{Gana Binary} & \textbf{IQR solap.} \\",
+        r"\textbf{Perfil} & \textbf{4-ary/Binary} & \textbf{Fibonacci/Binary} & \makecell{Menor mediana\\4-ary} & \makecell{Menor mediana\\Binary} & \textbf{IQR solap.} \\",
         r"\midrule",
     ]
     for profile in ("sparse", "dense"):
@@ -368,16 +368,17 @@ def export_benchmark_summary_table(
         wins_binary = int(binary["median_us"] < ary["median_us"])
         lines.append(
             f"Consulta OSM & {_median_ratio(ary, binary):.3f} & {_median_ratio(fib, binary):.3f} & "
-            f"{wins_ary} & {wins_binary} & -- \\\\"
+            f"{wins_ary} & {wins_binary} & {int(_iqr_overlap(ary, binary))} de 1 \\\\"
         )
     lines.extend([
         r"\bottomrule",
         r"\end{tabular}",
         r"\par\vspace{0.1cm}",
-        r"\raggedright\fontsize{8}{10}\selectfont\textit{Nota.} Una razón 4-ary/Binary menor que 1 indica que el 4-ario fue más rápido. La columna IQR se refiere a 4-ary frente a Binary. Fibonacci no ganó ninguna escala sintética.",
+        r"\raggedright\fontsize{8}{10}\selectfont\textit{Nota.} Razón 4-ary/Binary menor que 1: menor mediana del 4-ario. IQR solap. compara 4-ary frente a Binary; el solapamiento impide afirmar superioridad inequívoca. Fibonacci no obtuvo la menor mediana en ninguna escala sintética.",
         r"\end{table}",
         "",
     ])
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as output:
+        output.write("\n".join(lines))

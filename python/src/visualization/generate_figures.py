@@ -153,6 +153,44 @@ def generate_scalability_plot(benchmark_results: Dict[str, Any], output_paths: L
     plt.close()
 
 
+def generate_pilot_plot(results: Dict[str, Any], output_path: str) -> None:
+    """Visualiza las muestras reales del piloto, sin inferir un ganador."""
+    queues = ("binary_heap", "4ary_heap", "fibonacci_heap")
+    labels = ("Binario", "4-ario", "Fibonacci")
+    colors = ("#1f4e79", "#2f6b3f", "#9b3a32")
+    profiles = (("sparse", "Disperso"), ("dense", "Denso"))
+    maximum = max(
+        max(results["profiles"][profile]["data"][queue][0]["samples_us"])
+        for profile, _ in profiles for queue in queues
+    )
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.8), dpi=300, sharey=True)
+    for ax, (profile, name) in zip(axes, profiles):
+        data = results["profiles"][profile]["data"]
+        first = data[queues[0]][0]
+        for index, (queue, color) in enumerate(zip(queues, colors)):
+            row = data[queue][0]
+            samples = row["samples_us"]
+            offsets = np.linspace(-0.13, 0.13, len(samples))
+            ax.scatter(index + offsets, samples, s=48, color=color,
+                       edgecolor="white", linewidth=0.5, zorder=3)
+            ax.plot([index - 0.23, index + 0.23], [row["median_us"]] * 2,
+                    color="#111827", linewidth=1.6, zorder=2)
+        ax.set_title(f"{name}: {first['nodes']} nodos, {first['edges']} aristas", fontsize=12)
+        ax.set_xticks(range(3), labels, fontsize=11)
+        ax.tick_params(axis="y", labelsize=10)
+        ax.set_ylim(0, maximum * 1.15)
+        ax.grid(axis="y", linestyle=":", alpha=0.5)
+        ax.set_axisbelow(True)
+        ax.text(0.98, 0.96, f"Semilla {first['instance_seeds'][0]}",
+                transform=ax.transAxes, ha="right", va="top", fontsize=10)
+    axes[0].set_ylabel("Tiempo por muestra (microsegundos)", fontsize=11)
+    fig.tight_layout()
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(destination, bbox_inches="tight")
+    plt.close(fig)
+
+
 def generate_operations_breakdown_plot(benchmark_results: Dict[str, Any], output_paths: List[str]) -> None:
     """Genera gráfico del desglose cuantitativo de operaciones elementales."""
     profile = benchmark_results["profiles"]["sparse"]

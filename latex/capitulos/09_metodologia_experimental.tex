@@ -112,6 +112,21 @@ python python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
 python python/scripts/reproduce_canonical.py
 \end{lstlisting}
 
+\subsection{Piloto de Verificación del Protocolo}
+Como verificación reducida del protocolo, se ejecutó un ensayo con $|V|=100$ en ambos perfiles (400 aristas dispersas y 792 densas), una instancia por perfil, tres colas y tres mediciones por cola: 18 muestras cronometradas, además de dos calentamientos por combinación. Se empleó la semilla base 12345; antes del cronometraje, el mismo procedimiento verificó la equivalencia de distancias, el certificado de optimalidad y el oráculo NetworkX. El archivo \url{python/data/processed/pilot_benchmark_results.json} conserva semillas, muestras, medianas, IQR y entorno. Sus 18 muestras y sus medianas se comprobaron coherentes; la misma semilla reproduce los grafos, no los tiempos de pared, que dependen del sistema. La Figura~\ref{fig:piloto_mediciones} se generó a partir de las muestras guardadas, no de datos simulados. Por su tamaño, el piloto valida el procedimiento, pero no sustenta conclusiones de rendimiento entre colas ni acredita una ejecución previa al banco canónico. Para repetirlo desde la raíz, sin sobrescribir el benchmark canónico:
+\begin{lstlisting}[language=bash, caption={Reproducción del ensayo piloto y su figura}]
+python python/scripts/reproduce_pilot.py
+# Solo regenerar la figura sin repetir mediciones:
+python python/scripts/reproduce_pilot.py --plot-only
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figuras/piloto_mediciones.png}
+    \caption{Muestras del piloto en ambos perfiles: cada punto es una ejecución y cada segmento horizontal indica la mediana de tres repeticiones. Fuente: \texttt{pilot\_benchmark\_results.json}. La comparación de rendimiento se realiza con el banco completo y la consulta OSM, presentados en la Sección~\ref{sec:resultados}.}
+    \label{fig:piloto_mediciones}
+\end{figure}
+
 \subsection{Amenazas a la Validez}
 \begin{itemize}
     \item \textbf{Validez interna:} El ruido del planificador del sistema operativo y las fluctuaciones dinámicas de frecuencia (\textit{turbo boost}) introducen dispersión en las muestras temporales. Dicho efecto se mitiga mediante la desactivación del GC, el protocolo de calentamiento y el reporte de medianas e IQR en lugar de promedios simples.
