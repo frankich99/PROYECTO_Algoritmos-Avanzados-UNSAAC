@@ -48,7 +48,7 @@ La suite reúne 278 pruebas automatizadas que cubren exhaustivamente las cuatro 
         \texttt{test\_priority\_queues.py} & 61 & Contrato polimórfico común, orden estricto de extracción, \texttt{decrease\_key} y estrés con \texttt{heapq}. \\
         \texttt{test\_equivalence.py} & 48 & Equivalencia matemática de distancias con Bellman-Ford, NetworkX y Dijkstra en 40 grafos. \\
         \texttt{test\_validation\_io.py} & 45 & Detección de JSON corruptos, entradas adversas y validación del certificado formal. \\
-        \texttt{test\_dijkstra\_manual.py} & 36 & Traza analítica de Cusco, instancia CLRS 24.6, nodos aislados y lazos. \\
+        \texttt{test\_dijkstra\_manual.py} & 36 & Traza analítica de Cusco, instancia de CLRS (fig. 24.6), nodos aislados y lazos. \\
         \texttt{test\_cli.py} & 25 & Comandos de consola, códigos de salida (0, 1, 2) y ciclo generación--exportación. \\
         \texttt{test\_dijkstra.py} & 11 & Casos base de SSSP, límites y equivalencia a escala. \\
         \texttt{test\_a\_star.py} & 8 & Poda de búsqueda, admisibilidad, consistencia y fallback cuando no hay coordenadas. \\
@@ -70,7 +70,7 @@ Para evitar sesgos algorítmicos derivados de errores compartidos entre implemen
     \item \textbf{Algoritmo de Bellman-Ford:} Implementación pura de $O(|V||E|)$ tolerante a costos negativos y capaz de diagnosticar ciclos negativos. Se utiliza en 40 grafos aleatorios con topologías y densidades diversas.
     \item \textbf{Dijkstra sobre Arreglo no Ordenado:} Algoritmo determinista $O(|V|^2+|E|)$ que no emplea estructuras de árbol ni montículos, confirmando que la lógica de prioridades no perturba las distancias.
     \item \textbf{Librería Canónica NetworkX 3.7:} Empleada exclusivamente como oráculo externo de referencia (\textit{ground truth}) sobre mallas cuadrículas dirigidas de $8 \times 8$.
-    \item \textbf{Instancias Resueltas Analíticamente a Mano:} Contraste contra la traza de 6 nodos de Cusco (Sección~\ref{sec:formulacion}) y la Figura~24.6 de \textcite{cormen2022introduction}.
+    \item \textbf{Instancias resueltas analíticamente a mano:} Contraste contra la traza de seis nodos de Cusco (Sección~\ref{sec:formulacion}) y la instancia presentada por Cormen et al. (2022, figura 24.6, p. 659).
 \end{enumerate}
 
 \subsection{Certificado Formal de Optimalidad de Bellman $O(|V|+|E|)$}

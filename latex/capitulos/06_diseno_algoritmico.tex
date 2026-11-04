@@ -100,7 +100,7 @@ El montículo 4-ario generaliza el heap binario adoptando un factor de ramificac
     \text{padre}(i) = \left\lfloor \frac{i - 1}{4} \right\rfloor, \quad \text{hijo}_k(i) = 4i + k, \quad k \in \{1, 2, 3, 4\}
     \label{eq:aritmetica_4ary}
 \end{equation}
-Esta formulación reduce la profundidad del árbol a la mitad: $\lceil \log_4 |V| \rceil = 0.5 \lceil \log_2 |V| \rceil$. En \texttt{decrease\_key}, el número de intercambios se reduce a la mitad. Durante \texttt{extract\_min}, el método \texttt{sift-down} debe identificar el mínimo entre cuatro descendientes contiguos en memoria, lo cual encaja perfectamente en una única línea de caché L1/L2 de 64 bytes de la CPU contemporánea \parencite{lamarca1996cache}.
+Esta formulación reduce la profundidad teórica del árbol: $\lceil \log_4 |V| \rceil = 0.5 \lceil \log_2 |V| \rceil$. En \texttt{decrease\_key}, el número máximo de intercambios también disminuye. Durante \texttt{extract\_min}, \texttt{sift-down} compara cuatro descendientes contiguos; en nuestro trabajo analizamos esta ventaja estructural, pero no medimos directamente líneas de caché.
 
 \subsubsection{Fibonacci Heap (\texttt{FibonacciHeap})}
 El Fibonacci Heap \parencite{fredman1987fibonacci} mantiene una colección de árboles con orden de montículo estructurados mediante listas circulares doblemente enlazadas con punteros \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y el bit de marcado \texttt{marked}.

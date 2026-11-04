@@ -159,6 +159,8 @@ Para validar analíticamente el comportamiento del algoritmo, se diseñó la ins
     \label{fig:grafo_tikz}
 \end{figure}
 
+La Tabla~\ref{tab:aristas_cusco} y la Figura~\ref{fig:grafo_tikz} corresponden a una instancia didáctica. Usamos nombres de calles y lugares reales para facilitar la interpretación, pero no afirmamos que sus longitudes, pendientes o tiempos sean mediciones cartográficas. La red vial real empleada para los resultados aplicados se obtiene por separado desde OpenStreetMap mediante OSMnx.
+
 \input{tablas/tabla_aristas_cusco.tex}
 
 \subsection{Traza Manual Paso a Paso del Algoritmo de Dijkstra ($k=0$ a $k=6$)}
@@ -203,8 +205,8 @@ Bajo la métrica de tiempo efectivo con impedancia topográfica (Tabla~\ref{tab:
 
 \input{tablas/tabla_resultados_distancias.tex}
 
-\subsection{Instancia de Verificación Canónica: CLRS Figura 24.6}
-Para comprobar la adhesión a la literatura clásica de algoritmos, el sistema incluye como instancia canónica el grafo dirigido de 5 nodos de \textcite[p.~659]{cormen2022introduction}. El orden de extracción obtenido por el software es estrictamente $\langle s, y, z, t, x \rangle$ con distancias definitivas $\langle 0, 5, 7, 8, 9 \rangle$, idénticas a la solución teórica del libro de texto.
+\subsection{Instancia de verificación canónica de CLRS}
+Para comprobar la adhesión a la literatura clásica, el sistema incluye la instancia de caminos mínimos presentada por Cormen et al. (2022, figura 24.6, p. 659). El orden de extracción obtenido por el software es $\langle s, y, z, t, x \rangle$, con distancias definitivas $\langle 0, 5, 7, 8, 9 \rangle$, idénticas a la solución teórica.
 
 \subsection{Red Vial Urbana Real de Cusco (OpenStreetMap)}
 La red metropolitana real fue extraída mediante OSMnx 2.1.1 en torno al centro urbano de Cusco ($-13.5165, -71.9788$) con un radio de 1,500 metros en modalidad \texttt{drive}. La topología serializada en \texttt{cusco\_osm\_drive.json} contiene 891 intersecciones y 2,139 tramos viales dirigidos, arrojando una densidad de $|E|/|V| = 2.40$ característica de mallas viales dispersas. Sobre esta red, la consulta canónica entre el centroide y el nodo alcanzable más lejano abarca 17 intersecciones, 2,810.6 metros y un tiempo base óptimo de 387.197 segundos.

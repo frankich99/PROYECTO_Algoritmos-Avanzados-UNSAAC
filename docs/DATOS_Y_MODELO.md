@@ -19,6 +19,16 @@ medida en tráfico real. El caso canónico elige origen próximo al centro y
 destino alcanzable de mayor costo temporal. Su costo base es **387.197 s**,
 longitud **2810.6 m** y ruta de **17 vértices**.
 
+La zona puede consultarse visualmente en
+<https://www.openstreetmap.org/directions?to=cusco#map=19/-13.517131/-71.978632>.
+Ese enlace y la captura incluida en el informe sirven como referencia
+geográfica; los resultados no se obtuvieron leyendo la imagen. OSMnx descargó
+la red de conducción (`network_type="drive"`) alrededor de
+`(-13.5165, -71.9788)` con un radio de 1,500 m y la guardó como
+`cusco_osm_drive.json`. El snapshot se usa como entrada congelada para
+construir el grafo dirigido y repetir las mediciones sin depender de una
+descarga nueva durante cada ejecución.
+
 En `python/app.py`, activar clima y/o un horario simulado multiplica **todos**
 los pesos temporales por un mismo número mediante `uniformly_scaled`. La
 elección de ruta no cambia. La clase de vía es siempre `avenida`: no se

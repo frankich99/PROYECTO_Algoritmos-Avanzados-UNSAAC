@@ -26,7 +26,7 @@ La cota de complejidad temporal de Dijkstra está gobernada por las tres operaci
 En este trabajo se seleccionaron e implementaron puramente tres estructuras con mecánicas internas contrastantes:
 \begin{itemize}
     \item \textbf{Min-Heap Binario Indexado (\texttt{IndexedMinHeap}):} Estructura arbórea binaria casi completa dispuesta en un arreglo contiguo en memoria, complementada por una tabla hash inversa de posiciones $\text{pos}: V \to \mathbb{N}$ que ubica cualquier identificador de vértice en tiempo $O(1)$. Las operaciones \texttt{Insert}, \texttt{Extract-Min} y \texttt{Decrease-Key} operan en $O(\log |V|)$ mediante flotado (\textit{sift-up}) y hundimiento (\textit{sift-down}).
-    \item \textbf{4-ary Heap Contiguo (\texttt{DAryHeap}, $d=4$):} Árbol $d$-ario con factor de ramificación 4. Cada nodo padre en el índice $i$ almacena a sus cuatro descendientes en los índices contiguos $4i+1, 4i+2, 4i+3, 4i+4$. Esta disposición reduce la profundidad del árbol a la mitad respecto al binario ($\log_4 |V| = 0.5 \log_2 |V|$), lo que disminuye drásticamente el número de saltos en \texttt{Decrease-Key} y maximiza la localidad espacial al transferir bloques completos de 64 bytes a las líneas de caché L1/L2 del procesador \parencite{lamarca1996cache}.
+    \item \textbf{4-ary Heap Contiguo (\texttt{DAryHeap}, $d=4$):} Árbol $d$-ario con factor de ramificación 4. Cada nodo padre en el índice $i$ almacena a sus cuatro descendientes en los índices contiguos $4i+1, 4i+2, 4i+3, 4i+4$. Esta disposición reduce la profundidad del árbol a la mitad respecto al binario ($\log_4 |V| = 0.5 \log_2 |V|$). En nuestro benchmark observamos menos saltos en \texttt{Decrease-Key}; no medimos líneas de caché ni transferencias de bloques, por lo que no presentamos esa explicación como resultado experimental.
     \item \textbf{Fibonacci Heap (\texttt{FibonacciHeap}):} Colección de árboles con orden de montículo estructurados mediante listas circulares doblemente enlazadas con múltiples punteros por nodo (\texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}) \parencite{fredman1987fibonacci}. Utiliza inserción y corte perezoso (\textit{lazy}), logrando que \texttt{Insert} y \texttt{Decrease-Key} operen en tiempo constante amortizado $O(1)^*$ mediante el método del potencial de Tarjan \parencite{tarjan1983data}, mientras que \texttt{Extract-Min} toma $O(\log |V|)^*$ amortizado mediante consolidación dinámica de árboles de igual grado.
 \end{itemize}
 
@@ -48,25 +48,25 @@ asegurando admisibilidad y consistencia estricta, lo que garantiza poda espacial
 
 \subsubsection{Metodología de Pruebas Unitarias: Definición Formal del Patrón Arrange-Act-Assert (AAA)}
 \label{sec:fundamentos_aaa}
-La validación rigurosa de algoritmos avanzados sobre estructuras de datos no lineales requiere una metodología formal de pruebas que elimine la ambigüedad y garantice el determinismo científico. En ingeniería de software, el estándar de excelencia para pruebas automatizadas es el \textbf{Patrón Arrange-Act-Assert (AAA)}, formalizado originalmente por \textcite{wake2001aaa} en el marco de la programación extrema (\textit{Extreme Programming}) y el desarrollo guiado por pruebas (\textit{Test-Driven Development}, TDD) \parencite{beck2002tdd}.
+La validación rigurosa de algoritmos avanzados sobre estructuras de datos no lineales requiere una metodología formal de pruebas que reduzca la ambigüedad y mantenga el determinismo. En este proyecto adoptamos el \textbf{patrón Arrange-Act-Assert (AAA)} para separar la preparación, la ejecución y la comprobación de cada caso.
 
-El patrón AAA descompone cada caso de prueba en tres etapas secuenciales, estancas y claramente delimitadas:
+El patrón AAA descompone cada caso de prueba en tres pasos secuenciales, independientes y claramente delimitados:
 \begin{enumerate}
-    \item \textbf{Fase 1: Arrange (Disponer / Preparar):}
+    \item \textbf{Arrange (Disponer / Preparar):}
     \begin{itemize}
-        \item \textit{Definición conceptual:} Es la etapa de inicialización de precondiciones, aislamiento del estado del sistema y configuración del entorno previo a la ejecución. En esta fase se define inequívocamente el estado conocido sobre el cual operará la prueba, garantizando que el caso de prueba sea autónomo e independiente de cualquier otra ejecución previa.
+        \item \textit{Definición conceptual:} Consiste en inicializar las precondiciones, aislar el estado del sistema y configurar el entorno previo a la ejecución. Aquí se define inequívocamente el estado conocido sobre el cual operará la prueba, garantizando que el caso sea autónomo e independiente de cualquier otra ejecución previa.
         \item \textit{Aplicación concreta en el proyecto:} Se instancian los grafos dirigidos $G=(V, E, w)$ con topologías controladas; se fijan semillas pseudoaleatorias estrictas (\texttt{seed=42}) para la generación determinista de pesos; se instancian las colas de prioridad puras bajo ensayo (\texttt{IndexedMinHeap}, \texttt{DAryHeap}, \texttt{FibonacciHeap}); se definen los nodos de origen $s$ y destino $t$; y se preparan los vectores de valores esperados provenientes de oráculos canónicos.
     \end{itemize}
     
-    \item \textbf{Fase 2: Act (Actuar / Ejecutar):}
+    \item \textbf{Act (Actuar / Ejecutar):}
     \begin{itemize}
-        \item \textit{Definición conceptual:} Es la fase donde se invoca la unidad de código bajo prueba (\textit{System Under Test}, SUT). Debe constar preferentemente de una única acción observable que desencadena el comportamiento evaluado, evitando la ejecución de código secundario que contamine la medición o disperse la causa de una posible falla.
+        \item \textit{Definición conceptual:} Consiste en invocar la unidad de código bajo prueba (\textit{System Under Test}, SUT). Debe constar preferentemente de una única acción observable que desencadena el comportamiento evaluado, evitando la ejecución de código secundario que contamine la medición o disperse la causa de una posible falla.
         \item \textit{Aplicación concreta en el proyecto:} Se ejecuta el resolvedor algorítmico invocando \texttt{dijkstra\_solver(graph, source, queue\_type)} o \texttt{a\_star\_solver(graph, source, target, heuristic)}, o bien se invoca directamente una primitiva de la estructura de datos (\texttt{insert}, \texttt{extract\_min}, \texttt{decrease\_key}). Durante esta acción se capturan los valores de salida: el vector de distancias mínimas $d$, el árbol de predecesores $\pi$ y los contadores de telemetría de operaciones elementales.
     \end{itemize}
     
-    \item \textbf{Fase 3: Assert (Aseverar / Verificar):}
+    \item \textbf{Assert (Aseverar / Verificar):}
     \begin{itemize}
-        \item \textit{Definición conceptual:} Es la etapa de evaluación de poscondiciones e invariantes. Se formulan aserciones booleanas estrictas para contrastar los resultados obtenidos frente a las hipótesis y criterios de corrección predefinidos. Si cualquier aserción falla, el framework de pruebas interrumpe la ejecución y emite un informe diagnóstico con el estado exacto del fallo.
+        \item \textit{Definición conceptual:} Consiste en evaluar las poscondiciones e invariantes. Se formulan aserciones booleanas estrictas para contrastar los resultados obtenidos frente a las hipótesis y criterios de corrección predefinidos. Si cualquier aserción falla, el framework de pruebas interrumpe la ejecución y emite un informe diagnóstico con el estado exacto del fallo.
         \item \textit{Aplicación concreta en el proyecto:} Se comprueba la igualdad numérica estricta entre las distancias producidas por el solver y las calculadas por los oráculos independientes con una tolerancia de punto flotante $\epsilon = 10^{-6}$; se valida la preservación de los invariantes de montículo (orden y completitud); se verifica la consistencia topológica del camino reconstruido; y se comprueba el cumplimiento estricto del certificado de optimalidad de Bellman.
     \end{itemize}
 \end{enumerate}
@@ -81,7 +81,7 @@ El patrón AAA descompone cada caso de prueba en tres etapas secuenciales, estan
 \subsubsection{Teoría de Oráculos de Prueba y Verificación Formal de Corrección}
 En la teoría de pruebas de software, un \textbf{oráculo de prueba} es un mecanismo independiente y confiable capaz de determinar si la salida de un programa para una entrada dada es correcta o incorrecta. En este proyecto se formalizaron tres oráculos de verificación independientes:
 \begin{enumerate}
-    \item \textbf{Oráculo Analítico (Traza Manual):} Verificación paso a paso resuelta analíticamente a mano sobre la red nuclear de 6 nodos del Centro Histórico del Cusco y sobre la instancia canónica de \textcite{cormen2022introduction} (Figura 24.6), comprobando estado por estado los vectores de distancia y los contenidos de la cola de prioridad.
+    \item \textbf{Oráculo analítico (traza manual):} Verificación paso a paso sobre la red nuclear de seis nodos del Centro Histórico del Cusco y sobre la instancia de caminos mínimos presentada por Cormen et al. (2022, figura 24.6, p. 659), comprobando los vectores de distancia y los contenidos de la cola.
     \item \textbf{Oráculo Algorítmico Independiente (Redundancia de Implementación):} Implementación redundante del algoritmo de Bellman-Ford y contraste contra la biblioteca estándar NetworkX (\texttt{nx.single\_source\_dijkstra}), garantizando que ninguna suposición errónea compartida falsee la validación.
     \item \textbf{Oráculo Algebraico de Bellman (Certificado en Tiempo Lineal):} Verificación matemática directa de las condiciones de holgura complementaria en tiempo $O(|V|+|E|)$:
     \begin{equation}
@@ -95,12 +95,13 @@ En la teoría de pruebas de software, un \textbf{oráculo de prueba} es un mecan
 
 \subsubsection{Criterios de Selección de Fuentes Académicas y Técnicas (C1 a C5)}
 La selección de la literatura técnica y académica se condujo bajo cinco criterios explícitos de pertinencia, rigor científico y relevancia arquitectónica:
+Priorizamos fuentes publicadas entre 2021 y 2026 para describir herramientas, datos y prácticas actuales. Conservamos algunas obras anteriores a ese periodo únicamente cuando son las fuentes originales de Dijkstra, Fibonacci Heap o $A^*$; las citamos como antecedentes fundacionales, no como evidencia contemporánea de rendimiento.
 \begin{enumerate}
     \item \textbf{C1: Arbitraje por Pares y Nivel Académico:} Se priorizaron publicaciones seminales indexadas en las principales sociedades científicas (ACM, IEEE, SIAM, Springer), excluyendo blogs informales o tutoriales no validados.
     \item \textbf{C2: Relevancia Teórica y Demostración Formal:} Inclusión obligatoria de las obras clásicas que demostraron la correctitud y las cotas asintóticas de caminos mínimos y análisis amortizado \parencite{dijkstra1959note,fredman1987fibonacci,tarjan1983data,cormen2022introduction}.
-    \item \textbf{C3: Arquitectura de Computadores y Jerarquía de Memoria:} Incorporación de investigaciones experimentales que estudian el impacto de las líneas de caché L1/L2, fallos de predicción de saltos y localidad espacial en colas de prioridad sobre hardware contemporáneo \parencite{lamarca1996cache,cherkassky1996shortest}.
-    \item \textbf{C4: Estándares Geoespaciales y Datos Topográficos Abiertos:} Selección de metodología de ingesta y modelado de mallas viales urbanas reproducibles a partir de OpenStreetMap y bibliotecas científicas validadas \parencite{boeing2017osmnx,openstreetmap2026}.
-    \item \textbf{C5: Metodología de Calidad de Software y Reproducibilidad:} Consulta de las especificaciones canónicas de desarrollo guiado por pruebas, el patrón Arrange-Act-Assert y el framework automatizado de pruebas \parencite{wake2001aaa,beck2002tdd}.
+    \item \textbf{C3: Arquitectura de Computadores y Jerarquía de Memoria:} Evaluamos directamente la localidad de memoria y el costo de las operaciones en nuestro benchmark, sin presentar estudios anteriores a 2021 como evidencia de rendimiento actual.
+    \item \textbf{C4: Estándares Geoespaciales y Datos Topográficos Abiertos:} Seleccionamos una metodología reciente para ingerir y modelar mallas viales reproducibles desde OpenStreetMap \parencite{boeing2025osmnx,openstreetmap2026}.
+    \item \textbf{C5: Metodología de Calidad de Software y Reproducibilidad:} Aplicamos el patrón Arrange-Act-Assert y pruebas automatizadas como decisiones metodológicas del equipo; las evidencias de calidad se encuentran en nuestra suite y en el protocolo reproducible.
 \end{enumerate}
 
 \subsubsection{Matriz Razonada de Fuentes Bibliográficas Clave}
@@ -119,13 +120,9 @@ La Tabla~\ref{tab:criterios_fuentes} sistematiza la bibliografía fundamental es
         \textcite{dijkstra1959note} & Artículo Seminal (Numerische Mathematik) & C1, C2 & Fundamento teórico del algoritmo SSSP con pesos no negativos y principio de relajación voraz. \\
         \textcite{fredman1987fibonacci} & Artículo Teórico (Journal of the ACM) & C1, C2 & Especificación formal del Fibonacci Heap con tiempos amortizados $O(1)^*$ para \texttt{Decrease-Key}. \\
         \textcite{tarjan1983data} & Monografía Clásica (SIAM) & C1, C2 & Análisis riguroso del método del potencial para el cálculo de costos amortizados en estructuras de datos. \\
-        \textcite{cherkassky1996shortest} & Estudio Empírico (Mathematical Programming) & C1, C3 & Evaluación experimental exhaustiva; evidencia empírica de ineficiencias del Fibonacci Heap en grafos dispersos. \\
-        \textcite{lamarca1996cache} & Arquitectura de Memoria (ACM JEA) & C1, C3 & Análisis del impacto de líneas de caché de 64 bytes y fallos TLB en montículos binarios y $d$-arios contiguos. \\
         \textcite{hart1968formal} & Artículo Seminal (IEEE SSC) & C1, C2 & Formulación de $A^*$ y condiciones matemáticas de admisibilidad y consistencia para poda de grafos. \\
-        \textcite{boeing2017osmnx} & Sistemas Geoespaciales (CEUS) & C1, C4 & Metodología de ingestión, validación y corrección topológica de grafos urbanos desde OpenStreetMap. \\
+        \textcite{boeing2025osmnx} & Sistemas Geoespaciales (Geographical Analysis) & C1, C4 & Metodología reciente de ingestión, validación y análisis de grafos urbanos desde OpenStreetMap. \\
         \textcite{cormen2022introduction} & Libro de Texto Avanzado (MIT Press) & C1, C2 & Demostración formal de invariantes de bucle, cotas asintóticas y pseudocódigo algorítmico estructurado. \\
-        \textcite{wake2001aaa} & Metodología de Software (eXtreme Programming) & C5 & Definición formal y fundamentos operativos del patrón de pruebas unitarias Arrange-Act-Assert (AAA). \\
-        \textcite{beck2002tdd} & Ingeniería de Software (Addison-Wesley) & C5 & Principios de diseño guiado por pruebas, aserciones deterministas y verificación mediante oráculos. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -135,7 +132,7 @@ La Tabla~\ref{tab:criterios_fuentes} sistematiza la bibliografía fundamental es
 Al inicio del proyecto, el equipo identificó cinco áreas fundamentales de conocimiento avanzado que trascendían los contenidos formativos previos y que requirieron un proceso deliberado de autoaprendizaje e investigación independiente:
 
 \subsubsection{Metodología de Pruebas Unitarias AAA y Oráculos de Verificación}
-Superar el paradigma de pruebas informales o manuales mediante la adopción formal del patrón Arrange-Act-Assert \parencite{wake2001aaa}. El equipo adquirió la competencia de diseñar 278 pruebas unitarias y de integración parametrizadas con \texttt{pytest}, definiendo precondiciones deterministas en \textit{Arrange}, invocando solvers polimórficos en \textit{Act}, y formulando aserciones rigurosas en \textit{Assert} contra oráculos independientes (Bellman-Ford y NetworkX) y certificados de optimalidad en $O(|V|+|E|)$.
+El equipo pasó de pruebas informales a 278 pruebas unitarias y de integración parametrizadas con \texttt{pytest}. Definimos precondiciones deterministas en \textit{Arrange}, invocamos los solvers en \textit{Act} y formulamos aserciones en \textit{Assert} contra Bellman-Ford, NetworkX y el certificado de optimalidad en $O(|V|+|E|)$.
 
 \subsubsection{Manipulación Dinámica de Estructuras Arbóreas con Múltiples Punteros}
 Dominar la representación en memoria y manipulación dinámica de listas circulares doblemente enlazadas con múltiples punteros por nodo (\texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}) para el Fibonacci Heap, garantizando concatenaciones, inserciones y eliminaciones en tiempo $O(1)$ sin incurrir en fugas de memoria ni desreferenciación nula.
@@ -144,10 +141,10 @@ Dominar la representación en memoria y manipulación dinámica de listas circul
 Comprender formalmente la teoría del método del potencial de \textcite{tarjan1983data} y el funcionamiento de la operación \texttt{Decrease-Key} en el Fibonacci Heap. El equipo asimiló la necesidad del marcado de nodos (\textit{node marking}) y los cortes en cascada (\textit{cascading cuts}) para preservar la cota de grado $\lfloor \log_\phi n \rfloor$ en cada raíz arbórea.
 
 \subsubsection{Jerarquía de Memoria Física y Optimización en Líneas de Caché L1/L2}
-Asimilar el principio por el cual una estructura asintóticamente superior en teoría ($O(1)^*$ del Fibonacci Heap) puede resultar significativamente superada en hardware contemporáneo por estructuras con cotas teóricas inferiores ($O(\log_4 |V|)$ del montículo 4-ario contiguo). El equipo comprendió el impacto de los bloques de caché de 64 bytes y la reducción del 50\% de la profundidad del árbol en el 4-ary Heap \parencite{lamarca1996cache}.
+El equipo comprobó que una estructura con mejor cota amortizada ($O(1)$ para \texttt{Decrease-Key} en Fibonacci Heap) puede ser más lenta en la práctica que un montículo 4-ario contiguo. También comprobamos la reducción teórica del 50\% en la profundidad del árbol; no medimos directamente la caché del procesador.
 
 \subsubsection{Modelado de Redes Viales Reales y Normalización con OSMnx}
-Aprender a extraer y procesar mallas viales urbanas reales mediante OSMnx \parencite{boeing2017osmnx}, convirtiendo primitivas geoespaciales WGS84 a grafos dirigidos ponderados, resolviendo aristas paralelas, sentidos obligatorios de circulación vehicular y pendientes altitudinales severas del Centro Histórico del Cusco.
+El equipo aprendió a extraer y procesar mallas viales urbanas mediante OSMnx \parencite{boeing2025osmnx}, convirtiendo datos geoespaciales WGS84 en grafos dirigidos ponderados y conservando aristas paralelas y sentidos de circulación.
 
 \subsection{Estrategia y Evidencias de Aprendizaje Autónomo}
 \label{sec:estrategia_evidencias}
@@ -157,7 +154,7 @@ Para dominar e integrar estos nuevos conocimientos sin supervisión externa cont
 Lectura directa de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci}. Implementación de un prototipo temprano del Min-Heap binario indexado con tabla de posiciones $O(1)$ para validar la mecánica de \texttt{decrease\_key}. Se construyeron las primeras pruebas unitarias bajo el patrón AAA para verificar el orden de extracción y los invariantes de montículo.
 
 \subsubsection{Hito 2: Extensión d-aria y Análisis de Localidad en Memoria Caché}
-Estudio de la monografía de \textcite{lamarca1996cache} e implementación del montículo 4-ario contiguo. Se contrastó experimentalmente el número de operaciones elementales frente al heap binario, validando que la disminución en la profundidad del árbol compensa el aumento de comparaciones por nodo al evaluar los 4 descendientes contiguos alineados a líneas de caché de 64 bytes.
+Estudio de la estructura 4-aria e implementación del montículo contiguo. Contrastamos experimentalmente el número de operaciones elementales frente al heap binario y observamos el efecto de la menor profundidad del árbol al evaluar cuatro descendientes por nodo. No medimos directamente la caché del procesador.
 
 \subsubsection{Hito 3: Fibonacci Heap y Corrección Autónoma de Consolidación}
 Construcción manual del montículo de Fibonacci con punteros dobles circulares. Durante las pruebas de estrés intensivo con grafos aleatorios, el equipo detectó de forma autónoma una falla crítica: un arreglo de consolidación con dimensionamiento estático $\log_2(n)+7$ provocaba desbordamientos y pérdida de árboles; se corrigió analíticamente redimensionándolo dinámicamente mediante la cota formal de la razón áurea:

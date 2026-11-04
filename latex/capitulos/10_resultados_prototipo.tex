@@ -42,11 +42,22 @@ El conteo de comparaciones revela un fenómeno clave: en $|V|=5000$ disperso, el
 \subsection{Caso de Estudio Aplicado: Red Vial Real de Cusco (OpenStreetMap)}
 La red metropolitana del Cusco procesada contiene 891 intersecciones y 2,139 aristas dirigidas. La consulta canónica de evaluación conectó el centroide urbano (vértice \texttt{30972889}) con el extremo alcanzable más distante (vértice \texttt{5996728243}). La trayectoria óptima resultante comprende 17 intersecciones, una distancia acumulada de 2,810.6 metros y un tiempo base de desplazamiento de 387.197 segundos. La Figura~\ref{fig:ruta_osm} ilustra el trazado cartográfico del camino mínimo sobre la malla vial cusqueña.
 
+Como referencia geográfica del área consultada, usamos la vista de OpenStreetMap disponible en \href{https://www.openstreetmap.org/directions?to=cusco\#map=19/-13.517131/-71.978632}{este enlace}. La captura muestra las calles y lugares del Centro Histórico que sirven para ubicar visualmente la zona; no constituye la salida del algoritmo ni reemplaza el \textit{snapshot} utilizado en las mediciones.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.86\textwidth]{figuras/ruta_osm_cusco.png}
     \caption{Ruta mínima óptima calculada sobre la red vial OpenStreetMap del Cusco. La línea resalta el itinerario de emergencia y los marcadores señalan el origen y destino evaluados.}
     \label{fig:ruta_osm}
+\end{figure}
+
+La captura de referencia se incorpora en la Figura~\ref{fig:referencia_osm_cusco}. La red que procesamos no se leyó manualmente de la imagen: la descargamos mediante OSMnx desde OpenStreetMap alrededor de \texttt{(-13.5165, -71.9788)}, con un radio de 1,500 metros y el tipo de red \texttt{drive}. Después congelamos el resultado en el archivo \texttt{cusco\_osm\_drive.json} para que las mediciones fueran reproducibles. Este archivo contiene los nodos, las coordenadas y las aristas dirigidas con sus longitudes y tiempos nominales; no contiene pendientes medidas ni tráfico real por tramo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figuras/referencia_osm_cusco.png}
+    \caption{Vista de referencia del Centro Histórico del Cusco en OpenStreetMap. La imagen se utiliza para identificar visualmente el área de estudio y no representa la ruta calculada por el programa.}
+    \label{fig:referencia_osm_cusco}
 \end{figure}
 
 La Tabla~\ref{tab:benchmark_osm} resume los tiempos de ejecución de la consulta real. El Min-Heap Binario Indexado obtuvo la menor mediana con 15.65 ms, superando al 4-ary Heap (19.87 ms, +26.9\%) y al Fibonacci Heap (26.09 ms, +66.7\%). En esta escala moderada, la simplicidad del montículo binario y la ausencia de aritmética de índices $d$-aria le otorgan una ventaja medible en tiempo real.
