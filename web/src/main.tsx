@@ -99,8 +99,16 @@ function App() {
   const [experimentError, setExperimentError] = useState('')
   const [experimentLoading, setExperimentLoading] = useState(false)
   const [sizes, setSizes] = useState('30, 60, 100')
-  const [seed, setSeed] = useState(42)
-  const [runs, setRuns] = useState(5)
+  const [seed, setSeed] = useState('42')
+  const [runs, setRuns] = useState('5')
+  const handleSeedChange = (raw: string) => {
+    const digits = raw.replace(/[^0-9]/g, '')
+    setSeed(digits === '' ? '' : digits.replace(/^0+(?=\d)/, ''))
+  }
+  const handleRunsChange = (raw: string) => {
+    const digits = raw.replace(/[^0-9]/g, '')
+    setRuns(digits === '' ? '' : digits.replace(/^0+(?=\d)/, ''))
+  }
   const [editorMode, setEditorMode] = useState<'tabla' | 'json' | 'archivo' | 'generar'>('tabla')
   const [nodeDraft, setNodeDraft] = useState<{ id: string; lat: string; lon: string }[]>([{ id: 'A', lat: '', lon: '' }, { id: 'B', lat: '', lon: '' }, { id: 'C', lat: '', lon: '' }])
   const [edgeDraft, setEdgeDraft] = useState<{ origin: string; destination: string; weight: string }[]>([{ origin: 'A', destination: 'B', weight: '4' }, { origin: 'A', destination: 'C', weight: '10' }, { origin: 'B', destination: 'C', weight: '2' }])
@@ -463,12 +471,21 @@ function App() {
         {editorMode === 'archivo' && <div className="editor-box"><label>Importar JSON, CSV o TXT<input type="file" accept=".json,.csv,.txt" onChange={importFile} /></label>
           <label>Lista de aristas (origen destino peso, una por línea; CSV con cabecera opcional)<textarea rows={10} value={textDraft} onChange={e => setTextDraft(e.target.value)} /></label>
           <button className="primary" type="button" onClick={() => { setEditorError(''); setInstance({ kind: 'text', text: textDraft }) }}>Validar lista y calcular</button></div>}
-        {editorMode === 'generar' && <div className="editor-box"><label>Perfil<select value={spec.kind === 'generated' ? spec.generator : 'random'} onChange={e => setSpec({ kind: 'generated', generator: e.target.value as 'random' | 'grid' | 'sparse' | 'dense', nodes: 30, seed })}><option value="random">Red local aleatoria</option><option value="grid">Cuadrícula</option><option value="sparse">Disperso</option><option value="dense">Denso</option></select></label>
-          <label>Semilla<input type="number" value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
-          <label>Vértices (no aplica a cuadrícula)<input type="number" min="2" max="500" value={spec.nodes ?? 30} onChange={e => setSpec({ ...spec, kind: 'generated', nodes: Number(e.target.value) })} /></label>
-          <div className="two-fields"><label>Filas<input type="number" min="1" max="30" value={spec.rows ?? 5} onChange={e => setSpec({ ...spec, kind: 'generated', rows: Number(e.target.value) })} /></label>
-            <label>Columnas<input type="number" min="1" max="30" value={spec.cols ?? 5} onChange={e => setSpec({ ...spec, kind: 'generated', cols: Number(e.target.value) })} /></label></div>
-          <button className="primary" type="button" onClick={() => setInstance({ kind: 'generated', generator: spec.generator ?? 'random', nodes: spec.nodes ?? 30, rows: spec.rows ?? 5, cols: spec.cols ?? 5, seed })}>Generar y calcular</button></div>}
+        {editorMode === 'generar' && <div className="editor-box"><label>Perfil<select value={spec.kind === 'generated' ? spec.generator : 'random'} onChange={e => setSpec({ kind: 'generated', generator: e.target.value as 'random' | 'grid' | 'sparse' | 'dense', nodes: 30, seed: seed === '' ? 42 : Number(seed) })}><option value="random">Red local aleatoria</option><option value="grid">Cuadrícula</option><option value="sparse">Disperso</option><option value="dense">Denso</option></select></label>
+          <label>Semilla<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="42" value={seed} onChange={e => handleSeedChange(e.target.value)} /></label>
+          <label>Vértices (no aplica a cuadrícula)<input type="number" min="2" max="500" placeholder="30" value={spec.nodes ?? ''} onChange={e => {
+            const cl = e.target.value.replace(/^0+(?=\d)/, '')
+            setSpec({ ...spec, kind: 'generated', nodes: cl === '' ? undefined : Number(cl) })
+          }} /></label>
+          <div className="two-fields"><label>Filas<input type="number" min="1" max="30" placeholder="5" value={spec.rows ?? ''} onChange={e => {
+            const cl = e.target.value.replace(/^0+(?=\d)/, '')
+            setSpec({ ...spec, kind: 'generated', rows: cl === '' ? undefined : Number(cl) })
+          }} /></label>
+            <label>Columnas<input type="number" min="1" max="30" placeholder="5" value={spec.cols ?? ''} onChange={e => {
+              const cl = e.target.value.replace(/^0+(?=\d)/, '')
+              setSpec({ ...spec, kind: 'generated', cols: cl === '' ? undefined : Number(cl) })
+            }} /></label></div>
+          <button className="primary" type="button" onClick={() => setInstance({ kind: 'generated', generator: spec.generator ?? 'random', nodes: spec.nodes ?? 30, rows: spec.rows ?? 5, cols: spec.cols ?? 5, seed: seed === '' ? 42 : Number(seed) })}>Generar y calcular</button></div>}
         {editorError && <p className="error" role="alert">{editorError}</p>}
         <p className="fineprint">Para un grafo con pesos genéricos, «tiempo» y «distancia» son etiquetas de consulta, no unidades físicas verificadas. En el resultado solo se muestra el costo abstracto; no se inventa una longitud vial.</p>
       </div>}
@@ -504,14 +521,19 @@ function App() {
         <p>Dos redes por tamaño, semillas guardadas, dos calentamientos y repeticiones acotadas. Los resultados se quedan en esta sesión.</p>
         <form className="experiment-form" onSubmit={async e => {
           e.preventDefault(); setExperiment(null); setExperimentError(''); setExperimentLoading(true)
-          try { const parsed = sizes.split(',').map(n => Number(n.trim())); setExperiment(await api<Experiment>('/experiments', { profile, sizes: parsed, seed, runs })) }
+          try {
+            const parsed = sizes.split(',').map(n => Number(n.trim())).filter(n => Number.isFinite(n) && n > 0)
+            const reqSeed = seed.trim() === '' ? 42 : (Number(seed) || 42)
+            const reqRuns = runs.trim() === '' ? 5 : Math.min(Math.max(Number(runs) || 5, 2), 10)
+            setExperiment(await api<Experiment>('/experiments', { profile, sizes: parsed, seed: reqSeed, runs: reqRuns }))
+          }
           catch (err) { setExperimentError(err instanceof Error ? err.message : 'No se pudo medir.') }
           finally { setExperimentLoading(false) }
         }}>
           <label>Perfil<select value={profile} onChange={e => setProfile(e.target.value as typeof profile)}><option value="sparse">Disperso</option><option value="dense">Denso</option></select></label>
           <label>Tamaños, separados por comas<input value={sizes} onChange={e => setSizes(e.target.value)} /></label>
-          <label>Semilla<input type="number" value={seed} onChange={e => setSeed(Number(e.target.value))} /></label>
-          <label>Repeticiones por red<input type="number" min="2" max="10" value={runs} onChange={e => setRuns(Number(e.target.value))} /></label>
+          <label>Semilla<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="42" value={seed} onChange={e => handleSeedChange(e.target.value)} /></label>
+          <label>Repeticiones por red (2 a 10)<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="5" value={runs} onChange={e => handleRunsChange(e.target.value)} /></label>
           <button className="primary" type="submit" disabled={experimentLoading}>{experimentLoading ? 'Midiendo…' : 'Ejecutar experimento'}</button>
         </form>
         {experimentError && <p className="error" role="alert">{experimentError}</p>}

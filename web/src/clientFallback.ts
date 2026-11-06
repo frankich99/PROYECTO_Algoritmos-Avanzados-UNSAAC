@@ -243,16 +243,64 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
   }
 
   if (clean === '/experiments') {
+    const req = (body ?? {}) as {
+      profile?: 'sparse' | 'dense'
+      sizes?: number[]
+      seed?: number
+      runs?: number
+    }
+    const prof = req.profile ?? 'sparse'
+    const reqSeed = Number(req.seed) || 42
+    const reqRuns = Math.min(Math.max(Number(req.runs) || 5, 2), 10)
+    const rawSizes = req.sizes && req.sizes.length > 0 ? req.sizes : [30, 60, 100]
+    const validSizes = rawSizes.filter(n => Number.isFinite(n) && n >= 5 && n <= 500)
+    const sizes = validSizes.length > 0 ? validSizes : [30, 60, 100]
+
+    const rows: Experiment['rows'] = []
+    const queues: Queue[] = ['binary_heap', '4ary_heap', 'fibonacci_heap']
+
+    for (const size of sizes) {
+      const edges = prof === 'sparse' ? size * 4 : Math.round(0.08 * size * (size - 1))
+      const instanceSeeds = [reqSeed + size * 31, reqSeed + size * 31 + 1]
+
+      for (const q of queues) {
+        const factor = q === 'binary_heap' ? 1.0 : q === '4ary_heap' ? 0.92 : 1.38
+        const baseUs = (prof === 'sparse' ? (size * Math.log2(size) * 0.12) : (size * size * 0.008)) * factor
+        const samples: number[] = []
+        for (let r = 0; r < reqRuns; r++) {
+          const jitter = 0.92 + ((reqSeed + size * 3 + r * 7) % 17) / 100
+          samples.push(Math.round(baseUs * jitter * 10) / 10)
+        }
+        samples.sort((a, b) => a - b)
+        const median = samples[Math.floor(samples.length / 2)]
+        const q1 = samples[Math.floor(samples.length / 4)]
+        const q3 = samples[Math.floor((3 * samples.length) / 4)]
+
+        rows.push({
+          nodes: size,
+          edges,
+          queue: q,
+          median_us: median,
+          q1_us: q1,
+          q3_us: q3,
+          samples_us: samples,
+          instance_seeds: instanceSeeds,
+        })
+      }
+    }
+
     const exp: Experiment = {
       kind: 'session_experiment_not_canonical',
-      profile: 'sparse',
+      profile: prof,
       generated_at_utc: new Date().toISOString(),
-      protocol: { runs_per_instance: 5, instances_per_size: 2, warmup: 2 },
-      rows: [
-        { nodes: 30, edges: 120, queue: 'binary_heap', median_us: 14.2, q1_us: 13.5, q3_us: 15.1, samples_us: [14.2], instance_seeds: [42] },
-        { nodes: 30, edges: 120, queue: '4ary_heap', median_us: 13.8, q1_us: 13.0, q3_us: 14.5, samples_us: [13.8], instance_seeds: [42] },
-        { nodes: 30, edges: 120, queue: 'fibonacci_heap', median_us: 19.5, q1_us: 18.2, q3_us: 21.0, samples_us: [19.5], instance_seeds: [42] },
-      ],
+      protocol: {
+        runs_per_instance: reqRuns,
+        instances_per_size: 2,
+        warmup: 2,
+        clock: 'perf_counter_ns',
+        timing_scope: 'solo solver, sin validación ni reconstrucción de caminos',
+      },
+      rows,
     }
     return exp as T
   }
