@@ -151,7 +151,7 @@ cd ..
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-Última verificación de esta revisión: **287 passed** (duración variable).
+Última verificación de esta revisión: **291 passed** (duración variable).
 
 ### 3.9 Reproducción canónica
 
@@ -223,7 +223,7 @@ El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa 
 | $A^*$ en OSM | 887 $\to$ 823 expansiones ($-7.2\%$) |
 | $A^*$ manual | 6 $\to$ 5 expansiones ($-16.7\%$) |
 | Clima | $m=1.0691$; 413.952 s; $+6.91\%$; ruta sin cambios |
-| Pruebas | 287 casos aprobados en esta revisión; repetir en el entorno final |
+| Pruebas | 291 casos aprobados en esta revisión; repetir en el entorno final |
 
 ---
 
