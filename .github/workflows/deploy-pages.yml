@@ -35,8 +35,42 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Verify public API when configured
+        env:
+          VITE_API_BASE_URL: ${{ vars.RUTAS_API_BASE_URL }}
+        run: |
+          if [ -z "$VITE_API_BASE_URL" ]; then
+            echo 'No public API configured: Pages will provide static snapshots and historical benchmarks only.'
+            exit 0
+          fi
+          case "$VITE_API_BASE_URL" in
+            https://*) ;;
+            *) echo 'RUTAS_API_BASE_URL must be an HTTPS origin.' >&2; exit 1 ;;
+          esac
+          curl --fail --silent --show-error --max-time 20 "${VITE_API_BASE_URL%/}/api/v1/health" >/dev/null
+          curl --fail --silent --show-error --max-time 20 "${VITE_API_BASE_URL%/}/api/v1/version" | node -e '
+            let body="";
+            process.stdin.on("data", c => body += c);
+            process.stdin.on("end", () => {
+              const expected = require("./web/package.json").version;
+              try {
+                if (JSON.parse(body).version !== expected) throw new Error("API and web versions differ");
+              } catch (error) { console.error(error.message); process.exitCode = 1; }
+            });'
+          curl --fail --silent --show-error --max-time 20 -D - -o /dev/null -X OPTIONS \
+            -H 'Origin: https://frankich99.github.io' \
+            -H 'Access-Control-Request-Method: POST' \
+            -H 'Access-Control-Request-Headers: content-type' \
+            "${VITE_API_BASE_URL%/}/api/v1/instances/validate" | \
+            grep -i '^access-control-allow-origin: https://frankich99.github.io' >/dev/null || {
+              echo 'API does not allow requests from the GitHub Pages origin.' >&2
+              exit 1
+            }
+
       - name: Build web
         working-directory: web
+        env:
+          VITE_API_BASE_URL: ${{ vars.RUTAS_API_BASE_URL }}
         run: npm run build
 
       - name: Setup Pages

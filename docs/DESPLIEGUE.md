@@ -47,21 +47,21 @@ Genera:
 
 ```text
 dist_publicable/
-├── rutas-cusco-v1.2.0/          # Carpeta lista para ejecutar o copiar
-└── rutas-cusco-v1.2.0.zip       # Archivo para entregar o subir al servidor
+├── rutas-cusco-v1.5.0/          # Carpeta lista para ejecutar o copiar
+└── rutas-cusco-v1.5.0.zip       # Archivo para entregar o subir al servidor
 ```
 
 Ejecución local del paquete:
 
 ```powershell
-cd dist_publicable\rutas-cusco-v1.2.0
+cd dist_publicable\rutas-cusco-v1.5.0
 .\iniciar.ps1
 ```
 
 En Linux/macOS:
 
 ```bash
-cd dist_publicable/rutas-cusco-v1.2.0
+cd dist_publicable/rutas-cusco-v1.5.0
 chmod +x iniciar.sh
 ./iniciar.sh
 ```
@@ -73,22 +73,23 @@ El paquete escucha en `0.0.0.0:8000` por defecto y respeta la variable `PORT`.
 Dentro del paquete publicable:
 
 ```bash
-docker build -t rutas-cusco:1.2.0 .
-docker run --rm -p 8000:8000 -e PORT=8000 rutas-cusco:1.2.0
+docker build -t rutas-cusco:1.5.0 .
+docker run --rm -p 8000:8000 -e PORT=8000 rutas-cusco:1.5.0
 ```
 
 Abrir <http://127.0.0.1:8000/>.
 
 ## 4. Render o Railway
 
-1. Suba el contenido de `dist_publicable/rutas-cusco-v1.2.0/` a un repositorio
+1. Suba el contenido de `dist_publicable/rutas-cusco-v1.5.0/` a un repositorio
    (o conecte el repositorio del proyecto y use el `Dockerfile`).
 2. Comando de arranque:
    `uvicorn web_api:app --app-dir python --host 0.0.0.0 --port $PORT`.
 3. Variables de entorno:
    - `PORT`: la asigna el proveedor.
-   - `RUTAS_CORS_ORIGINS`: solo si la web se sirve desde otro dominio.
-   - `RUTAS_WEB_DIST`: solo si el build está en otra ruta.
+    - `RUTAS_CORS_ORIGINS`: solo si la web se sirve desde otro dominio.
+    - `RUTAS_WEB_DIST`: solo si el build está en otra ruta.
+    - `OPENWEATHERMAP_API_KEY` y `TOMTOM_API_KEY`: solo en el servidor, si se usarán esos proveedores.
 4. Verifique `/api/v1/health` y `/api/v1/version` después del despliegue.
 
 El `Procfile` incluido contiene el comando de arranque para proveedores que lo
@@ -116,6 +117,18 @@ Pages) y la API en otro dominio:
 
 No use `*` como origen si la API quedará abierta a Internet.
 
+### GitHub Pages
+
+GitHub Pages solo aloja la web compilada. Sin API pública, la página carga los
+snapshots OSM y los benchmarks estáticos, pero no ejecuta rutas, experimentos ni
+consultas de proveedores. No se muestran resultados ficticios para esas acciones.
+Para ofrecer la funcionalidad completa, despliegue primero la API bajo HTTPS y
+configure en las variables de Actions del repositorio `RUTAS_API_BASE_URL` con
+su origen (sin claves ni ruta `/api/v1`). Establezca
+`RUTAS_CORS_ORIGINS=https://frankich99.github.io` en el servidor. El workflow
+comprueba que la API responde y coincide en versión antes de publicar el build.
+No exponga la API sin límites de tráfico y autenticación adecuados.
+
 ## 6. Variables de entorno
 
 | Variable | Valor por defecto | Uso |
@@ -124,10 +137,11 @@ No use `*` como origen si la API quedará abierta a Internet.
 | `RUTAS_WEB_DIST` | `<raíz>/web/dist` | Ruta del build estático |
 | `RUTAS_CORS_ORIGINS` | vacío | Orígenes permitidos, separados por coma |
 | `VITE_API_BASE_URL` | vacío (mismo origen) | URL de la API al compilar la web |
-| `OPENWEATHERMAP_API_KEY` | vacío | Solo CLI; la web pide la clave en el formulario |
+| `OPENWEATHERMAP_API_KEY` y `TOMTOM_API_KEY` | vacío | Claves del servidor; la web recibe solo indicadores de disponibilidad |
 
-Nunca guarde claves en Git. Las claves enviadas desde la web se usan para esa
-consulta y no se escriben en los archivos del proyecto.
+Nunca guarde claves en Git ni en variables `VITE_`: se incorporan al bundle
+visible para todos. Las claves alternativas enviadas desde la web se usan para
+esa consulta y no se escriben en los archivos del proyecto.
 
 ## 7. Comprobaciones antes de publicar
 

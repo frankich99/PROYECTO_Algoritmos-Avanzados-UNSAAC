@@ -75,6 +75,28 @@ la API con `RUTAS_CORS_ORIGINS`. `npm run preview` por sí solo no sirve la API.
 No publicar el backend sin límites de tráfico y autenticación: acepta
 experimentos de CPU y consultas a proveedores externos.
 
+### GitHub Pages (sitio público)
+
+GitHub Pages **no ejecuta Python**. Sin una API pública, la web muestra únicamente
+los dos snapshots OSM reales y el benchmark/piloto histórico; calcular rutas,
+generar instancias, medir experimentos y consultar proveedores muestran un error
+explícito. No se sustituyen por rutas ni tiempos de cola inventados.
+
+Para ofrecer la misma funcionalidad que en local, despliegue FastAPI en un
+servicio HTTPS con límites de tráfico y autenticación apropiados y configure:
+
+1. En la API, `RUTAS_CORS_ORIGINS=https://frankich99.github.io` (sin barra final).
+2. En las variables del repositorio GitHub Actions, `RUTAS_API_BASE_URL` con el
+   origen público de la API, por ejemplo `https://api.ejemplo.com` (sin claves).
+3. Reinicie el despliegue de Pages: el workflow verifica `/api/v1/health` y que
+   `/api/v1/version` coincide con la versión web **antes** de compilar. Vite
+   incorpora la URL al bundle; cambiar la variable exige recompilar.
+
+No configure el backend con `localhost`, ni suba `.env` al repositorio. En local,
+si el servidor se inició sin `--reload`, reinícielo al modificar Python. Para
+probar la modalidad de solo archivos en Vite, use `VITE_STATIC_DEMO=true` en
+desarrollo, sin `VITE_API_BASE_URL`.
+
 ## Qué se puede hacer
 
 - Consultar rutas en el centro OSM guardado (891 nodos y 2139 aristas, radio

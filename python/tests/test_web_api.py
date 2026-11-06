@@ -19,6 +19,11 @@ def test_catalog_and_openapi():
     assert catalog["networks"][0]["available"] is True
     assert set(catalog["queues"]) == {"binary_heap", "4ary_heap", "fibonacci_heap"}
     assert "/api/v1/routes/solve" in client.get("/openapi.json").json()["paths"]
+    public = Path(__file__).resolve().parents[2] / "web" / "public" / "data"
+    for name in ("cusco_osm_drive.json", "cusco_urbano_drive.json",
+                 "benchmark_results.json", "pilot_benchmark_results.json"):
+        assert (public / name).read_bytes() == (DATA / name).read_bytes()
+    assert json.loads((public / "openapi.json").read_text(encoding="utf-8"))["info"]["version"] == app.version
 
 
 def test_version_endpoint():
