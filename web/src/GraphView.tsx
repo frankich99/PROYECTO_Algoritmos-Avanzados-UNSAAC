@@ -124,7 +124,7 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
         </g>
       })}
 
-      {/* 3. Nodos proporcionados con tipografía centrada */}
+      {/* 3. Nodos proporcionados con tipografía centrada y etiquetas de alto contraste */}
       {[...layout].map(([id, [x, y]]) => {
         const isSource = id === String(route?.source)
         const isTarget = id === String(route?.target)
@@ -132,12 +132,32 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
         const r = preview.nodes < 50 ? (isSource || isTarget ? 13 : 11.5) : 3.5
         const fillColor = isSource ? '#8A6418' : isTarget ? '#681C32' : isPath ? '#7a3045' : '#315D65'
 
+        const isUpper = y < 205
+        const nameY = isSource ? y + r + 13 : isTarget ? y - r - 6 : (isUpper ? y - r - 6 : y + r + 13)
+        const nameColor = isSource ? '#6e4e10' : isTarget ? '#541224' : '#1f1b1c'
+
         return <g key={`node-${id}`}>
           <circle cx={x} cy={y} r={r} fill={fillColor} stroke="#ffffff" strokeWidth={preview.nodes < 50 ? 2 : 1} />
-          {preview.nodes < 50 && <text x={x} y={y + 3.5} textAnchor="middle" fontSize={id.length > 2 ? '8.5' : '10'}
-            fontWeight="700" fill="#ffffff" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>}
-          {isSource && preview.nodes < 50 && <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#8A6418">Origen</text>}
-          {isTarget && preview.nodes < 50 && <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#681C32">Destino</text>}
+          {preview.nodes < 50 && (
+            id.length <= 2 ? (
+              <text x={x} y={y + 3.5} textAnchor="middle" fontSize="10"
+                fontWeight="700" fill="#ffffff" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>
+            ) : (
+              <text x={x} y={nameY} textAnchor="middle" fontSize={id.length > 12 ? '9' : '10'}
+                fontWeight="700" fill={nameColor} stroke="#ffffff" strokeWidth="3.5" strokeLinejoin="round"
+                paintOrder="stroke fill" fontFamily="'Source Sans 3', Arial, sans-serif">
+                {id}
+              </text>
+            )
+          )}
+          {isSource && preview.nodes < 50 && (
+            <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#8A6418"
+              stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Origen</text>
+          )}
+          {isTarget && preview.nodes < 50 && (
+            <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#681C32"
+              stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Destino</text>
+          )}
         </g>
       })}
     </svg>
