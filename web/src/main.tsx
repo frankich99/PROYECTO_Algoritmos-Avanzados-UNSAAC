@@ -525,29 +525,50 @@ function App() {
         <div className="segmented tabs">{(['tabla', 'json', 'archivo', 'generar'] as const).map(tab => <button type="button" aria-pressed={editorMode === tab} className={editorMode === tab ? 'active' : ''} onClick={() => { setEditorMode(tab); setEditorError('') }} key={tab}>{({ tabla: 'Nodos y aristas', json: 'JSON', archivo: 'CSV / TXT', generar: 'Generar' })[tab]}</button>)}</div>
         {editorMode === 'tabla' && <div className="editor-grid">
           <section>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
-              <h2 style={{ margin: 0 }}>Nodos</h2>
-              <button
-                type="button"
-                className="text-button"
-                style={{ fontSize: '0.82rem', fontWeight: 600 }}
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText()
-                    if (text && text.trim()) handlePasteNodesText(text)
-                    else {
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Nodos</h2>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText()
+                      if (text && text.trim()) handlePasteNodesText(text)
+                      else {
+                        const p = prompt('Pega aquí los nodos (ej. "A | -13.516 | -71.978" o solo IDs por línea):')
+                        if (p) handlePasteNodesText(p)
+                      }
+                    } catch {
                       const p = prompt('Pega aquí los nodos (ej. "A | -13.516 | -71.978" o solo IDs por línea):')
                       if (p) handlePasteNodesText(p)
                     }
-                  } catch {
-                    const p = prompt('Pega aquí los nodos (ej. "A | -13.516 | -71.978" o solo IDs por línea):')
-                    if (p) handlePasteNodesText(p)
-                  }
-                }}
-                title="Pega texto de nodos directamente desde el portapapeles"
-              >
-                📋 Pegar tabla de Nodos
-              </button>
+                  }}
+                  title="Pega texto de nodos directamente desde el portapapeles"
+                >
+                  📋 Pegar
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={() => {
+                    setNodeDraft([])
+                    setPasteFeedback('Nodos limpiados. Puedes agregar o pegar nuevos.')
+                    setTimeout(() => setPasteFeedback(''), 3000)
+                  }}
+                  title="Vaciar la lista de nodos"
+                >
+                  🗑️ Limpiar
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={() => setNodeDraft(old => [...old, { id: '', lat: '', lon: '' }])}
+                  title="Agregar un nodo individual"
+                >
+                  ➕ Agregar
+                </button>
+              </div>
             </div>
             <p className="fineprint">Coordenadas opcionales. Puedes presionar <strong>Ctrl+V</strong> en cualquier celda para pegar una tabla completa.</p>
             {nodeDraft.map((node, i) => <div className="editor-row" key={i}>
@@ -580,29 +601,50 @@ function App() {
           </section>
 
           <section>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
-              <h2 style={{ margin: 0 }}>Aristas dirigidas</h2>
-              <button
-                type="button"
-                className="text-button"
-                style={{ fontSize: '0.82rem', fontWeight: 600 }}
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText()
-                    if (text && text.trim()) handlePasteEdgesText(text)
-                    else {
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Aristas dirigidas</h2>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={async () => {
+                    try {
+                      const text = await navigator.clipboard.readText()
+                      if (text && text.trim()) handlePasteEdgesText(text)
+                      else {
+                        const p = prompt('Pega aquí las aristas (ej. "A | B | 4" o "A B 4"):')
+                        if (p) handlePasteEdgesText(p)
+                      }
+                    } catch {
                       const p = prompt('Pega aquí las aristas (ej. "A | B | 4" o "A B 4"):')
                       if (p) handlePasteEdgesText(p)
                     }
-                  } catch {
-                    const p = prompt('Pega aquí las aristas (ej. "A | B | 4" o "A B 4"):')
-                    if (p) handlePasteEdgesText(p)
-                  }
-                }}
-                title="Pega texto de aristas directamente desde el portapapeles"
-              >
-                📋 Pegar tabla de Aristas
-              </button>
+                  }}
+                  title="Pega texto de aristas directamente desde el portapapeles"
+                >
+                  📋 Pegar
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={() => {
+                    setEdgeDraft([])
+                    setPasteFeedback('Aristas limpiadas. Puedes agregar o pegar nuevas.')
+                    setTimeout(() => setPasteFeedback(''), 3000)
+                  }}
+                  title="Vaciar la lista de aristas"
+                >
+                  🗑️ Limpiar
+                </button>
+                <button
+                  type="button"
+                  className="btn-action"
+                  onClick={() => setEdgeDraft(old => [...old, { origin: '', destination: '', weight: '' }])}
+                  title="Agregar una arista individual"
+                >
+                  ➕ Agregar
+                </button>
+              </div>
             </div>
             <p className="fineprint">Para dos sentidos, introduce dos aristas. Puedes presionar <strong>Ctrl+V</strong> en cualquier celda para pegar.</p>
             {edgeDraft.map((edge, i) => <div className="editor-row" key={i}>

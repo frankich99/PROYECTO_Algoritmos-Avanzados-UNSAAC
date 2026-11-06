@@ -77,25 +77,27 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
   return <div className="graph-container" role="img" aria-label={`Grafo con ${preview.nodes} nodos y ${preview.edges} aristas. Ruta: ${route?.result.path.join(', ') || 'sin calcular'}`}>
     <svg viewBox="0 0 700 410" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: 'auto' }}>
       <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#8c7e73" />
+        {/* Flecha estándar: delgada y estilizada */}
+        <marker id="arrow" viewBox="0 0 10 10" refX="20" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+          <path d="M 1 2.2 L 8.5 5 L 1 7.8 L 2.8 5 z" fill="#9c8f83" />
         </marker>
-        <marker id="arrow-selected" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#681C32" />
+        {/* Flecha de ruta óptima: afilada, delgada y elegante */}
+        <marker id="arrow-selected" viewBox="0 0 10 10" refX="21" refY="5" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="10.5" orient="auto-start-reverse">
+          <path d="M 1 2 L 9 5 L 1 8 L 3 5 z" fill="#681C32" />
         </marker>
       </defs>
 
-      {/* 1. Líneas de aristas */}
+      {/* 1. Líneas de aristas con grosor refinado */}
       {edgeList.map(({ u, v, selected }, i) => {
         const [x1, y1] = layout.get(u)!
         const [x2, y2] = layout.get(v)!
         return <line key={`line-${u}-${v}-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
-          stroke={selected ? '#681C32' : '#A89D92'}
-          strokeWidth={selected ? 4 : 1.5}
+          stroke={selected ? '#681C32' : '#b4a89d'}
+          strokeWidth={selected ? 2.6 : 1.2}
           markerEnd={selected ? 'url(#arrow-selected)' : 'url(#arrow)'} />
       })}
 
-      {/* 2. Etiquetas de peso y costo */}
+      {/* 2. Etiquetas de peso y costo compactas y legibles */}
       {showLabels && edgeList.map(({ u, v, weight, selected }, i) => {
         if (weight === undefined || weight === null) return null
         const [x1, y1] = layout.get(u)!
@@ -105,37 +107,37 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
         const midX = (x1 + x2) / 2
         const midY = (y1 + y2) / 2
         const nx = -dy / len, ny = dx / len
-        const lblX = midX + nx * 11
-        const lblY = midY + ny * 11
+        const lblX = midX + nx * 10
+        const lblY = midY + ny * 10
         const textStr = String(weight)
-        const badgeW = Math.max(22, textStr.length * 7 + 8)
+        const badgeW = Math.max(18, textStr.length * 6.5 + 8)
 
         return <g key={`lbl-${u}-${v}-${i}`}>
-          <rect x={lblX - badgeW / 2} y={lblY - 9} width={badgeW} height={17} rx={4}
+          <rect x={lblX - badgeW / 2} y={lblY - 7.5} width={badgeW} height={15} rx={3}
             fill={selected ? '#681C32' : '#ffffff'}
             stroke={selected ? '#dec697' : '#c8b8a8'}
-            strokeWidth={selected ? 1.5 : 1} />
-          <text x={lblX} y={lblY + 3.5} textAnchor="middle" fontSize="10" fontWeight="700"
+            strokeWidth={selected ? 1.2 : 0.8} />
+          <text x={lblX} y={lblY + 3.2} textAnchor="middle" fontSize="9.5" fontWeight="700"
             fill={selected ? '#ffffff' : '#3d322c'} fontFamily="'Source Sans 3', monospace">
             {textStr}
           </text>
         </g>
       })}
 
-      {/* 3. Nodos */}
+      {/* 3. Nodos proporcionados con tipografía centrada */}
       {[...layout].map(([id, [x, y]]) => {
         const isSource = id === String(route?.source)
         const isTarget = id === String(route?.target)
         const isPath = pathNodes.has(id)
-        const r = preview.nodes < 50 ? (isSource || isTarget ? 15 : 13) : 4
+        const r = preview.nodes < 50 ? (isSource || isTarget ? 13 : 11.5) : 3.5
         const fillColor = isSource ? '#8A6418' : isTarget ? '#681C32' : isPath ? '#7a3045' : '#315D65'
 
         return <g key={`node-${id}`}>
-          <circle cx={x} cy={y} r={r} fill={fillColor} stroke="#ffffff" strokeWidth={preview.nodes < 50 ? 2.5 : 1} />
-          {preview.nodes < 50 && <text x={x} y={y + 4} textAnchor="middle" fontSize={id.length > 2 ? '9.5' : '11'}
+          <circle cx={x} cy={y} r={r} fill={fillColor} stroke="#ffffff" strokeWidth={preview.nodes < 50 ? 2 : 1} />
+          {preview.nodes < 50 && <text x={x} y={y + 3.5} textAnchor="middle" fontSize={id.length > 2 ? '8.5' : '10'}
             fontWeight="700" fill="#ffffff" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>}
-          {isSource && preview.nodes < 50 && <text x={x} y={y - 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#8A6418">Origen</text>}
-          {isTarget && preview.nodes < 50 && <text x={x} y={y + 26} textAnchor="middle" fontSize="10" fontWeight="700" fill="#681C32">Destino</text>}
+          {isSource && preview.nodes < 50 && <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#8A6418">Origen</text>}
+          {isTarget && preview.nodes < 50 && <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#681C32">Destino</text>}
         </g>
       })}
     </svg>
