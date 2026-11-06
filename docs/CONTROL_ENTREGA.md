@@ -183,9 +183,11 @@ genera.
   `python/requirements.txt`. La interfaz vigente es React/TypeScript en `web/`
   con API FastAPI en `python/web_api.py`; no queda una segunda web que mantener.
 - **Suite.** Al retirar las 11 pruebas de Streamlit, la suite pasa de 298 a
-  **287 casos**. Las pruebas de `test_web_api.py` cubren catálogo, validación
-  de coberturas, geometría OSM, instancias personalizadas, escenarios uniformes
-  y separación entre banco canónico y experimentos de sesión.
+  **287 casos**. Con las pruebas de persistencia y clima añadidas en la
+  versión 1.2.1 (06/11/2026), la suite vigente es de **291 casos**. Las
+  pruebas de `test_web_api.py` cubren catálogo, validación de coberturas,
+  geometría OSM, instancias personalizadas, escenarios uniformes y separación
+  entre banco canónico y experimentos de sesión.
 - **Cobertura ampliada.** Se publicó `python/data/processed/cusco_urbano_drive.json`
   como snapshot **independiente**: consulta radial de 3000 m alrededor de
   `(-13.5165, -71.9788)`, recortada por distancia de red, base OSM del
