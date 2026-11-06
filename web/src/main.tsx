@@ -662,16 +662,30 @@ function App() {
         <div className="cards-grid">
           <section className="info-card">
             <h2>2. ¿De dónde sale la Distancia y la Velocidad?</h2>
-            <p><strong>Distancia física pura (metros):</strong> Proviene de la geometría real del segmento vial (cartografía OpenStreetMap o levantamiento métrico). No se inventan longitudes.</p>
-            <div className="formula-highlight">Distancia(P) = Σ longitud_metros(e)</div>
-            <p><strong>Velocidades nominales supuestas:</strong> Según la jerarquía de calzada en Cusco, convertidas a metros/segundo (v ÷ 3.6):</p>
+            <p><strong>Distancia física pura (metros):</strong> Proviene de la geometría real del segmento vial (cartografía OpenStreetMap o levantamiento métrico colonial):</p>
+            <div className="math-eq">
+              <span className="m-var">Distancia</span>(P) = <span className="m-sum">∑</span><sub className="m-sub">e ∈ P</sub> <span className="m-var">longitud</span>(e) &nbsp; [m]
+            </div>
+            <p><strong>Velocidades nominales y conversión a m/s:</strong></p>
+            <div className="math-eq">
+              <span className="m-var">T</span><sub className="m-sub">base</sub>(e) = 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">longitud</span>(e)</span>
+                <span className="m-den"><span className="m-var">v</span><sub className="m-sub">m/s</sub>(e)</span>
+              </span>
+              <span className="m-op">,</span> &nbsp; donde &nbsp;
+              <span className="m-var">v</span><sub className="m-sub">m/s</sub> = 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">v</span><sub className="m-sub">km/h</sub></span>
+                <span className="m-den">3.6</span>
+              </span>
+            </div>
             <ul className="variable-list">
               <li><strong>Calles coloniales estrechas:</strong> 15 km/h (4.17 m/s) — Santa Clara, Marqués, Espaderos.</li>
               <li><strong>Pasajes peatonales:</strong> 8 km/h (2.22 m/s) — Portal de Panes, Loreto, Cuesta San Blas.</li>
               <li><strong>Avenidas principales:</strong> 35 km/h (9.72 m/s) — Av. El Sol, Av. Tullumayo.</li>
               <li><strong>Calles residenciales:</strong> 25 km/h (6.94 m/s) — Calles fuera del casco monumental.</li>
             </ul>
-            <p className="fineprint">Tiempo base plano: T_base = longitud / (velocidad_kmh ÷ 3.6)</p>
           </section>
 
           <section className="info-card">
@@ -684,8 +698,23 @@ function App() {
               <li><strong>Bajadas hacia Qorikancha y Mantas:</strong> -1.0% a -2.5%</li>
             </ul>
             <p>Cuando se selecciona la métrica <strong>«Tiempo»</strong>, se aplica la fórmula del proyecto:</p>
-            <div className="formula-highlight">
-              Tiempo(u, v) = (longitud / velocidad_nominal) × (1 + 2.5 × max(0, pendiente % / 100))
+            <div className="math-eq">
+              <span className="m-var">Tiempo</span>(u, v) = 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">longitud</span></span>
+                <span className="m-den"><span className="m-var">velocidad nominal</span></span>
+              </span>
+              <span className="m-op">×</span>
+              <span className="m-b-sq">[</span>
+              1 + 2.5 <span className="m-op">×</span> <span className="m-fn">max</span>
+              <span className="m-b-rd">(</span>
+              0, 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">pendiente</span> %</span>
+                <span className="m-den">100</span>
+              </span>
+              <span className="m-b-rd">)</span>
+              <span className="m-b-sq">]</span>
             </div>
             <ul className="variable-list">
               <li><strong>Física del modelo:</strong> Solo se penalizan las cuestas arriba (max(0, g)). En las bajadas no hay sobreesfuerzo motriz.</li>
@@ -696,9 +725,31 @@ function App() {
           <section className="info-card">
             <h2>4. ¿Cómo se usan la Temperatura y el Clima?</h2>
             <p><strong>Temperatura (°C):</strong> Se consulta en vivo desde Open-Meteo / OpenWeatherMap y se muestra en pantalla como contexto ambiental informativo, <strong>pero no altera la fricción de la vía</strong> (el frío o calor moderado en Cusco no frena el vehículo ni al peatón).</p>
-            <p><strong>Factores meteorológicos que sí penalizan el tiempo:</strong></p>
-            <div className="formula-highlight">
-              F_clima = 1 + 0.20·lluvia_norm + 0.15·niebla_norm + 0.10·ráfagas_norm + 0.08·humedad_alta
+            <p><strong>Factores meteorológicos que sí penalizan el tiempo (F_clima):</strong></p>
+            <div className="math-eq">
+              <span className="m-var">F</span><sub className="m-sub">clima</sub> = 
+              1 + 0.20 <span className="m-op">·</span>
+              <span className="m-frac">
+                <span className="m-num"><span className="m-fn">min</span>(<span className="m-var">lluvia</span>, 10)</span>
+                <span className="m-den">10</span>
+              </span>
+              + 0.15 <span className="m-op">·</span>
+              <span className="m-b-rd">(</span>1 - 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">visibilidad</span></span>
+                <span className="m-den">10 000</span>
+              </span>
+              <span className="m-b-rd">)</span>
+              + 0.10 <span className="m-op">·</span>
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">ráfagas</span></span>
+                <span className="m-den">80</span>
+              </span>
+              + 0.08 <span className="m-op">·</span>
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">humedad</span> - 65</span>
+                <span className="m-den">35</span>
+              </span>
             </div>
             <ul className="variable-list">
               <li><strong>Lluvia (mm):</strong> Moja el adoquín colonial haciéndolo resbaladizo (hasta +20%).</li>
@@ -711,22 +762,38 @@ function App() {
           <section className="info-card">
             <h2>5. Congestión de Tráfico y Tiempo Final</h2>
             <p><strong>Factor de congestión (F_tráfico):</strong></p>
-            <ul className="variable-list">
-              <li><strong>Simulación horaria:</strong> F_horario = 1 + 1.15 × (nivel - 1). Niveles: Fluido (1.0), Moderado (1.25), Alto (1.65) u Hora Punta (2.20).</li>
-              <li><strong>TomTom en vivo:</strong> F_TomTom = max(1.0, velocidad_libre / velocidad_actual) sobre el segmento cercano al origen.</li>
-            </ul>
+            <div className="math-eq">
+              <span className="m-var">F</span><sub className="m-sub">TomTom</sub> = <span className="m-fn">max</span><span className="m-b-rd">(</span>1.0, 
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">v</span><sub className="m-sub">libre</sub></span>
+                <span className="m-den"><span className="m-var">v</span><sub className="m-sub">actual</sub></span>
+              </span><span className="m-b-rd">)</span>
+              &nbsp; | &nbsp;
+              <span className="m-var">F</span><sub className="m-sub">horario</sub> = 1 + 1.15 <span className="m-op">×</span> (<span className="m-var">nivel</span> - 1)
+            </div>
             <p><strong>Fórmula final del tiempo de viaje estimado:</strong></p>
-            <div className="formula-highlight">
-              Tiempo estimado(P) = Tiempo base(P) × redondear(F_clima × F_tráfico, 4)
+            <div className="math-eq">
+              <span className="m-var">Tiempo estimado</span>(P) = <span className="m-var">Tiempo base</span>(P) <span className="m-op">×</span> <span className="m-b-rd">(</span><span className="m-var">F</span><sub className="m-sub">clima</sub> <span className="m-op">×</span> <span className="m-var">F</span><sub className="m-sub">tráfico</sub><span className="m-b-rd">)</span>
             </div>
             <p className="fineprint">La ruta óptima se busca con Dijkstra o A* sobre los pesos base; los factores dinámicos escalan el tiempo de forma uniforme y verificable.</p>
           </section>
 
           <section className="info-card">
             <h2>6. ¿Qué se modifica en A* para ser más eficiente?</h2>
-            <p><strong>Función f(v) = g(v) + h(v):</strong> Suma el costo acumulado desde el origen <code>g(v)</code> y la estimación heurística admisible <code>h(v)</code> hacia el destino.</p>
-            <div className="formula-highlight">
-              h(v) = λ · distancia_euclidiana(v, destino), &nbsp; con λ = min(peso_e / dist_e)
+            <p><strong>Función de evaluación f(v) = g(v) + h(v):</strong></p>
+            <div className="math-eq">
+              <span className="m-var">f</span>(v) = <span className="m-var">g</span>(v) + <span className="m-var">h</span>(v)
+              &nbsp; , &nbsp;
+              <span className="m-var">h</span>(v) = λ <span className="m-op">·</span> <span className="m-var">d</span><sub className="m-sub">euclídea</sub>(v, <span className="m-var">destino</span>)
+            </div>
+            <div className="math-eq">
+              λ = <span className="m-fn">min</span><sub className="m-sub">e ∈ E</sub>
+              <span className="m-frac">
+                <span className="m-num"><span className="m-var">peso</span>(e)</span>
+                <span className="m-den"><span className="m-var">distancia euclídea</span>(e)</span>
+              </span>
+              &nbsp; ⟹ &nbsp;
+              <span className="m-var">h</span>(v) ≤ <span className="m-var">d</span>*(v, <span className="m-var">destino</span>)
             </div>
             <ul className="variable-list">
               <li><strong>Garantía matemática (Admisibilidad):</strong> Al fijar λ como la razón mínima entre costo y distancia de cualquier arista, <code>h(v) ≤ d*(v, destino)</code> siempre, asegurando hallar el camino de costo mínimo exacto.</li>
@@ -737,6 +804,9 @@ function App() {
           <section className="info-card">
             <h2>7. Verificación Cruzada y Optimalidad Dual</h2>
             <p>Dijkstra (con montículo binario, 4-ario y Fibonacci) y A* operan sobre la misma red y generan costos idénticos.</p>
+            <div className="math-eq">
+              π(v) - π(u) ≤ <span className="m-var">w</span>(u, v) &nbsp; ∀(u, v) ∈ E &nbsp; ⟺ &nbsp; <span className="m-var">brecha de dualidad</span> = 0
+            </div>
             <ul className="variable-list">
               <li><strong>Certificado de holgura reducida:</strong> Para cada arista (u, v), se verifica que <code>π(v) - π(u) ≤ w(u,v)</code> (brecha de dualidad = 0).</li>
               <li><strong>Referencia independiente:</strong> Comprobado contra Bellman-Ford en todas las instancias de prueba.</li>
