@@ -44,6 +44,31 @@ function ProviderKeyInput({ provider, configured, value, onChange }: {
   </div>
 }
 
+function MathEquation({ children, title }: { children: React.ReactNode; title?: string }) {
+  const [zoom, setZoom] = useState(1.0)
+  const zoomIn = () => setZoom(z => Math.min(Math.round((z + 0.15) * 100) / 100, 2.2))
+  const zoomOut = () => setZoom(z => Math.max(Math.round((z - 0.15) * 100) / 100, 0.65))
+  const resetZoom = () => setZoom(1.0)
+
+  return (
+    <div className="math-wrapper">
+      <div className="math-toolbar">
+        <span className="math-title">{title || 'Fórmula'}</span>
+        <div className="math-zoom-controls">
+          <button type="button" aria-label="Reducir fórmula" onClick={zoomOut} title="Reducir zoom (−)">−</button>
+          <span className="math-zoom-val" onClick={resetZoom} title="Clic para restablecer al 100%">{Math.round(zoom * 100)}%</span>
+          <button type="button" aria-label="Ampliar fórmula" onClick={zoomIn} title="Aumentar zoom (+)">+</button>
+        </div>
+      </div>
+      <div className="math-scroll-area">
+        <div className="math-eq" style={{ fontSize: `${0.88 * zoom}rem` }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [section, setSection] = useState<Section>('Rutas')
   const [mobileMenu, setMobileMenu] = useState(false)
@@ -681,15 +706,24 @@ function App() {
           </div>
         </section>
 
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem', padding: '0.55rem 0.9rem', background: '#fffdf8', border: '1px solid #dcd2c4', borderRadius: '4px', margin: '1.2rem 0 0.8rem' }}>
+          <span style={{ fontSize: '0.86rem', fontWeight: 600, color: 'var(--wine)' }}>
+            🔬 Fórmulas con Zoom Interactivo: Usa los botones [ − ] y [ + ] en cada recuadro para ajustar el tamaño.
+          </span>
+          <span className="fineprint" style={{ margin: 0 }}>
+            Clic en el porcentaje para restablecer al 100% predeterminado.
+          </span>
+        </div>
+
         <div className="cards-grid">
           <section className="info-card">
             <h2>2. ¿De dónde sale la Distancia y la Velocidad?</h2>
             <p><strong>Distancia física pura (metros):</strong> Proviene de la geometría real del segmento vial (cartografía OpenStreetMap o levantamiento métrico colonial):</p>
-            <div className="math-eq">
+            <MathEquation title="Distancia Métrica (Σ)">
               <span className="m-var">Distancia</span>(P) = <span className="m-sum">∑</span><sub className="m-sub">e ∈ P</sub> <span className="m-var">longitud</span>(e) &nbsp; [m]
-            </div>
+            </MathEquation>
             <p><strong>Velocidades nominales y conversión a m/s:</strong></p>
-            <div className="math-eq">
+            <MathEquation title="Tiempo Base y Conversión m/s">
               <span className="m-var">T</span><sub className="m-sub">base</sub>(e) = 
               <span className="m-frac">
                 <span className="m-num"><span className="m-var">longitud</span>(e)</span>
@@ -701,7 +735,7 @@ function App() {
                 <span className="m-num"><span className="m-var">v</span><sub className="m-sub">km/h</sub></span>
                 <span className="m-den">3.6</span>
               </span>
-            </div>
+            </MathEquation>
             <ul className="variable-list">
               <li><strong>Calles coloniales estrechas:</strong> 15 km/h (4.17 m/s) — Santa Clara, Marqués, Espaderos.</li>
               <li><strong>Pasajes peatonales:</strong> 8 km/h (2.22 m/s) — Portal de Panes, Loreto, Cuesta San Blas.</li>
@@ -720,7 +754,7 @@ function App() {
               <li><strong>Bajadas hacia Qorikancha y Mantas:</strong> -1.0% a -2.5%</li>
             </ul>
             <p>Cuando se selecciona la métrica <strong>«Tiempo»</strong>, se aplica la fórmula del proyecto:</p>
-            <div className="math-eq">
+            <MathEquation title="Tiempo con Pendiente y Relieve de Cusco">
               <span className="m-var">Tiempo</span>(u, v) = 
               <span className="m-frac">
                 <span className="m-num"><span className="m-var">longitud</span></span>
@@ -737,7 +771,7 @@ function App() {
               </span>
               <span className="m-b-rd">)</span>
               <span className="m-b-sq">]</span>
-            </div>
+            </MathEquation>
             <ul className="variable-list">
               <li><strong>Física del modelo:</strong> Solo se penalizan las cuestas arriba (max(0, g)). En las bajadas no hay sobreesfuerzo motriz.</li>
               <li><strong>Jerarquía de calzada:</strong> Calles coloniales estrechas a 15 km/h, pasajes peatonales a 8 km/h y avenidas a 35 km/h.</li>
@@ -748,7 +782,7 @@ function App() {
             <h2>4. ¿Cómo se usan la Temperatura y el Clima?</h2>
             <p><strong>Temperatura (°C):</strong> Se consulta en vivo desde Open-Meteo / OpenWeatherMap y se muestra en pantalla como contexto ambiental informativo, <strong>pero no altera la fricción de la vía</strong> (el frío o calor moderado en Cusco no frena el vehículo ni al peatón).</p>
             <p><strong>Factores meteorológicos que sí penalizan el tiempo (F_clima):</strong></p>
-            <div className="math-eq">
+            <MathEquation title="Factor Climático Combinado (F_clima)">
               <span className="m-var">F</span><sub className="m-sub">clima</sub> = 
               1 + 0.20 <span className="m-op">·</span>
               <span className="m-frac">
@@ -772,7 +806,7 @@ function App() {
                 <span className="m-num"><span className="m-var">humedad</span> - 65</span>
                 <span className="m-den">35</span>
               </span>
-            </div>
+            </MathEquation>
             <ul className="variable-list">
               <li><strong>Lluvia (mm):</strong> Moja el adoquín colonial haciéndolo resbaladizo (hasta +20%).</li>
               <li><strong>Visibilidad (m):</strong> Reduce la velocidad preventiva por niebla matutina (hasta +15%).</li>
@@ -784,7 +818,7 @@ function App() {
           <section className="info-card">
             <h2>5. Congestión de Tráfico y Tiempo Final</h2>
             <p><strong>Factor de congestión (F_tráfico):</strong></p>
-            <div className="math-eq">
+            <MathEquation title="Congestión (TomTom y Horario)">
               <span className="m-var">F</span><sub className="m-sub">TomTom</sub> = <span className="m-fn">max</span><span className="m-b-rd">(</span>1.0, 
               <span className="m-frac">
                 <span className="m-num"><span className="m-var">v</span><sub className="m-sub">libre</sub></span>
@@ -792,23 +826,23 @@ function App() {
               </span><span className="m-b-rd">)</span>
               &nbsp; | &nbsp;
               <span className="m-var">F</span><sub className="m-sub">horario</sub> = 1 + 1.15 <span className="m-op">×</span> (<span className="m-var">nivel</span> - 1)
-            </div>
+            </MathEquation>
             <p><strong>Fórmula final del tiempo de viaje estimado:</strong></p>
-            <div className="math-eq">
+            <MathEquation title="Tiempo Estimado Final de la Ruta">
               <span className="m-var">Tiempo estimado</span>(P) = <span className="m-var">Tiempo base</span>(P) <span className="m-op">×</span> <span className="m-b-rd">(</span><span className="m-var">F</span><sub className="m-sub">clima</sub> <span className="m-op">×</span> <span className="m-var">F</span><sub className="m-sub">tráfico</sub><span className="m-b-rd">)</span>
-            </div>
+            </MathEquation>
             <p className="fineprint">La ruta óptima se busca con Dijkstra o A* sobre los pesos base; los factores dinámicos escalan el tiempo de forma uniforme y verificable.</p>
           </section>
 
           <section className="info-card">
             <h2>6. ¿Qué se modifica en A* para ser más eficiente?</h2>
             <p><strong>Función de evaluación f(v) = g(v) + h(v):</strong></p>
-            <div className="math-eq">
+            <MathEquation title="Función de Evaluación A*">
               <span className="m-var">f</span>(v) = <span className="m-var">g</span>(v) + <span className="m-var">h</span>(v)
               &nbsp; , &nbsp;
               <span className="m-var">h</span>(v) = λ <span className="m-op">·</span> <span className="m-var">d</span><sub className="m-sub">euclídea</sub>(v, <span className="m-var">destino</span>)
-            </div>
-            <div className="math-eq">
+            </MathEquation>
+            <MathEquation title="Calibración de Heurística Admisible λ">
               λ = <span className="m-fn">min</span><sub className="m-sub">e ∈ E</sub>
               <span className="m-frac">
                 <span className="m-num"><span className="m-var">peso</span>(e)</span>
@@ -816,7 +850,7 @@ function App() {
               </span>
               &nbsp; ⟹ &nbsp;
               <span className="m-var">h</span>(v) ≤ <span className="m-var">d</span>*(v, <span className="m-var">destino</span>)
-            </div>
+            </MathEquation>
             <ul className="variable-list">
               <li><strong>Garantía matemática (Admisibilidad):</strong> Al fijar λ como la razón mínima entre costo y distancia de cualquier arista, <code>h(v) ≤ d*(v, destino)</code> siempre, asegurando hallar el camino de costo mínimo exacto.</li>
               <li><strong>Poda direccional:</strong> No explora calles en direcciones opuestas a la meta, reduciendo hasta un 60% los nodos expandidos frente a Dijkstra.</li>
@@ -826,9 +860,9 @@ function App() {
           <section className="info-card">
             <h2>7. Verificación Cruzada y Optimalidad Dual</h2>
             <p>Dijkstra (con montículo binario, 4-ario y Fibonacci) y A* operan sobre la misma red y generan costos idénticos.</p>
-            <div className="math-eq">
+            <MathEquation title="Certificado Dual de Holgura Reducida">
               π(v) - π(u) ≤ <span className="m-var">w</span>(u, v) &nbsp; ∀(u, v) ∈ E &nbsp; ⟺ &nbsp; <span className="m-var">brecha de dualidad</span> = 0
-            </div>
+            </MathEquation>
             <ul className="variable-list">
               <li><strong>Certificado de holgura reducida:</strong> Para cada arista (u, v), se verifica que <code>π(v) - π(u) ≤ w(u,v)</code> (brecha de dualidad = 0).</li>
               <li><strong>Referencia independiente:</strong> Comprobado contra Bellman-Ford en todas las instancias de prueba.</li>
