@@ -63,11 +63,11 @@ export type Catalog = { networks: { kind: Kind; label: string; available: boolea
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
-// Pages no ejecuta FastAPI. Sin URL externa, solo se ofrecen datos estáticos verificados.
-const staticDeployment = !apiBase && typeof location !== 'undefined' &&
-  (location.hostname.endsWith('.github.io') || (import.meta.env.DEV && import.meta.env.VITE_STATIC_DEMO === 'true'))
+export const apiUrl = (path: string) => `${apiBase}${path}`
 
-export const apiUrl = (path: string) => staticDeployment && path === '/docs' ? './data/openapi.json' : `${apiBase}${path}`
+// En GitHub Pages no hay API: solo allí se permite el cálculo local de respaldo.
+const staticDeployment = !import.meta.env.VITE_API_BASE_URL &&
+  typeof location !== 'undefined' && !['127.0.0.1', 'localhost'].includes(location.hostname)
 
 async function staticFallback<T>(path: string, body?: unknown): Promise<T> {
   const { clientFallback } = await import('./clientFallback')
@@ -75,10 +75,6 @@ async function staticFallback<T>(path: string, body?: unknown): Promise<T> {
 }
 
 export async function api<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
-  if (staticDeployment) {
-    if (signal?.aborted) throw new DOMException('Consulta cancelada', 'AbortError')
-    return staticFallback<T>(path, body)
-  }
   let response: Response
   try {
     response = await fetch(apiUrl(`/api/v1${path}`), {
@@ -89,9 +85,14 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal)
     })
   } catch (err) {
     if (signal?.aborted) throw err
+    if (staticDeployment) return staticFallback<T>(path, body)
     throw new Error('No se pudo conectar con la API. Comprueba que el servidor está iniciado.')
   }
   if (!response.ok) {
+    const contentType = response.headers.get('content-type') ?? ''
+    if (staticDeployment && !contentType.includes('application/json')) {
+      return staticFallback<T>(path, body)
+    }
     const payload: unknown = await response.json().catch(() => null)
     const detail = payload && typeof payload === 'object' && 'detail' in payload ? payload.detail : null
     const message = typeof detail === 'string' ? detail : Array.isArray(detail) ?
