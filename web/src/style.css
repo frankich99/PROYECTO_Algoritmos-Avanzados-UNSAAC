@@ -59,6 +59,10 @@ body{min-width:0}
 @media(max-width:1000px){.workspace{grid-template-columns:minmax(270px,320px) minmax(0,1fr)}.source-panel{grid-template-columns:1fr}}
 @media(max-width:810px){.workspace{grid-template-columns:minmax(0,1fr)}.source-panel{gap:.5rem}}
 @media(max-width:590px){.reading-grid{grid-template-columns:1fr 1fr;gap:.1rem .6rem}.source-panel{padding:1rem}.option-body{padding-left:.65rem;margin-left:.35rem}.method-page>section{padding:.9rem 0}}
+.formula-highlight{background:#fffdf7;border:1px solid #dcd2c4;border-left:4px solid var(--wine);padding:.85rem 1.15rem;font:600 1.02rem 'Source Sans 3',Arial,sans-serif;margin:.6rem 0;border-radius:0 4px 4px 0;overflow-x:auto}
+.variable-list{list-style:none;padding:0;margin:.4rem 0;display:grid;gap:.35rem}
+.variable-list li{font-size:.9rem;line-height:1.45}
+.variable-list li strong{color:var(--wine)}
 .cards-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem;margin:1.5rem 0}
 .info-card{background:#fff;border:1px solid #d3c7ba;border-radius:4px;padding:1.25rem;display:flex;flex-direction:column;gap:.7rem;box-shadow:0 1px 3px #1f1b1c10}
 .info-card h2{font:700 1.22rem Georgia,serif;color:var(--wine);margin:0;border-bottom:2px solid #ecdcc8;padding-bottom:.4rem}

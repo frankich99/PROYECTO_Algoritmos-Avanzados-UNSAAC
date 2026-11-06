@@ -604,8 +604,8 @@ function App() {
           </section>
         </div>
       </div>}
-      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 06</p><h1>Datos, Complejidades y Métodos</h1>
-        <p>Estructura concisa de las estructuras de datos, heurística A* y reglas físicas aplicadas sobre la red vial de Cusco.</p>
+      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 06</p><h1>Datos, Fórmulas y Métodos</h1>
+        <p>Estructura matemática transparente: de dónde proviene cada dato, cómo se calcula la distancia y el tiempo con relieve cusqueño, y cómo se aplican la meteorología y la congestión.</p>
 
         <section>
           <h2>1. Comparativa de Colas de Prioridad y Algoritmo A*</h2>
@@ -661,30 +661,87 @@ function App() {
 
         <div className="cards-grid">
           <section className="info-card">
-            <h2>2. ¿Qué se modifica en A* para ser más eficiente?</h2>
-            <p><strong>Función de evaluación:</strong> Evalúa cada nodo según <strong>f(v) = g(v) + h(v)</strong>, donde <code>g(v)</code> es el costo real acumulado desde el origen y <code>h(v)</code> es la estimación heurística al destino.</p>
-            <p><strong>Heurística admisible:</strong> Usa la distancia euclidiana escalada <strong>h(v) = λ · d_euclídea(v, destino)</strong> con factor <strong>λ = min(peso_e / dist_e)</strong>. Esto garantiza matemáticamente que <code>h(v) ≤ d*(v, destino)</code> (nunca sobreestima), asegurando encontrar el camino de costo mínimo exacto.</p>
-            <p><strong>Poda direccional:</strong> Mientras Dijkstra explora en círculos concéntricos en todas direcciones, A* guía el frente de búsqueda hacia el objetivo, descartando ramas opuestas y ahorrando hasta 60% de expansiones.</p>
+            <h2>2. ¿De dónde sale la Distancia y la Velocidad?</h2>
+            <p><strong>Distancia física pura (metros):</strong> Proviene de la geometría real del segmento vial (cartografía OpenStreetMap o levantamiento métrico). No se inventan longitudes.</p>
+            <div className="formula-highlight">Distancia(P) = Σ longitud_metros(e)</div>
+            <p><strong>Velocidades nominales supuestas:</strong> Según la jerarquía de calzada en Cusco, convertidas a metros/segundo (v ÷ 3.6):</p>
+            <ul className="variable-list">
+              <li><strong>Calles coloniales estrechas:</strong> 15 km/h (4.17 m/s) — Santa Clara, Marqués, Espaderos.</li>
+              <li><strong>Pasajes peatonales:</strong> 8 km/h (2.22 m/s) — Portal de Panes, Loreto, Cuesta San Blas.</li>
+              <li><strong>Avenidas principales:</strong> 35 km/h (9.72 m/s) — Av. El Sol, Av. Tullumayo.</li>
+              <li><strong>Calles residenciales:</strong> 25 km/h (6.94 m/s) — Calles fuera del casco monumental.</li>
+            </ul>
+            <p className="fineprint">Tiempo base plano: T_base = longitud / (velocidad_kmh ÷ 3.6)</p>
           </section>
 
           <section className="info-card">
-            <h2>3. Relieve y Pendientes de Cusco</h2>
-            <p className="formula">Tiempo base = (longitud ÷ velocidad) × (1 + 2.5 × max(0, pendiente % / 100))</p>
-            <p><strong>Penalización unidireccional:</strong> La topografía cusqueña penaliza exclusivamente las cuestas arriba (San Blas +8.5%, Espaderos +1.5%, Santa Clara +2.5%). Las bajadas no incrementan el tiempo.</p>
-            <p><strong>Jerarquía de calzadas:</strong> Avenidas (35 km/h) vs calles coloniales estrechas (15 km/h) vs vías peatonales (8 km/h).</p>
+            <h2>3. Fórmula de Relieve y Pendientes de Cusco</h2>
+            <p>En la red <strong>«Cusco centro (6 nodos, didáctico)»</strong>, cada calle colonial posee longitud real y pendiente porcentual (g):</p>
+            <ul className="variable-list">
+              <li><strong>Subida de Calle Espaderos:</strong> +1.5%</li>
+              <li><strong>Subida de Calle Garcilaso:</strong> +3.0%</li>
+              <li><strong>Subida al Arco de Santa Clara:</strong> +2.5%</li>
+              <li><strong>Bajadas hacia Qorikancha y Mantas:</strong> -1.0% a -2.5%</li>
+            </ul>
+            <p>Cuando se selecciona la métrica <strong>«Tiempo»</strong>, se aplica la fórmula del proyecto:</p>
+            <div className="formula-highlight">
+              Tiempo(u, v) = (longitud / velocidad_nominal) × (1 + 2.5 × max(0, pendiente % / 100))
+            </div>
+            <ul className="variable-list">
+              <li><strong>Física del modelo:</strong> Solo se penalizan las cuestas arriba (max(0, g)). En las bajadas no hay sobreesfuerzo motriz.</li>
+              <li><strong>Jerarquía de calzada:</strong> Calles coloniales estrechas a 15 km/h, pasajes peatonales a 8 km/h y avenidas a 35 km/h.</li>
+            </ul>
           </section>
 
           <section className="info-card">
-            <h2>4. Factores Dinámicos: Clima y Tráfico</h2>
-            <p className="formula">Tiempo estimado = Tiempo base × redondear(F_clima × F_tráfico, 4)</p>
-            <p><strong>Clima:</strong> Incorpora lluvia (mm), visibilidad (m), ráfagas (km/h) y humedad (%). La temperatura se informa pero no afecta la fricción vial.</p>
-            <p><strong>Congestión:</strong> Simulación por bandas horarias (fluido a hora punta) o lectura en vivo de TomTom Traffic API para el segmento de origen.</p>
+            <h2>4. ¿Cómo se usan la Temperatura y el Clima?</h2>
+            <p><strong>Temperatura (°C):</strong> Se consulta en vivo desde Open-Meteo / OpenWeatherMap y se muestra en pantalla como contexto ambiental informativo, <strong>pero no altera la fricción de la vía</strong> (el frío o calor moderado en Cusco no frena el vehículo ni al peatón).</p>
+            <p><strong>Factores meteorológicos que sí penalizan el tiempo:</strong></p>
+            <div className="formula-highlight">
+              F_clima = 1 + 0.20·lluvia_norm + 0.15·niebla_norm + 0.10·ráfagas_norm + 0.08·humedad_alta
+            </div>
+            <ul className="variable-list">
+              <li><strong>Lluvia (mm):</strong> Moja el adoquín colonial haciéndolo resbaladizo (hasta +20%).</li>
+              <li><strong>Visibilidad (m):</strong> Reduce la velocidad preventiva por niebla matutina (hasta +15%).</li>
+              <li><strong>Ráfagas de viento:</strong> Si superan 25 km/h (hasta +10%).</li>
+              <li><strong>Humedad relativa:</strong> Si supera 65% en calzada de piedra (hasta +8%).</li>
+            </ul>
           </section>
 
           <section className="info-card">
-            <h2>5. Verificación y Reproducibilidad</h2>
-            <p>Todos los algoritmos operan sobre exactamente la misma instancia y lista de adyacencia. Cambia la gestión de prioridades, <strong>nunca los pesos ni el camino de costo mínimo</strong>.</p>
-            <p className="fineprint">Comprobación dual: Certificado de holgura reducida <code>π(v) - π(u) ≤ w(u,v)</code> y verificación contra Bellman-Ford independiente. Documentación: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">contrato API</a> y <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">atribución OSM</a>.</p>
+            <h2>5. Congestión de Tráfico y Tiempo Final</h2>
+            <p><strong>Factor de congestión (F_tráfico):</strong></p>
+            <ul className="variable-list">
+              <li><strong>Simulación horaria:</strong> F_horario = 1 + 1.15 × (nivel - 1). Niveles: Fluido (1.0), Moderado (1.25), Alto (1.65) u Hora Punta (2.20).</li>
+              <li><strong>TomTom en vivo:</strong> F_TomTom = max(1.0, velocidad_libre / velocidad_actual) sobre el segmento cercano al origen.</li>
+            </ul>
+            <p><strong>Fórmula final del tiempo de viaje estimado:</strong></p>
+            <div className="formula-highlight">
+              Tiempo estimado(P) = Tiempo base(P) × redondear(F_clima × F_tráfico, 4)
+            </div>
+            <p className="fineprint">La ruta óptima se busca con Dijkstra o A* sobre los pesos base; los factores dinámicos escalan el tiempo de forma uniforme y verificable.</p>
+          </section>
+
+          <section className="info-card">
+            <h2>6. ¿Qué se modifica en A* para ser más eficiente?</h2>
+            <p><strong>Función f(v) = g(v) + h(v):</strong> Suma el costo acumulado desde el origen <code>g(v)</code> y la estimación heurística admisible <code>h(v)</code> hacia el destino.</p>
+            <div className="formula-highlight">
+              h(v) = λ · distancia_euclidiana(v, destino), &nbsp; con λ = min(peso_e / dist_e)
+            </div>
+            <ul className="variable-list">
+              <li><strong>Garantía matemática (Admisibilidad):</strong> Al fijar λ como la razón mínima entre costo y distancia de cualquier arista, <code>h(v) ≤ d*(v, destino)</code> siempre, asegurando hallar el camino de costo mínimo exacto.</li>
+              <li><strong>Poda direccional:</strong> No explora calles en direcciones opuestas a la meta, reduciendo hasta un 60% los nodos expandidos frente a Dijkstra.</li>
+            </ul>
+          </section>
+
+          <section className="info-card">
+            <h2>7. Verificación Cruzada y Optimalidad Dual</h2>
+            <p>Dijkstra (con montículo binario, 4-ario y Fibonacci) y A* operan sobre la misma red y generan costos idénticos.</p>
+            <ul className="variable-list">
+              <li><strong>Certificado de holgura reducida:</strong> Para cada arista (u, v), se verifica que <code>π(v) - π(u) ≤ w(u,v)</code> (brecha de dualidad = 0).</li>
+              <li><strong>Referencia independiente:</strong> Comprobado contra Bellman-Ford en todas las instancias de prueba.</li>
+            </ul>
+            <p className="fineprint">Contratos y especificación: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">OpenAPI / Docs</a> y atribución de datos a OpenStreetMap.</p>
           </section>
         </div>
       </div>}
