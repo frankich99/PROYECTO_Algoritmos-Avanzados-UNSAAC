@@ -14,7 +14,13 @@ import './style.css'
 const queueNames: Record<Queue, string> = { binary_heap: 'Binario', '4ary_heap': '4-ario', fibonacci_heap: 'Fibonacci' }
 const initialGraph = { name: 'Grafo propuesto', directed: true, nodes: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
   edges: [{ origin: 'A', destination: 'B', weight: 4 }, { origin: 'A', destination: 'C', weight: 10 }, { origin: 'B', destination: 'C', weight: 2 }] }
-const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Evidencias', 'Datos y método', 'Cobertura Cusco'] as const
+const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Cobertura Cusco', 'Evidencias', 'Datos y método', 'Acerca de'] as const
+const team = [
+  { name: 'Noe Franklin Choquenaira Quispe', code: '133962', work: 'Dijkstra, heap binario y modelo didáctico; A*; informe.' },
+  { name: 'Aldo Yaranga Achahui', code: '103179', work: 'Pruebas, cuaderno y exportadores; CLI y pruebas de CLI.' },
+  { name: 'Yeni Ruth Porroa Sivana', code: '120893', work: 'Heap 4-ario; análisis de estructuras.' },
+  { name: 'Romario Quispe Rimachi', code: '164257', work: 'Fibonacci heap y benchmark inicial; actualización de resultados.' },
+] as const
 type Section = typeof menu[number]
 type Saved = { name: string; metric: string; network: string; nodes: number; edges: number; route: RouteResponse }
 
@@ -377,7 +383,7 @@ function App() {
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
     <header className="site-header"><div className="header-inner">
       <button className="wordmark" onClick={() => { setSection('Rutas'); setMobileMenu(false) }} aria-label="Ir a Rutas">
-        <span className="wordmark-main">UNSAAC <i>/</i> Rutas</span><span className="wordmark-sub">Proyecto de algoritmos · Cusco</span>
+        <span className="wordmark-main">UNSAAC <i>/</i> Rutas</span><span className="wordmark-sub">Proyecto de Algoritmos Avanzados · Cusco</span>
       </button>
       <button className="menu-toggle" aria-expanded={mobileMenu} aria-controls="principal" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? 'Cerrar' : 'Menú'}</button>
       <nav id="principal" className={mobileMenu ? 'nav-links open' : 'nav-links'} aria-label="Navegación principal">
@@ -783,7 +789,7 @@ function App() {
         <p className="warning">Un punto fuera del snapshot o lejos de un nodo no se conectará artificialmente. Ampliar la cobertura exige adquirir, comprobar y versionar otra red. No cambia el banco histórico.</p>
         <p className="fineprint"><code>python/scripts/build_urban_snapshot.py</code> prepara un pendiente y exige una segunda revisión para publicarlo; las coberturas sin archivo revisado permanecen inactivas.</p>
       </div>}
-      {section === 'Evidencias' && <div className="reading-page"><p className="section-label">Validación Académica / 05</p><h1>Evidencias y Resultados de Validación</h1>
+      {section === 'Evidencias' && <div className="reading-page"><p className="section-label">Validación académica / 06</p><h1>Evidencias y Resultados de Validación</h1>
         <p>Garantía de correctitud formal, cobertura de pruebas unitarias al 100%, experimentos reproducibles y documentación oficial del proyecto (UNSAAC - Algoritmos Avanzados).</p>
         <div className="cards-grid">
           <section className="info-card">
@@ -840,7 +846,7 @@ function App() {
           </section>
         </div>
       </div>}
-      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 06</p><h1>Datos, Fórmulas y Métodos</h1>
+      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 07</p><h1>Datos, Fórmulas y Métodos</h1>
         <p>Estructura matemática transparente: de dónde proviene cada dato, cómo se calcula la distancia y el tiempo con relieve cusqueño, y cómo se aplican la meteorología y la congestión.</p>
 
         <section>
@@ -1059,6 +1065,90 @@ function App() {
             <p className="fineprint">Contratos y especificación: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">OpenAPI / Docs</a> y atribución de datos a OpenStreetMap.</p>
           </section>
         </div>
+      </div>}
+      {section === 'Acerca de' && <div className="reading-page about-page"><p className="section-label">Proyecto / 08</p>
+        <h1>Un proyecto académico, una ruta verificable</h1>
+        <p className="about-lead">Rutas mínimas en Cusco compara tres colas de prioridad en Dijkstra y una extensión A* sobre redes viales reales. La entrega actual incluye la aplicación web y la API; la app móvil en Flutter está planificada para consumir la misma API.</p>
+
+        <section className="section-space">
+          <h2>Ficha institucional</h2>
+          <dl className="fact-grid about-facts">
+            <div><dt>Universidad</dt><dd>Universidad Nacional de San Antonio Abad del Cusco (UNSAAC)</dd></div>
+            <div><dt>Facultad</dt><dd>Ingeniería Eléctrica, Electrónica, Informática y Mecánica</dd></div>
+            <div><dt>Escuela profesional</dt><dd>Ingeniería Informática y de Sistemas</dd></div>
+            <div><dt>Asignatura</dt><dd>Algoritmos Avanzados · Semestre 2026-II</dd></div>
+            <div><dt>Docente responsable</dt><dd>Ing. Héctor Eduardo Ugarte Rojas</dd></div>
+            <div><dt>Grupo</dt><dd>5 · Cusco, Perú</dd></div>
+            <div><dt>Entrega</dt><dd>Web + API v1.5.0</dd></div>
+            <div><dt>Estado</dt><dd>Prototipo académico verificable</dd></div>
+          </dl>
+        </section>
+
+        <section className="section-space">
+          <h2>Equipo del Grupo 5</h2>
+          <p>La autoría se acredita con los commits registrados; la defensa y la evaluación son individuales.</p>
+          <div className="team-list">{team.map(member => <article className="team-member" key={member.code}>
+            <div className="team-id"><h3>{member.name}</h3><p>Código {member.code}</p></div>
+            <p><span className="team-label">Aportes verificables</span>{member.work}</p>
+          </article>)}</div>
+          <p className="fineprint">Detalle de autoría y evidencias: <a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer">repositorio del proyecto</a>.</p>
+        </section>
+
+        <section className="section-space">
+          <h2>Arquitectura de la solución</h2>
+          <p>La web no ejecuta los algoritmos: los solicita a la API. Esa separación permite reutilizar el mismo núcleo desde la futura app móvil.</p>
+          <ol className="arch-flow">
+            <li><span className="arch-number">01</span><div><h3>Cliente web</h3><p>Interfaz de consulta, mapas, resultados y procedencia.</p><small>React · TypeScript · MapLibre</small></div></li>
+            <li><span className="arch-number">02</span><div><h3>API REST</h3><p>Valida instancias, resuelve rutas y consulta proveedores.</p><small>FastAPI · Pydantic · Uvicorn</small></div></li>
+            <li><span className="arch-number">03</span><div><h3>Núcleo algorítmico</h3><p>Dijkstra con tres colas y A* con heurística euclidiana escalada.</p><small>Python 3.12</small></div></li>
+            <li><span className="arch-number">04</span><div><h3>Datos y proveedores</h3><p>Snapshots OSM, benchmark canónico, clima y tráfico puntual.</p><small>OSM · JSON · OpenWeatherMap · TomTom</small></div></li>
+            <li className="arch-planned"><span className="arch-number">05</span><div><h3>App móvil</h3><p>Planificada para consumir la misma API REST.</p><small>Flutter · no incluida en esta entrega</small></div></li>
+          </ol>
+          <p className="fineprint">Las claves de OpenWeatherMap y TomTom se configuran en el servidor. El navegador solo recibe si están disponibles; nunca las claves.</p>
+        </section>
+
+        <section className="section-space">
+          <h2>Stack y versiones verificadas</h2>
+          <Table headers={['Capa', 'Tecnología', 'Versión', 'Uso']} rows={[
+            ['Interfaz', 'React', '19.3.1', 'Componentes y estado'],
+            ['Interfaz', 'TypeScript', '5.9.3', 'Tipado estático'],
+            ['Build', 'Vite', '7.3.7', 'Desarrollo y empaquetado'],
+            ['Mapa', 'MapLibre GL JS', '6.16.0', 'Red vial y ruta'],
+            ['API', 'FastAPI', '0.162.0', 'Contrato HTTP y validación'],
+            ['Servidor', 'Uvicorn', '0.54.0', 'Servicio ASGI'],
+            ['Núcleo', 'Python', '3.12.8', 'Algoritmos, datos y pruebas'],
+            ['Pruebas', 'pytest', '9.1.1', '296 pruebas superadas'],
+            ['Proveedores', 'requests', '2.34.2', 'Clima y tráfico'],
+            ['Móvil', 'Flutter', 'Planificado', 'App futura sobre la misma API'],
+          ]} />
+          <p className="fineprint">Versiones comprobadas en esta entrega (06/11/2026). Node 24.20 se usó para compilar la web; no es un requisito del informe.</p>
+        </section>
+
+        <section className="section-space">
+          <h2>Datos, alcance y límites</h2>
+          <div className="about-columns">
+            <section><h3>Red vial</h3><p>Centro: 891 nodos y 2139 aristas, radio 1,5 km, snapshot del 28/10/2026. Centro ampliado: 1938 nodos y 4753 aristas, base OSM del 10/08/2026. Ninguna cobertura representa todo Cusco.</p></section>
+            <section><h3>Experimento</h3><p>Banco canónico de 1350 muestras: 2 perfiles × 5 escalas × 3 instancias × 3 colas × 15 repeticiones. Los datos originales no se reescriben desde la web.</p></section>
+            <section><h3>Clima y tráfico</h3><p>Clima de modelo o estación según proveedor. Tráfico por supuesto horario o por un segmento TomTom cercano al origen. No hay congestión medida por arista ni pendiente en el snapshot OSM.</p></section>
+            <section><h3>Alcance</h3><p>Prototipo académico para comparar algoritmos y explicar resultados. No es navegación vial en tiempo real ni sustituye una evaluación individual.</p></section>
+          </div>
+        </section>
+
+        <section className="section-space">
+          <h2>Versiones de la entrega</h2>
+          <ol className="version-list">
+            <li><div><strong>v1.5.0</strong><span>06/11/2026 · actual</span></div><p>Bordes de nodos de alto contraste sin pérdida en fondos claros, corrección de visualización de grafos, tablas interactivas con pegado directo e instancias de prueba.</p></li>
+            <li><div><strong>v1.2.1</strong><span>06/11/2026</span></div><p>Hora actual/simulada, GPS opcional, lectura TomTom puntual, claves gestionadas en el servidor y lecturas estructuradas.</p></li>
+            <li><div><strong>v1.2.0</strong><span>05/11/2026</span></div><p>Aplicación web React + TypeScript, API FastAPI, cobertura ampliada y paquete publicable.</p></li>
+          </ol>
+        </section>
+
+        <section className="section-space">
+          <h2>Enlaces de verificación</h2>
+          <p><a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer">Repositorio</a> · <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">Contrato API</a> · <a href="./data/informe_final_unsaac.pdf" download>Informe final (PDF)</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">Atribución OSM</a></p>
+          <div className="result-actions"><button type="button" onClick={() => setSection('Evidencias')}>Ver evidencias</button><button type="button" onClick={() => setSection('Datos y método')}>Ver datos y método</button></div>
+          <p className="fineprint">Universidad Nacional de San Antonio Abad del Cusco · Grupo 5 · 2026.</p>
+        </section>
       </div>}
     </main><footer className="site-footer"><span>UNSAAC · Grupo 5 · Algoritmos Avanzados</span><span>Datos del proyecto, no navegación vial en tiempo real.</span></footer>
   </>

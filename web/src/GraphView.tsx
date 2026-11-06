@@ -114,49 +114,50 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
 
         return <g key={`lbl-${u}-${v}-${i}`}>
           <rect x={lblX - badgeW / 2} y={lblY - 7.5} width={badgeW} height={15} rx={3}
-            fill={selected ? '#681C32' : '#ffffff'}
-            stroke={selected ? '#dec697' : '#c8b8a8'}
-            strokeWidth={selected ? 1.2 : 0.8} />
+            fill={selected ? '#681C32' : '#f5f0e6'}
+            stroke={selected ? '#dec697' : '#9c8e81'}
+            strokeWidth={selected ? 1.2 : 0.9} />
           <text x={lblX} y={lblY + 3.2} textAnchor="middle" fontSize="9.5" fontWeight="700"
-            fill={selected ? '#ffffff' : '#3d322c'} fontFamily="'Source Sans 3', monospace">
+            fill={selected ? '#ffffff' : '#2b211d'} fontFamily="'Source Sans 3', monospace">
             {textStr}
           </text>
         </g>
       })}
 
-      {/* 3. Nodos proporcionados con tipografía centrada y etiquetas de alto contraste */}
+      {/* 3. Nodos proporcionados con borde de alto contraste (sin blanco que se pierda en fondo claro) */}
       {[...layout].map(([id, [x, y]]) => {
         const isSource = id === String(route?.source)
         const isTarget = id === String(route?.target)
         const isPath = pathNodes.has(id)
         const r = preview.nodes < 50 ? (isSource || isTarget ? 13 : 11.5) : 3.5
         const fillColor = isSource ? '#8A6418' : isTarget ? '#681C32' : isPath ? '#7a3045' : '#315D65'
+        const strokeColor = isSource ? '#4e370a' : isTarget ? '#3d0d1b' : isPath ? '#481523' : '#163136'
 
         const isUpper = y < 205
         const nameY = isSource ? y + r + 13 : isTarget ? y - r - 6 : (isUpper ? y - r - 6 : y + r + 13)
-        const nameColor = isSource ? '#6e4e10' : isTarget ? '#541224' : '#1f1b1c'
+        const nameColor = isSource ? '#543b08' : isTarget ? '#4a0e1e' : '#1f1b1c'
 
         return <g key={`node-${id}`}>
-          <circle cx={x} cy={y} r={r} fill={fillColor} stroke="#ffffff" strokeWidth={preview.nodes < 50 ? 2 : 1} />
+          <circle cx={x} cy={y} r={r} fill={fillColor} stroke={strokeColor} strokeWidth={preview.nodes < 50 ? 2 : 1} />
           {preview.nodes < 50 && (
             id.length <= 2 ? (
               <text x={x} y={y + 3.5} textAnchor="middle" fontSize="10"
-                fontWeight="700" fill="#ffffff" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>
+                fontWeight="700" fill="#fffbf2" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>
             ) : (
               <text x={x} y={nameY} textAnchor="middle" fontSize={id.length > 12 ? '9' : '10'}
-                fontWeight="700" fill={nameColor} stroke="#ffffff" strokeWidth="3.5" strokeLinejoin="round"
+                fontWeight="700" fill={nameColor} stroke="#faf7f1" strokeWidth="3.5" strokeLinejoin="round"
                 paintOrder="stroke fill" fontFamily="'Source Sans 3', Arial, sans-serif">
                 {id}
               </text>
             )
           )}
           {isSource && preview.nodes < 50 && (
-            <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#8A6418"
-              stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Origen</text>
+            <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#6e4e10"
+              stroke="#faf7f1" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Origen</text>
           )}
           {isTarget && preview.nodes < 50 && (
-            <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#681C32"
-              stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Destino</text>
+            <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#541224"
+              stroke="#faf7f1" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Destino</text>
           )}
         </g>
       })}

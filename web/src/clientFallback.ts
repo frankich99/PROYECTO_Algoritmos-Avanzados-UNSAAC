@@ -87,7 +87,7 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
   }
 
   if (clean === '/version') {
-    return { name: 'Rutas mínimas en Cusco', version: '1.2.1', web_build: true, mode: 'client_fallback' } as T
+    return { name: 'Rutas mínimas en Cusco', version: '1.5.0', web_build: true, mode: 'client_fallback' } as T
   }
 
   if (clean === '/instances/validate') {

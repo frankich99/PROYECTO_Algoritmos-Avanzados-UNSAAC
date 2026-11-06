@@ -38,7 +38,7 @@ PILOT = DATA / "pilot_benchmark_results.json"
 WEATHER = DATA / "weather_cusco.json"
 MAX_NODES, MAX_EDGES = 5000, 30000
 QUEUES = ("binary_heap", "4ary_heap", "fibonacci_heap")
-API_VERSION = "1.2.1"
+API_VERSION = "1.5.0"
 WEB_DIST = Path(os.environ.get(
     "RUTAS_WEB_DIST", Path(__file__).resolve().parent.parent / "web" / "dist"
 )).resolve()

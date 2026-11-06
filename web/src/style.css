@@ -99,3 +99,41 @@ body{min-width:0}
 .m-sub{font-size:.7em;vertical-align:sub}
 .m-sum{font-size:1.35em;vertical-align:middle;line-height:1;margin-right:.15rem}
 @media(max-width:920px){.cards-grid{grid-template-columns:1fr}}
+
+/* Acerca de: ficha institucional, equipo y arquitectura */
+.about-page{max-width:1120px}
+.about-lead{font-size:1.08rem;line-height:1.65;max-width:850px;color:#3a3032}
+.fact-grid{display:grid}
+.about-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 2rem;margin:1.6rem 0 0}
+.fact-grid div{border-top:1px solid #d6cbbf;padding:.55rem 0;min-width:0}
+.fact-grid dt{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--subtle);font-weight:700}
+.fact-grid dd{margin:.15rem 0 0;font-weight:600;overflow-wrap:anywhere}
+.team-list{display:grid;margin:1rem 0 .4rem}
+.team-member{display:grid;grid-template-columns:minmax(230px,.9fr) minmax(0,1.5fr);gap:1rem;align-items:start;padding:1rem 0;border-top:1px solid #d6cbbf}
+.team-member h3{font-size:1.05rem;margin:0 0 .15rem}
+.team-member p{margin:0}
+.team-id p{font-size:.84rem;color:var(--subtle);font-variant-numeric:tabular-nums}
+.team-label{display:block;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--wine);font-weight:700;margin-bottom:.15rem}
+.arch-flow{list-style:none;padding:0;margin:1.2rem 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem}
+.arch-flow li{border-top:2px solid var(--gold);padding:.75rem 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:.6rem;align-items:start;min-width:0}
+.arch-flow .arch-number{font:700 1rem Georgia,serif;color:var(--wine);font-variant-numeric:tabular-nums}
+.arch-flow h3{font-size:1.02rem;margin:0 0 .2rem}
+.arch-flow p{font-size:.92rem;margin:0 0 .25rem;line-height:1.45}
+.arch-flow small{color:var(--subtle);font-size:.79rem;line-height:1.35;display:block}
+.arch-flow .arch-planned{border-top-style:dashed;border-top-color:#8f7a5a}
+.arch-flow .arch-planned .arch-number{color:var(--gold)}
+.about-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 2rem;margin:1rem 0}
+.about-columns section{border-top:1px solid #d6cbbf;padding-top:.65rem;min-width:0}
+.about-columns h3{font-size:1.03rem;margin:0 0 .3rem}
+.about-columns p{margin:0;font-size:.93rem;line-height:1.5}
+.version-list{list-style:none;padding:0;margin:1rem 0;display:grid}
+.version-list li{display:grid;grid-template-columns:175px minmax(0,1fr);gap:1rem;padding:.7rem 0;border-top:1px solid #d6cbbf}
+.version-list div{display:flex;flex-direction:column}
+.version-list strong{font:700 1.05rem Georgia,serif;color:var(--wine)}
+.version-list span{font-size:.8rem;color:var(--subtle)}
+.version-list p{margin:0;line-height:1.5}
+@media(max-width:960px){.header-inner{flex-wrap:wrap;min-height:65px;align-items:center}.menu-toggle{display:block;background:transparent;border-color:#eee;color:#fff}.menu-toggle:hover:not(:disabled){color:#fff}.nav-links{display:none;width:100%;padding-bottom:.65rem;flex-wrap:wrap;align-items:stretch}.nav-links.open{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.nav-links button{min-height:44px;text-align:left;font-size:.9rem;padding:.5rem .6rem}.nav-links button.current:after{left:.6rem;right:auto;width:55px}}
+@media(max-width:920px){.arch-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:810px){.about-facts{grid-template-columns:1fr}.team-member{grid-template-columns:1fr;gap:.35rem}.about-columns{grid-template-columns:1fr}.version-list li{grid-template-columns:1fr;gap:.2rem}}
+@media(max-width:590px){.arch-flow{grid-template-columns:1fr}}
+@media(max-width:590px){.wordmark-sub{font-size:.69rem;letter-spacing:0;white-space:normal;line-height:1.25}}

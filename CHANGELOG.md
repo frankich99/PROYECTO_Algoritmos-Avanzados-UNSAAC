@@ -1,5 +1,20 @@
 # Historial de versiones
 
+## [1.5.0] - 2026-11-06
+
+### Añadido
+
+- Módulo interactivo de pegado directo y formateo rápido de tablas de nodos y aristas con botones de acción (`Pegar`, `Limpiar`, `Agregar`).
+- Carpeta canónica `instancias_pruebas/` con datasets estructurados en tabla, JSON y CSV/TXT de simple a complejo.
+- Vista ampliada de `Datos y método` y `Evidencias` en la barra de navegación con fórmulas en formato formal estilo LaTeX con zoom individual.
+
+### Cambiado
+
+- Bordes de nodos con color de alto contraste (`strokeColor`) eliminando el contorno blanco que se perdía en fondos claros.
+- Nombres de nodos renderizados en color oscuro de alta legibilidad (`#1f1b1c`) ubicados fuera del círculo con halo del color del lienzo.
+- Etiquetas de peso y costo de aristas con fondo perimetral nítido y trazos de flechas estilizadas.
+- La versión del proyecto pasa a `1.5.0`.
+
 ## [1.2.1] - 2026-11-06
 
 ### Añadido

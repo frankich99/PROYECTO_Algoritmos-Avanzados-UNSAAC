@@ -24,7 +24,7 @@ def test_catalog_and_openapi():
 def test_version_endpoint():
     payload = client.get("/api/v1/version").json()
     assert payload["name"] == "Rutas mínimas en Cusco"
-    assert payload["version"] == "1.2.1"
+    assert payload["version"] == "1.5.0"
 
 
 def test_web_build_served_when_available():

@@ -1,7 +1,7 @@
 # Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.2.1-blue.svg)](CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.5.0-blue.svg)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/tests-296%20passed-brightgreen.svg)](python/tests/)
 [![Documento](https://img.shields.io/badge/informe-LaTeX-orange.svg)](latex/main.pdf)
 [![Red OSM](https://img.shields.io/badge/OSM-891%20nodos%20%7C%202139%20aristas-informational.svg)](python/data/processed/cusco_osm_drive.json)
@@ -36,7 +36,7 @@ de esos componentes. Seguimiento y defensa individual: [control de entrega](docs
 * **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** estado técnico al 05/11/2026 y evidencias individuales pendientes; sin calendario retrospectivo de reuniones.
 * **[docs/DATOS_Y_MODELO.md](docs/DATOS_Y_MODELO.md):** procedencia, unidades y alcance de la web y del experimento canónico.
 * **[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md):** build de producción, paquete publicable y despliegue en Docker, Render o Railway.
-* **[CHANGELOG.md](CHANGELOG.md):** historial de versiones; la versión actual es **v1.2.1**.
+* **[CHANGELOG.md](CHANGELOG.md):** historial de versiones; la versión actual es **v1.5.0**.
 * **[web/](web/):** aplicación oficial React + TypeScript con API FastAPI, mapas MapLibre e instrucciones en [web/README.md](web/README.md).
 * **[python/scripts/build_publicable.py](python/scripts/build_publicable.py):** genera la carpeta y el ZIP publicables con backend, datos y web compilada.
 * **[python/scripts/reproduce_canonical.py](python/scripts/reproduce_canonical.py):** regeneración del benchmark, del caso OSM, de las tablas y de las figuras.
@@ -81,16 +81,18 @@ $A^*$ se incluye como extensión para consultas punto a punto. Usa una heurísti
 
 ## 3. Aplicación web
 
-La interfaz oficial es **React + TypeScript** (`web/`), conectada a la API **FastAPI** (`python/web_api.py`). La antigua aplicación Streamlit se retiró. Seis vistas:
+La interfaz oficial es **React + TypeScript** (`web/`), conectada a la API **FastAPI** (`python/web_api.py`). La antigua aplicación Streamlit se retiró. Ocho vistas:
 
-1. **Rutas:** elegir red OSM, instancia ilustrativa o grafo propio; seleccionar origen y destino por ID o coordenadas; resolver con Dijkstra o $A^*$ y contrastar las tres colas. Permite clima histórico, snapshot local o consulta temporal y horario simulado como **escenarios uniformes**, no aforos por tramo.
+1. **Rutas:** elegir red OSM, instancia ilustrativa o grafo propio; seleccionar origen y destino por nodo o coordenadas; resolver con Dijkstra o $A^*$ y contrastar las tres colas. Permite clima histórico, snapshot local o consulta temporal, y hora simulada o actual como **escenarios uniformes**, no aforos por tramo.
 2. **Instancias:** construir un grafo dirigido desde tabla, JSON o lista de aristas TXT/CSV, o generarlo con semilla. Los pesos genéricos se muestran como «peso», no como metros o segundos.
 3. **Comparar:** revisar el banco canónico por perfil y escala, y agregar consultas de la sesión sin mezclarlas con el experimento histórico.
 4. **Experimentos:** medir redes sintéticas nuevas, separadas del informe y etiquetadas como resultados de sesión.
 5. **Cobertura Cusco:** consultar el centro de 1,5 km o el centro ampliado de 3 km; cada uno declara su alcance y ninguno representa todo Cusco.
-6. **Datos y método:** revisar fuentes, límites, verificación y enlaces al contrato OpenAPI.
+6. **Evidencias:** revisar la suite de pruebas, la red vial, el benchmark, el informe PDF y el repositorio.
+7. **Datos y método:** revisar fuentes, fórmulas, límites, verificación y enlaces al contrato OpenAPI.
+8. **Acerca de:** ficha institucional, integrantes del Grupo 5, arquitectura web/API/móvil, stack con versiones y alcance.
 
-Las consultas de API no escriben en los datos del informe. Si una clave se expuso, rótela antes de usar la integración: la web exige introducir explícitamente una clave nueva en el campo de contraseña; la CLI puede usar `OPENWEATHERMAP_API_KEY` tras sustituir la anterior. Nunca guarde claves en Git.
+Las consultas de API no escriben en los datos del informe. Las claves de OpenWeatherMap y TomTom se configuran en `.env` del servidor y no se envían al navegador; la web permite una clave alternativa opcional para una consulta. Si una clave se expuso, rótela y actualice `.env`. Nunca guarde claves en Git.
 
 En **dos terminales**, desde la raíz y desde `web/`:
 

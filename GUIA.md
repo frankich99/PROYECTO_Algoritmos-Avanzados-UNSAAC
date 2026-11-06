@@ -202,7 +202,9 @@ Genera `latex/main.pdf`.
 | **Comparar** | Revisar el banco canónico por perfil y escala, y agregar consultas de la sesión sin mezclarlas con las mediciones históricas. |
 | **Experimentos** | Medir redes sintéticas nuevas, separadas del informe y etiquetadas como resultados de sesión. |
 | **Cobertura Cusco** | Distinguir el snapshot central de 1,5 km del centro ampliado de 3 km; ninguno es todo Cusco. |
-| **Datos y método** | Mostrar fuentes, verificación, límites y enlaces al contrato OpenAPI. |
+| **Evidencias** | Mostrar la suite de pruebas, la red vial, el benchmark, el informe PDF y el repositorio. |
+| **Datos y método** | Mostrar fuentes, fórmulas, verificación, límites y enlaces al contrato OpenAPI. |
+| **Acerca de** | Presentar la ficha institucional, el equipo, la arquitectura web/API/móvil, el stack y las versiones. |
 
 El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa base necesita teselas. Una consulta meteorológica opcional no borra el snapshot si falla.
 
