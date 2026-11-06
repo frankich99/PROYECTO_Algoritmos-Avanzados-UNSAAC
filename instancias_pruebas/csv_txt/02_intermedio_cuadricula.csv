@@ -1,0 +1,22 @@
+# Instancia 02: Red en Malla Grid 3x3 (9 Nodos)
+# Formato: origen,destino,peso
+# Pone a prueba disminuciones de clave (decrease-key) frecuentes
+# origin,destination,weight
+N1,N2,10
+N1,N4,5
+N2,N3,8
+N2,N5,4
+N3,N6,6
+N4,N5,3
+N4,N7,7
+N5,N2,2
+N5,N6,9
+N5,N8,4
+N6,N9,3
+N7,N8,2
+N8,N5,1
+N8,N9,5
+N2,N1,10
+N4,N1,5
+N5,N4,3
+N8,N7,2

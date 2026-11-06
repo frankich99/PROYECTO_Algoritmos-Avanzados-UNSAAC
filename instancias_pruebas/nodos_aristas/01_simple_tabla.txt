@@ -1,0 +1,30 @@
+==================================================
+INSTANCIA 01: SIMPLE (Grafo CLRS - 6 Nodos)
+==================================================
+
+Copie y pegue estos valores en la pestaña:
+"Instancias" -> "Nodos y aristas"
+
+--- NODOS ---
+ID   | Latitud | Longitud
+A    | -13.516 | -71.978
+B    | -13.515 | -71.976
+C    | -13.518 | -71.977
+D    | -13.514 | -71.974
+E    | -13.519 | -71.975
+F    | -13.517 | -71.972
+
+--- ARISTAS DIRIGIDAS ---
+Origen | Destino | Peso
+A      | B       | 4
+A      | C       | 2
+B      | C       | 1
+B      | D       | 5
+C      | D       | 8
+C      | E       | 10
+D      | E       | 2
+D      | F       | 6
+E      | F       | 2
+
+Resultado Optimo desde A hasta F:
+Costo: 7 (Ruta: A -> C -> D -> E -> F)

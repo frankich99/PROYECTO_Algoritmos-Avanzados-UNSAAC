@@ -1,0 +1,60 @@
+{
+  "name": "02 - Centro Historico Cusco (Intermedio con Pendientes)",
+  "directed": true,
+  "metric": "time",
+  "nodes": [
+    {"id": "A", "name": "Plaza Mayor del Cusco", "lon": -71.9788, "lat": -13.5165},
+    {"id": "B", "name": "Plaza Regocijo (Cusipata)", "lon": -71.9798, "lat": -13.5168},
+    {"id": "C", "name": "Qorikancha (Santo Domingo)", "lon": -71.9755, "lat": -13.5190},
+    {"id": "D", "name": "Plaza San Francisco", "lon": -71.9818, "lat": -13.5173},
+    {"id": "E", "name": "Mercado Central San Pedro", "lon": -71.9835, "lat": -13.5202},
+    {"id": "F", "name": "Plazoleta Limacpampa", "lon": -71.9730, "lat": -13.5205}
+  ],
+  "edges": [
+    {
+      "origin": "A", "destination": "B", "length_m": 180.0,
+      "street_type": "calle_centro", "gradient_pct": 1.5,
+      "street_name": "Calle Espaderos / Portal Carnicerias"
+    },
+    {
+      "origin": "A", "destination": "C", "length_m": 450.0,
+      "street_type": "calle_centro", "gradient_pct": -2.0,
+      "street_name": "Calle Loreto / Pampa del Castillo"
+    },
+    {
+      "origin": "B", "destination": "D", "length_m": 220.0,
+      "street_type": "calle_centro", "gradient_pct": 3.0,
+      "street_name": "Calle Garcilaso / Calle Marques"
+    },
+    {
+      "origin": "B", "destination": "C", "length_m": 400.0,
+      "street_type": "calle_centro", "gradient_pct": -1.0,
+      "street_name": "Calle San Bernardo / Almagro"
+    },
+    {
+      "origin": "C", "destination": "F", "length_m": 350.0,
+      "street_type": "avenida", "gradient_pct": 0.5,
+      "street_name": "Calle Ahuacpinta / Limacpampa Grande"
+    },
+    {
+      "origin": "C", "destination": "E", "length_m": 600.0,
+      "street_type": "calle_centro", "gradient_pct": 2.0,
+      "street_name": "Calle Matara / Tres Cruces de Oro"
+    },
+    {
+      "origin": "D", "destination": "E", "length_m": 250.0,
+      "street_type": "calle_centro", "gradient_pct": 2.5,
+      "street_name": "Calle Santa Clara / Arco Santa Clara"
+    },
+    {
+      "origin": "D", "destination": "C", "length_m": 500.0,
+      "street_type": "calle_centro", "gradient_pct": -2.5,
+      "street_name": "Calle Marques / Mantas"
+    },
+    {
+      "origin": "E", "destination": "F", "length_m": 700.0,
+      "street_type": "avenida", "gradient_pct": -1.0,
+      "street_name": "Calle Nueva Baja / Av. Tullumayo"
+    }
+  ]
+}

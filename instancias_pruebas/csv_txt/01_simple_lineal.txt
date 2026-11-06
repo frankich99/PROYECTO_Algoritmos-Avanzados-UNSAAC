@@ -1,0 +1,14 @@
+# Instancia 01: Simple lineal con bifurcaciones
+# Formato: origen destino peso
+# Grafo didactico con 6 nodos y 9 aristas
+directed
+source A
+A B 4
+A C 2
+B C 1
+B D 5
+C D 8
+C E 10
+D E 2
+D F 6
+E F 2

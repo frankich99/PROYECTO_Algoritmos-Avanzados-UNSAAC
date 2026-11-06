@@ -1,0 +1,44 @@
+========================================================================
+INSTANCIA 03: COMPLEJO (Cusco Monumental y Conectividad Urbana - 10 Nodos)
+========================================================================
+
+Copie y pegue estos valores en la pestaña:
+"Instancias" -> "Nodos y aristas"
+
+--- NODOS ---
+ID   | Latitud   | Longitud
+A    | -13.5165  | -71.9788
+B    | -13.5168  | -71.9798
+C    | -13.5190  | -71.9755
+D    | -13.5173  | -71.9818
+E    | -13.5202  | -71.9835
+F    | -13.5205  | -71.9730
+G    | -13.5140  | -71.9750
+H    | -13.5148  | -71.9762
+I    | -13.5215  | -71.9768
+J    | -13.5240  | -71.9715
+
+Nombres:
+A: Plaza Mayor | B: Regocijo | C: Qorikancha | D: San Francisco | E: San Pedro
+F: Limacpampa  | G: San Blas | H: Choquechaca | I: Av. El Sol   | J: Estacion Wanchaq
+
+--- ARISTAS DIRIGIDAS (Costo efectivo en segundos) ---
+Origen | Destino | Peso
+A      | B       | 44.8
+A      | C       | 108.0
+A      | H       | 75.0
+B      | D       | 56.8
+B      | C       | 96.0
+C      | F       | 36.5
+C      | I       | 35.0
+D      | E       | 63.8
+E      | I       | 72.0
+F      | J       | 60.0
+G      | H       | 30.0
+H      | G       | 85.0
+H      | F       | 52.0
+I      | J       | 48.0
+A      | G       | 120.0
+
+Resultado Optimo desde A hasta J:
+Ruta mas rapida hacia Wanchaq: A -> C -> I -> J (Costo: 191.0 s)

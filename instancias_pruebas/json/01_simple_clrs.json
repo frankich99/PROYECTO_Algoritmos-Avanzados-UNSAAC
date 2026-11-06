@@ -1,0 +1,23 @@
+{
+  "name": "01 - Grafo Didactico CLRS (Simple)",
+  "directed": true,
+  "nodes": [
+    {"id": "A", "name": "Nodo A", "x": 0.0, "y": 0.0},
+    {"id": "B", "name": "Nodo B", "x": 100.0, "y": 50.0},
+    {"id": "C", "name": "Nodo C", "x": 100.0, "y": -50.0},
+    {"id": "D", "name": "Nodo D", "x": 200.0, "y": 50.0},
+    {"id": "E", "name": "Nodo E", "x": 200.0, "y": -50.0},
+    {"id": "F", "name": "Nodo F", "x": 300.0, "y": 0.0}
+  ],
+  "edges": [
+    {"origin": "A", "destination": "B", "weight": 4},
+    {"origin": "A", "destination": "C", "weight": 2},
+    {"origin": "B", "destination": "C", "weight": 1},
+    {"origin": "B", "destination": "D", "weight": 5},
+    {"origin": "C", "destination": "D", "weight": 8},
+    {"origin": "C", "destination": "E", "weight": 10},
+    {"origin": "D", "destination": "E", "weight": 2},
+    {"origin": "D", "destination": "F", "weight": 6},
+    {"origin": "E", "destination": "F", "weight": 2}
+  ]
+}

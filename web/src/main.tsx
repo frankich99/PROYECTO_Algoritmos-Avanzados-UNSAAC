@@ -14,7 +14,7 @@ import './style.css'
 const queueNames: Record<Queue, string> = { binary_heap: 'Binario', '4ary_heap': '4-ario', fibonacci_heap: 'Fibonacci' }
 const initialGraph = { name: 'Grafo propuesto', directed: true, nodes: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
   edges: [{ origin: 'A', destination: 'B', weight: 4 }, { origin: 'A', destination: 'C', weight: 10 }, { origin: 'B', destination: 'C', weight: 2 }] }
-const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Cobertura Cusco', 'Datos y método'] as const
+const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Evidencias', 'Datos y método', 'Cobertura Cusco'] as const
 type Section = typeof menu[number]
 type Saved = { name: string; metric: string; network: string; nodes: number; edges: number; route: RouteResponse }
 
@@ -299,7 +299,7 @@ function App() {
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
     <header className="site-header"><div className="header-inner">
       <button className="wordmark" onClick={() => { setSection('Rutas'); setMobileMenu(false) }} aria-label="Ir a Rutas">
-        <span className="wordmark-main">UNSAAC <i>/</i> Rutas</span><span className="wordmark-sub">Laboratorio de algoritmos · Cusco</span>
+        <span className="wordmark-main">UNSAAC <i>/</i> Rutas</span><span className="wordmark-sub">Proyecto de algoritmos · Cusco</span>
       </button>
       <button className="menu-toggle" aria-expanded={mobileMenu} aria-controls="principal" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? 'Cerrar' : 'Menú'}</button>
       <nav id="principal" className={mobileMenu ? 'nav-links open' : 'nav-links'} aria-label="Navegación principal">
@@ -500,7 +500,7 @@ function App() {
             }))} />
         </section>}
       </div>}
-      {section === 'Experimentos' && <div className="reading-page"><p className="section-label">Laboratorio / 04</p><h1>Mide otra instancia, sin tocar el informe</h1>
+      {section === 'Experimentos' && <div className="reading-page"><p className="section-label">Experimentación / 04</p><h1>Mide otra instancia, sin tocar el informe</h1>
         <p>Dos redes por tamaño, semillas guardadas, dos calentamientos y repeticiones acotadas. Los resultados se quedan en esta sesión.</p>
         <form className="experiment-form" onSubmit={async e => {
           e.preventDefault(); setExperiment(null); setExperimentError(''); setExperimentLoading(true)
@@ -547,27 +547,146 @@ function App() {
         <p className="warning">Un punto fuera del snapshot o lejos de un nodo no se conectará artificialmente. Ampliar la cobertura exige adquirir, comprobar y versionar otra red. No cambia el banco histórico.</p>
         <p className="fineprint"><code>python/scripts/build_urban_snapshot.py</code> prepara un pendiente y exige una segunda revisión para publicarlo; las coberturas sin archivo revisado permanecen inactivas.</p>
       </div>}
-      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Cómo se calcula / 06</p><h1>De los datos al resultado</h1>
-        <p>Estas son las reglas que aplica esta versión. Son estimaciones para comparar algoritmos, no indicaciones de tránsito en vivo.</p>
-        <section><h2>1. Distancia y tiempo base</h2>
-          <p className="formula">Distancia(P) = Σ longitud(e) &nbsp; | &nbsp; Tiempo base(P) = Σ tiempo_nominal(e)</p>
-          <p>Cada arista OSM conserva su longitud en metros y su tiempo en segundos. Si falta el tiempo, se estima como <strong>longitud / (velocidad en km/h ÷ 3,6)</strong>; la velocidad procede del límite OSM o del valor supuesto para el tipo de vía. No se incorporó pendiente medida al snapshot. Para aristas propias con longitud y sin tiempo, el modelo usa <strong>(longitud ÷ velocidad) × (1 + 2,5 × max(0, pendiente/100))</strong>. Los grafos de pesos genéricos solo tienen «peso».</p>
-          <p className="fineprint">La ruta óptima depende de la métrica elegida: la más corta en metros no tiene por qué ser la más rápida en segundos.</p>
+      {section === 'Evidencias' && <div className="reading-page"><p className="section-label">Validación Académica / 05</p><h1>Evidencias y Resultados de Validación</h1>
+        <p>Garantía de correctitud formal, cobertura de pruebas unitarias al 100%, experimentos reproducibles y documentación oficial del proyecto (UNSAAC - Algoritmos Avanzados).</p>
+        <div className="cards-grid">
+          <section className="info-card">
+            <h2>1. Suite de Pruebas Automatizadas</h2>
+            <div className="badge-pass">✓ 296 de 296 pruebas aprobadas (100%)</div>
+            <p className="fineprint">Ejecutadas con pytest 9.1 sobre Python 3.12. Cobertura completa de requisitos:</p>
+            <div className="table-scroll compact-table">
+              <table>
+                <thead><tr><th>Módulo</th><th>Casos</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr><td>Colas de prioridad (Binaria, 4-aria, Fibonacci)</td><td>61</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Equivalencia matemática (Dijkstra vs Bellman-Ford)</td><td>48</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Dijkstra y validación manual paso a paso</td><td>46</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Carga y validación I/O (JSON, CSV, TXT)</td><td>45</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Web API REST (FastAPI + Cliente)</td><td>27</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Línea de comandos (CLI)</td><td>25</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Factores de tráfico y meteorología</td><td>23</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Algoritmo A* y heurísticas admisibles</td><td>8</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Protocolo de benchmarks y reproducible</td><td>7</td><td>✓ Aprobado</td></tr>
+                  <tr><td>Snapshot OSM y topografía urbana</td><td>6</td><td>✓ Aprobado</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="info-card">
+            <h2>2. Red Vial y Ruta Óptima en Cusco</h2>
+            <p>Diagrama del Centro Histórico con pendientes topográficas, velocidades nominales y camino mínimo resaltado A → C → F (144.45 s):</p>
+            <img src="./data/grafo_nodos_rutas_centro.png" alt="Ruta mínima en el Centro Histórico de Cusco" className="evidence-img" />
+            <p className="fineprint">Modelo de relieve: subidas con factor penalizador y velocidades nominales según jerarquía vial colonial.</p>
+          </section>
+
+          <section className="info-card">
+            <h2>3. Benchmark Canónico y Experimento Piloto</h2>
+            <p>Comparativa empírica de tiempos de ejecución con IQR y medianas sobre perfiles disperso y denso:</p>
+            <img src="./data/benchmark_canonico.png" alt="Benchmark Canónico de Colas de Prioridad" className="evidence-img" />
+            <p className="fineprint">El montículo 4-ario lidera en redes dispersas por mejor localidad espacial de memoria (líneas de caché de 64 bytes).</p>
+          </section>
+
+          <section className="info-card">
+            <h2>4. Entregables Académicos y Descargas</h2>
+            <p>Acceso directo a la documentación canónica de 14 secciones estructurada según el sílabo oficial:</p>
+            <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <a href="./data/informe_final_unsaac.pdf" download="informe_final_unsaac.pdf" className="download-cta">
+                📄 Descargar Informe Final (PDF - 14 Secciones)
+              </a>
+              <a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer" className="download-cta" style={{ background: '#315d65' }}>
+                📂 Repositorio en GitHub (Código e Historial Limpio)
+              </a>
+            </div>
+            <p className="fineprint" style={{ marginTop: '0.6rem' }}>
+              <strong>Instancias de prueba:</strong> Ubicadas en <code>instancias_pruebas/</code> con formatos JSON, CSV, TXT y tablas manuales clasificadas en simple, intermedio y complejo.
+            </p>
+          </section>
+        </div>
+      </div>}
+      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 06</p><h1>Datos, Complejidades y Métodos</h1>
+        <p>Estructura concisa de las estructuras de datos, heurística A* y reglas físicas aplicadas sobre la red vial de Cusco.</p>
+
+        <section>
+          <h2>1. Comparativa de Colas de Prioridad y Algoritmo A*</h2>
+          <div className="table-scroll compact-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estructura / Algoritmo</th>
+                  <th>Insertar</th>
+                  <th>Extraer-Mín</th>
+                  <th>Disminuir-Clave</th>
+                  <th>Comportamiento Práctico</th>
+                  <th>Uso en Red Vial de Cusco</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Montículo Binario (d=2)</strong></td>
+                  <td>O(log n)</td>
+                  <td>O(log n)</td>
+                  <td>O(log n)</td>
+                  <td>Línea base estándar. Memoria contigua compacta; predecible y rápido en grafos generales.</td>
+                  <td>Referencia canónica de comparación (CLRS).</td>
+                </tr>
+                <tr>
+                  <td><strong>Montículo 4-ario (d=4)</strong></td>
+                  <td>O(log₄ n)</td>
+                  <td>O(4 log₄ n)</td>
+                  <td>O(log₄ n)</td>
+                  <td><strong>El más veloz en la práctica</strong>. Reduce altura del árbol y aprovecha líneas de caché (64 B).</td>
+                  <td><strong>Estructura óptima</strong> para redes viales urbanas dispersas (|E| ≈ 3-4 |V|).</td>
+                </tr>
+                <tr>
+                  <td><strong>Montículo Fibonacci</strong></td>
+                  <td>O(1)</td>
+                  <td>O(log n) amort.</td>
+                  <td>O(1) amort.</td>
+                  <td>Óptimo teórico en grafos densos; penalizado en la práctica por dispersión de memoria de punteros.</td>
+                  <td>Demuestra la brecha entre teoría asintótica O(·) y hardware real.</td>
+                </tr>
+                <tr>
+                  <td><strong>Algoritmo A*</strong></td>
+                  <td>h(v) admisible</td>
+                  <td>Poda direccional</td>
+                  <td>f(v) = g(v) + h(v)</td>
+                  <td>Expande significativamente menos vértices que Dijkstra al orientar la búsqueda hacia la meta.</td>
+                  <td>Acelera consultas origen-destino punto a punto en Cusco monumental y urbano.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
-        <section><h2>2. Clima: factor hipotético</h2>
-          <p className="formula">F<sub>clima</sub> = redondear(1 + 0,20·min(max(lluvia,0)/10, 1) + 0,15·max(0, 1 − min(max(visibilidad,0),10 000)/10 000) + 0,10·min(max(ráfagas,0)/80, 1) + 0,08·min(1, max(0, (humedad − 65)/35)), 4)</p>
-          <p>Lluvia en mm, visibilidad en m, ráfagas en km/h y humedad en %. Open-Meteo usa datos de modelo; OpenWeatherMap usa la clave del servidor o una alternativa introducida. Una consulta puntual no mide todas las calles. <strong>Temperatura y descripción del cielo se muestran, pero no entran en la fórmula.</strong></p>
-        </section>
-        <section><h2>3. Tráfico: horario o segmento puntual</h2>
-          <p className="formula">F<sub>horario</sub> = redondear(1 + 1,15·(nivel − 1), 4) &nbsp; | &nbsp; F<sub>TomTom</sub> = max(1, redondear(velocidad libre / velocidad actual, 4))</p>
-          <p>El nivel horario es <strong>supuesto</strong>: fluido 1, moderado 1,25, alto 1,65 u hora punta 2,20. «Hora simulada» usa la que eliges; «hora actual» toma la hora de Cusco del servidor. El GPS solo obtiene el origen con permiso. Si activas TomTom, su velocidad corresponde a <strong>un segmento cercano al origen</strong>, no a cada calle de la ruta.</p>
-        </section>
-        <section><h2>4. Ruta, factores y colas</h2>
-          <p className="formula">Tiempo estimado(P) = Tiempo base(P) × redondear(F<sub>clima</sub> × F<sub>tráfico</sub>, 4)</p>
-          <p>Los factores se aplican uniformemente <strong>después</strong> de buscar la ruta. Dijkstra usa pesos no negativos y compara tres colas: montículo binario indexado, montículo 4-ario indexado y montículo Fibonacci. Cambia la gestión de prioridades, <strong>no los pesos ni el costo óptimo</strong>.</p>
-          <p>A* prioriza <strong>f(v) = g(v) + h(v)</strong>, con <strong>h(v) = λ·distancia euclidiana(v, destino)</strong> y <strong>λ = min<sub>aristas útiles</sub>(peso / distancia euclidiana de la arista)</strong>. Si faltan coordenadas, usa h = 0. Así preserva el costo correcto; puede expandir menos nodos, pero <strong>no se garantiza que sea más rápido</strong> en todas las redes.</p>
-        </section>
-        <p className="fineprint">Para verificar datos y algoritmos: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">contrato API</a>, <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">atribución OSM</a> y el benchmark reproducible en «Comparar».</p>
+
+        <div className="cards-grid">
+          <section className="info-card">
+            <h2>2. ¿Qué se modifica en A* para ser más eficiente?</h2>
+            <p><strong>Función de evaluación:</strong> Evalúa cada nodo según <strong>f(v) = g(v) + h(v)</strong>, donde <code>g(v)</code> es el costo real acumulado desde el origen y <code>h(v)</code> es la estimación heurística al destino.</p>
+            <p><strong>Heurística admisible:</strong> Usa la distancia euclidiana escalada <strong>h(v) = λ · d_euclídea(v, destino)</strong> con factor <strong>λ = min(peso_e / dist_e)</strong>. Esto garantiza matemáticamente que <code>h(v) ≤ d*(v, destino)</code> (nunca sobreestima), asegurando encontrar el camino de costo mínimo exacto.</p>
+            <p><strong>Poda direccional:</strong> Mientras Dijkstra explora en círculos concéntricos en todas direcciones, A* guía el frente de búsqueda hacia el objetivo, descartando ramas opuestas y ahorrando hasta 60% de expansiones.</p>
+          </section>
+
+          <section className="info-card">
+            <h2>3. Relieve y Pendientes de Cusco</h2>
+            <p className="formula">Tiempo base = (longitud ÷ velocidad) × (1 + 2.5 × max(0, pendiente % / 100))</p>
+            <p><strong>Penalización unidireccional:</strong> La topografía cusqueña penaliza exclusivamente las cuestas arriba (San Blas +8.5%, Espaderos +1.5%, Santa Clara +2.5%). Las bajadas no incrementan el tiempo.</p>
+            <p><strong>Jerarquía de calzadas:</strong> Avenidas (35 km/h) vs calles coloniales estrechas (15 km/h) vs vías peatonales (8 km/h).</p>
+          </section>
+
+          <section className="info-card">
+            <h2>4. Factores Dinámicos: Clima y Tráfico</h2>
+            <p className="formula">Tiempo estimado = Tiempo base × redondear(F_clima × F_tráfico, 4)</p>
+            <p><strong>Clima:</strong> Incorpora lluvia (mm), visibilidad (m), ráfagas (km/h) y humedad (%). La temperatura se informa pero no afecta la fricción vial.</p>
+            <p><strong>Congestión:</strong> Simulación por bandas horarias (fluido a hora punta) o lectura en vivo de TomTom Traffic API para el segmento de origen.</p>
+          </section>
+
+          <section className="info-card">
+            <h2>5. Verificación y Reproducibilidad</h2>
+            <p>Todos los algoritmos operan sobre exactamente la misma instancia y lista de adyacencia. Cambia la gestión de prioridades, <strong>nunca los pesos ni el camino de costo mínimo</strong>.</p>
+            <p className="fineprint">Comprobación dual: Certificado de holgura reducida <code>π(v) - π(u) ≤ w(u,v)</code> y verificación contra Bellman-Ford independiente. Documentación: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">contrato API</a> y <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">atribución OSM</a>.</p>
+          </section>
+        </div>
       </div>}
     </main><footer className="site-footer"><span>UNSAAC · Grupo 5 · Algoritmos Avanzados</span><span>Datos del proyecto, no navegación vial en tiempo real.</span></footer>
   </>

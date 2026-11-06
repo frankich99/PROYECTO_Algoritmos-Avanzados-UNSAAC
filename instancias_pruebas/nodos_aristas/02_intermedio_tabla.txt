@@ -1,0 +1,33 @@
+==============================================================
+INSTANCIA 02: INTERMEDIO (Centro Historico de Cusco - 6 Nodos)
+==============================================================
+
+Copie y pegue estos valores en la pestaña:
+"Instancias" -> "Nodos y aristas"
+
+--- NODOS (Coordenadas Reales de Cusco) ---
+ID   | Latitud   | Longitud
+A    | -13.5165  | -71.9788
+B    | -13.5168  | -71.9798
+C    | -13.5190  | -71.9755
+D    | -13.5173  | -71.9818
+E    | -13.5202  | -71.9835
+F    | -13.5205  | -71.9730
+
+Nombres de referencia:
+A: Plaza Mayor | B: Cusipata | C: Qorikancha | D: San Francisco | E: San Pedro | F: Limacpampa
+
+--- ARISTAS DIRIGIDAS (Tiempos efectivos en segundos con pendiente) ---
+Origen | Destino | Peso (segundos)
+A      | B       | 44.82
+A      | C       | 108.00
+B      | D       | 56.76
+B      | C       | 96.00
+C      | F       | 36.45
+C      | E       | 151.20
+D      | E       | 63.75
+D      | C       | 120.00
+E      | F       | 157.50
+
+Resultado Optimo desde A hasta F:
+Costo: 144.45 s (Ruta: A -> C -> F)

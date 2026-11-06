@@ -1,0 +1,27 @@
+# Instancia 03: Red Urbana Cusco Topografia y Relieve (12 Nodos)
+# Formato: origen destino peso_tiempo_segundos
+# Tiempos calculados con pendientes reales y tipo de calzada
+directed
+source PlazaMayor
+PlazaMayor Regocijo 45
+PlazaMayor Qorikancha 108
+PlazaMayor SanBlas 120
+PlazaMayor Plateros 36
+Regocijo SanFrancisco 57
+Regocijo Qorikancha 96
+SanFrancisco SantaClara 64
+SanFrancisco SantaTeresa 45
+SantaClara MercadoSanPedro 58
+MercadoSanPedro ElSol 156
+MercadoSanPedro Tullumayo 168
+Qorikancha Limacpampa 36
+Qorikancha ElSol 42
+Limacpampa Tullumayo 25
+Limacpampa Wanchaq 78
+SanBlas Choquechaca 38
+Choquechaca Limacpampa 85
+Plateros Saphy 42
+Saphy SanCristobal 135
+SanCristobal PlazaMayor 50
+ElSol Wanchaq 65
+Tullumayo Wanchaq 55
