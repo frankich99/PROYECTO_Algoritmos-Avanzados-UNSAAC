@@ -64,21 +64,19 @@ const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 export const apiUrl = (path: string) => `${apiBase}${path}`
 
 export async function api<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(apiUrl(`/api/v1${path}`), {
-    method: body === undefined ? 'GET' : 'POST',
-    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal,
-  })
-  if (!response.ok) {
-    let detail = `Error HTTP ${response.status}`
-    try {
-      const result = await response.json()
-      if (typeof result.detail === 'string') detail = result.detail
-      else if (Array.isArray(result.detail)) detail = result.detail.map((item: { loc?: (string | number)[]; msg?: string }) =>
-        `${item.loc?.join('.') ?? 'Entrada'}: ${item.msg ?? 'valor inválido'}`).join('; ')
-    } catch { /* El servidor no devolvió JSON. */ }
-    throw new Error(detail)
+  try {
+    const response = await fetch(apiUrl(`/api/v1${path}`), {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    })
+    if (response.ok) {
+      return (await response.json()) as T
+    }
+  } catch (err) {
+    if (signal?.aborted) throw err
   }
-  return response.json() as Promise<T>
+  const { clientFallback } = await import('./clientFallback')
+  return clientFallback<T>(path, body)
 }
