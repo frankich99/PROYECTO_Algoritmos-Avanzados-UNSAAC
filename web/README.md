@@ -35,6 +35,24 @@ sin `--reload`. Para probar otro servidor local sin detener el puerto 8000,
 definir `ROUTES_API_URL=http://127.0.0.1:8001` antes de iniciar Vite en otro
 puerto. No guardar claves de proveedores en esa variable.
 
+### Claves de los proveedores
+
+La API toma `OPENWEATHERMAP_API_KEY` y `TOMTOM_API_KEY` de las variables de
+entorno o, si faltan, del archivo `.env` en la raíz del repositorio. Copiar
+`.env.example` a `.env` y escribir allí las claves **solo en tu máquina**;
+`.env` está excluido de Git y del paquete publicable. Las variables de
+entorno prevalecen. Reinicia la API al editar la configuración para que las
+consultas nuevas y la web tengan el mismo estado.
+
+La web solo recibe `true/false` para saber qué proveedores están configurados;
+**nunca recibe ni muestra las claves del servidor**. Al elegir OpenWeatherMap
+o activar TomTom no hace falta volver a escribirlas. Los campos opcionales
+«Usar otra clave» sustituyen la clave del servidor solo para esa consulta;
+«Quitar clave del navegador» vuelve a usar la del servidor. «Olvidar claves
+del navegador» borra solo las alternativas locales. Por defecto las
+alternativas no se guardan; «Recordar» las guarda en `localStorage`, que no es
+una bóveda segura. Usa HTTPS y controles de acceso si publicas la API.
+
 ## Producción en un solo servicio
 
 FastAPI sirve la web compilada y la API desde el mismo origen:
@@ -62,7 +80,7 @@ experimentos de CPU y consultas a proveedores externos.
 - Consultar rutas en el centro OSM guardado (891 nodos y 2139 aristas, radio
   aproximado 1,5 km) o en el centro ampliado (1938 nodos y 4753 aristas,
   consulta radial de 3 km recortada por distancia de red), con nodo de origen
-  y destino por ID o coordenadas.
+  y destino mediante selectores de nodos o coordenadas.
 - Crear un grafo dirigido desde una tabla, importar JSON o lista de aristas
   TXT/CSV (cabecera `origen,destino,peso` opcional), o generar uno con semilla. Para pesos genéricos la unidad es
   «peso», no metros ni segundos. Las coordenadas de grafos propios son
@@ -73,11 +91,12 @@ experimentos de CPU y consultas a proveedores externos.
 - Ver benchmark histórico sin modificarlo, y ejecutar experimentos pequeños
   etiquetados como resultados nuevos de sesión.
 - Consultar el modelo Open-Meteo sin clave, o OpenWeatherMap/TomTom con una
-  clave suministrada para esa consulta. TomTom cubre un punto, no toda la red.
-  Las claves no se escriben en los archivos del proyecto. Por defecto viven
+  clave configurada en el servidor o alternativa opcional en «Cobertura Cusco». TomTom cubre un
+  segmento cercano a un punto, no toda la red.
+  Las claves del servidor no se escriben en archivos versionados. Las alternativas por defecto viven
   solo en la memoria del navegador; «Recordar claves» las guarda en
   `localStorage` únicamente con consentimiento, y «Olvidar claves» borra las
-  guardadas y las de la sesión. El almacenamiento del navegador no protege
+  guardadas y las de la sesión, no las del servidor. El almacenamiento del navegador no protege
   frente a scripts ejecutados en el mismo origen. Usar HTTPS si se despliega
   fuera de `127.0.0.1`.
 
@@ -98,6 +117,15 @@ experimentos de CPU y consultas a proveedores externos.
   temperatura se muestra, **pero no está en la fórmula**. Es uniforme: cambia
   el tiempo estimado, no la ruta ni las operaciones de las colas. Los
   resultados JSON contienen fuente, fecha, valores y aportes, no claves.
+- En «Rutas» se puede elegir una **hora simulada (HH:MM)** o la **hora actual de
+  Cusco** que toma el servidor al calcular. En modo actual, el GPS es opcional:
+  solo se solicita al pulsar «Usar mi ubicación» y únicamente coloca el origen;
+  debe estar dentro del snapshot, cerca de un nodo vial y tener precisión
+  suficiente. Si se deniega, se puede elegir un nodo. Sin TomTom se utiliza el
+  supuesto horario del proyecto; con clave y activación explícita, la relación
+  de velocidades de **un segmento** se usa como factor uniforme exploratorio.
+  Si TomTom no responde o informa un cierre, la ruta no aplica el factor
+  automáticamente. Ni el GPS ni TomTom miden congestión en toda la ruta.
 
 La base cartográfica **plana** no requiere Internet; la opción «Calles OSM»
 solicita teselas externas y su disponibilidad depende del proveedor. Solo una
@@ -144,6 +172,7 @@ Contrato interactivo: <http://127.0.0.1:8000/docs>.
 `POST /api/v1/experiments` mide redes sintéticas nuevas;
 `POST /api/v1/conditions` consulta el proveedor seleccionado. Validaciones
 fallidas devuelven HTTP 422; ausencia de ruta devuelve `cost: null`.
+`/catalog` devuelve solo la disponibilidad de cada clave del servidor (booleanos).
 `/conditions` devuelve el factor y sus aportes; `/routes/solve` acepta una
 observación aportada por la sesión y comprueba que coincida con el origen.
 La respuesta indica que una observación reenviada por el navegador no fue

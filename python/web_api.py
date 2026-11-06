@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import json
 import math
 import os
@@ -24,6 +25,7 @@ from src.io.graph_io import GraphInstance, InvalidInstanceError, parse_edge_list
 from src.io.osm_loader import load_snapshot as load_osm_snapshot
 from src.models.cusco_network import load_cusco_instance
 from src.services.traffic import TomTomTrafficClient, calculate_traffic_multiplier, get_traffic_by_schedule
+from src.services.provider_keys import provider_key
 from src.services.weather import (OpenMeteoClient, OpenWeatherMapClient, WeatherObservation,
                                   WeatherServiceError, weather_contributions, weather_multiplier)
 from src.utils.cost_model import CuscoCostModel, RoadSegment
@@ -99,7 +101,10 @@ class Scenario(BaseModel):
     weather_key: str | None = Field(default=None, max_length=200)
     weather_observation: SessionWeather | None = None
     weather_request_point: Point | None = None
-    traffic_hour: int | None = Field(default=None, ge=0, le=23)
+    traffic_hour: float | None = Field(default=None, ge=0, lt=24, allow_inf_nan=False)
+    traffic_mode: Literal["simulated", "current"] | None = None
+    traffic_live: bool = False
+    traffic_live_key: str | None = Field(default=None, max_length=200)
 
 
 class RouteRequest(BaseModel):
@@ -299,7 +304,7 @@ def _route_edges(path: list[Any], records: list[dict[str, Any]], metric: str,
 
 def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple[float, dict[str, Any]]:
     if metric != "time":
-        if value.weather != "none" or value.traffic_hour is not None:
+        if value.weather != "none" or value.traffic_hour is not None or value.traffic_mode is not None or value.traffic_live or value.traffic_live_key:
             raise InvalidInstanceError("Clima y horario solo afectan la métrica tiempo.")
         return 1.0, {"kind": "nominal"}
     factor = 1.0
@@ -339,15 +344,19 @@ def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple
             coords = source_point or Point(lat=-13.5165, lon=-71.9788)
             requested = coords
             if value.weather_provider == "openweathermap":
-                if not value.weather_key:
+                key = (value.weather_key or "").strip() or provider_key("openweathermap")
+                if not key:
                     raise InvalidInstanceError("Se requiere una clave OpenWeatherMap para esta consulta.")
-                obs = OpenWeatherMapClient(api_key=value.weather_key).fetch_current(coords.lat, coords.lon)
+                obs = OpenWeatherMapClient(api_key=key).fetch_current(coords.lat, coords.lon)
             else:
                 obs = OpenMeteoClient().fetch_current(coords.lat, coords.lon)
         if value.weather not in ("live", "saved") or value.weather_observation is None:
             timezone_label = "America/Lima" if "Open-Meteo" in obs.source else "UTC"
-        factor *= weather_multiplier(obs)
+        weather_factor = weather_multiplier(obs)
+        factor *= weather_factor
         detail = {"kind": "uniform_scenario", "weather_source": obs.source,
+                  "weather_factor": weather_factor,
+                  "weather_session_supplied": value.weather in ("live", "saved") and value.weather_observation is not None,
                   "weather_observed_at": obs.observed_at,
                   "weather_timezone": timezone_label,
                   "weather_cached": obs.cached,
@@ -361,11 +370,46 @@ def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple
                                       "surface_pressure_hpa": obs.surface_pressure_hpa},
                   "requested_point": requested.model_dump() if requested else None,
                   "weather_grid_point": {"lat": obs.latitude, "lon": obs.longitude}}
-    if value.traffic_hour is not None:
+    if value.traffic_mode == "current":
+        if value.traffic_hour is not None:
+            raise InvalidInstanceError("La hora actual se obtiene del servidor; no envíe una hora simulada.")
+        now = datetime.now(ZoneInfo("America/Lima"))
+        hour = now.hour + now.minute / 60 + now.second / 3600
+        traffic = get_traffic_by_schedule(hour)
+        traffic_factor = calculate_traffic_multiplier(traffic)
+        detail.update({"traffic_mode": "current", "traffic_observed_at": now.isoformat(),
+                       "traffic_hour": round(hour, 4), "traffic_source": "Horario supuesto a la hora actual de Cusco",
+                       "traffic_level": traffic.level, "traffic_description": traffic.description})
+        if value.traffic_live or value.traffic_live_key:
+            if source_point is None:
+                raise InvalidInstanceError("TomTom requiere un origen geográfico para la lectura puntual.")
+            key = (value.traffic_live_key or "").strip() or provider_key("tomtom")
+            if not key:
+                raise InvalidInstanceError("TomTom requiere una clave configurada para esta consulta.")
+            flow = TomTomTrafficClient(api_key=key).fetch_flow(
+                lat=source_point.lat, lon=source_point.lon)
+            if flow is None:
+                raise InvalidInstanceError("No se obtuvo tráfico puntual de TomTom. Revise la clave y la cobertura, o desactive esa opción.")
+            if flow.get("road_closure"):
+                raise InvalidInstanceError("TomTom indica cierre del segmento cercano. No se puede extrapolar ese cierre a toda la ruta.")
+            traffic_factor = flow["multiplier"]
+            detail.update({"traffic_source": "TomTom: segmento cercano al origen, no toda la ruta",
+                           "traffic_flow": flow, "traffic_flow_fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+                           "traffic_point": source_point.model_dump()})
+        factor *= traffic_factor
+        detail.update({"kind": "uniform_scenario", "traffic_factor": traffic_factor})
+    elif value.traffic_hour is not None:
+        if value.traffic_live or value.traffic_live_key:
+            raise InvalidInstanceError("TomTom solo se consulta en el modo de hora actual.")
         traffic = get_traffic_by_schedule(value.traffic_hour)
-        factor *= calculate_traffic_multiplier(traffic)
-        detail.update({"kind": "uniform_scenario", "traffic": "supuesto horario uniforme",
+        traffic_factor = calculate_traffic_multiplier(traffic)
+        factor *= traffic_factor
+        detail.update({"kind": "uniform_scenario", "traffic_mode": "simulated",
+                       "traffic_source": "Horario supuesto, no medido", "traffic_factor": traffic_factor,
+                       "traffic_level": traffic.level, "traffic_description": traffic.description,
                        "traffic_hour": value.traffic_hour})
+    elif value.traffic_mode == "simulated" or value.traffic_live or value.traffic_live_key:
+        raise InvalidInstanceError("Seleccione la hora simulada o el modo de hora actual antes de aplicar tráfico.")
     return round(factor, 4), detail
 
 
@@ -386,7 +430,8 @@ def catalog():
                            "available": OSM.exists()},
                           {"kind": "urban", "label": "Centro ampliado, snapshot OSM (radio 3 km)",
                            "available": _urban_available()}],
-            "queues": list(QUEUES), "example": "Seis nodos ilustrativos, no vías medidas"}
+            "queues": list(QUEUES), "example": "Seis nodos ilustrativos, no vías medidas",
+            "provider_keys": {name: bool(provider_key(name)) for name in ("openweathermap", "tomtom")}}
 
 
 @app.post("/api/v1/instances/validate")
@@ -409,8 +454,12 @@ def instance_validate(spec: InstanceSpec, metric: Literal["time", "distance"] = 
 def route_solve(request: RouteRequest):
     try:
         inst = _instance(request.instance, request.metric)
-        if inst.metric == "weight" and (request.scenario.weather != "none" or request.scenario.traffic_hour is not None):
+        if inst.metric == "weight" and (request.scenario.weather != "none" or request.scenario.traffic_hour is not None
+                                        or request.scenario.traffic_mode is not None or request.scenario.traffic_live
+                                        or request.scenario.traffic_live_key):
             raise InvalidInstanceError("Los escenarios meteorológicos solo se aplican a instancias con tiempos viales.")
+        if (request.scenario.traffic_live or request.scenario.traffic_live_key) and request.instance.kind not in ("center", "urban"):
+            raise InvalidInstanceError("La lectura puntual de TomTom requiere una red OSM de Cusco.")
         if (request.source_point or request.target_point) and request.instance.kind not in ("center", "urban"):
             raise InvalidInstanceError("El ajuste por coordenadas geográficas solo admite snapshots OSM verificados.")
         source, start = _resolve_node(inst, request.source, request.source_point)
@@ -541,7 +590,8 @@ def experiment(request: ExperimentRequest):
 
 @app.post("/api/v1/conditions")
 def conditions(request: ConditionRequest):
-    lat, lon, provider, key = (request.point.lat, request.point.lon, request.provider, request.key)
+    lat, lon, provider = request.point.lat, request.point.lon, request.provider
+    key = (request.key or "").strip() or (provider_key(provider) if provider != "open-meteo" else None)
     try:
         if provider == "tomtom":
             if not key:

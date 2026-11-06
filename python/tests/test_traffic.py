@@ -100,6 +100,7 @@ def test_tomtom_uses_only_reported_speeds():
 @pytest.mark.parametrize("flow", [
     {}, {"currentSpeed": 30}, {"currentSpeed": 0, "freeFlowSpeed": 40},
     {"currentSpeed": float("nan"), "freeFlowSpeed": 40},
+    {"currentSpeed": 1e-320, "freeFlowSpeed": 40},
 ])
 def test_tomtom_does_not_invent_missing_or_invalid_speeds(flow):
     client = TomTomTrafficClient(api_key="clave-de-prueba", session=FlowSession(FlowResponse(flow)))

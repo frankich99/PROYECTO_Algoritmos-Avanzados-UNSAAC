@@ -3,7 +3,7 @@
 Implementación modular en Python de Dijkstra con tres colas de prioridad intercambiables, $A^*$ con heurística consistente, un certificado de optimalidad y un caso aplicado sobre OpenStreetMap.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-291%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-296%20passed-brightgreen.svg)](tests/)
 [![Datos](https://img.shields.io/badge/snapshots-OSM%20%2B%20clima-informational.svg)](data/processed/)
 
 **Asignatura:** Algoritmos Avanzados (2026-II) · UNSAAC  
@@ -139,7 +139,7 @@ estimado de viaje de la consulta OSM, expresado en segundos.
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-La suite contiene **291 pruebas** y cubre:
+La suite contiene **296 pruebas** y cubre:
 
 * contrato común de las tres colas (inserción, extracción, `decrease_key`, claves inválidas y cortes en cascada);
 * equivalencia con Bellman-Ford, Dijkstra con arreglo y NetworkX;

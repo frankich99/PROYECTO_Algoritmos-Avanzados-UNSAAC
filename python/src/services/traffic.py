@@ -80,10 +80,13 @@ class TomTomTrafficClient:
             free_flow = float(flow["freeFlowSpeed"])
             if not all(math.isfinite(speed) and speed > 0 for speed in (current_speed, free_flow)):
                 return None
+            ratio = free_flow / current_speed
+            if not math.isfinite(ratio):
+                return None
             return {
                 "current_speed_kmh": current_speed,
                 "free_flow_speed_kmh": free_flow,
-                "multiplier": max(1.0, round(free_flow / current_speed, 4)),
+                "multiplier": max(1.0, round(ratio, 4)),
                 "confidence": float(flow["confidence"]) if flow.get("confidence") is not None else None,
                 "road_closure": bool(flow["roadClosure"]) if "roadClosure" in flow else None,
             }
