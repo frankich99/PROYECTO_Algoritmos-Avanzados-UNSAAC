@@ -21,11 +21,33 @@ body{min-width:0}
 
 /* La consulta de fuentes vive en Cobertura; el mapa y los resultados ganan espacio. */
 .workspace{grid-template-columns:minmax(310px,360px) minmax(0,1fr);gap:1.35rem}
-.traffic-options{display:grid;gap:.35rem;min-width:0}
-.traffic-options legend{font-size:.9rem;color:var(--wine)}
-.traffic-options .check{font-weight:600;align-items:center}
-.traffic-options .check input[type=radio]{width:20px;height:20px;flex:none;accent-color:var(--wine)}
-.option-body{display:grid;gap:.65rem;border-left:2px solid #d3c7ba;padding:.25rem .25rem .6rem .9rem;margin:.1rem 0 .6rem .55rem;min-width:0}
+.traffic-container-card{border:1.5px solid #dcd1c4;background:#fdfbf7;border-radius:8px;padding:12px 14px;margin:0.6rem 0 1rem;display:flex;flex-direction:column;gap:10px}
+.traffic-heading{display:flex;align-items:center;gap:8px;font-size:1.02rem;font-weight:700;color:#5e1628;cursor:pointer;user-select:none;margin:0}
+.traffic-heading input[type=checkbox]{width:19px;height:19px;accent-color:#681C32;cursor:pointer;flex:none}
+.traffic-content{display:flex;flex-direction:column;gap:10px}
+.traffic-mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.traffic-mode-toggle button{padding:8px 10px;font-size:0.92rem;font-weight:700;border-radius:6px;border:1.5px solid #c9bdae;background:#ffffff;color:#3b2820;cursor:pointer;transition:all 0.15s ease;text-align:center}
+.traffic-mode-toggle button:hover{border-color:#681C32}
+.traffic-mode-toggle button.active{background:#681C32;color:#ffffff;border-color:#681C32;box-shadow:0 1px 3px rgba(104,28,50,0.25)}
+.cusco-live-card, .cusco-simulated-card{border:1px solid #e2d7cb;background:#fffdfa;border-radius:7px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.live-header{display:flex;justify-content:space-between;align-items:center}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:#eaf6ec;border:1px solid #85ce95;color:#1b6829;font-size:0.76rem;font-weight:800;padding:2px 8px;border-radius:12px;letter-spacing:0.04em}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#20a03a;display:inline-block;box-shadow:0 0 4px #20a03a}
+.live-tz{font-size:0.8rem;color:#6d5b51;font-weight:500}
+.cusco-live-clock{display:flex;align-items:center;gap:8px;font-family:'Source Code Pro',Consolas,Monaco,monospace;font-size:1.45rem;font-weight:700;color:#5e1628;letter-spacing:0.04em}
+.traffic-factor-pill{display:inline-flex;align-self:flex-start;align-items:center;gap:4px;background:#f0f7f7;border:1px solid #1f6f78;color:#17575e;font-size:0.84rem;font-weight:600;padding:3px 10px;border-radius:5px}
+.traffic-origin-card{border:1px solid #e7ded4;background:#ffffff;border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.origin-title{font-size:0.92rem;font-weight:700;color:#2b1f1a;display:flex;align-items:center;gap:6px}
+.btn-gps-origin{width:100%;background:#ffffff;border:1.5px solid #681C32;color:#681C32;font-weight:700;font-size:0.92rem;padding:8px 12px;border-radius:6px;cursor:pointer;text-align:center;transition:all 0.15s ease}
+.btn-gps-origin:hover:not(:disabled){background:#681C32;color:#ffffff}
+.btn-gps-origin:disabled{opacity:0.6;cursor:not-allowed}
+.btn-center-origin{align-self:flex-start;background:#ede3d7;border:1px solid #bfaea0;color:#2a1d17;font-weight:700;font-size:0.88rem;padding:6px 14px;border-radius:6px;cursor:pointer;transition:background 0.15s ease}
+.btn-center-origin:hover{background:#e2d5c6}
+.tomtom-toggle{margin-top:6px;font-size:0.88rem;color:#5e4c43}
+.tomtom-toggle summary{cursor:pointer;font-weight:600;color:#44322a}
+.tomtom-body{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding-left:6px}
+button.primary{width:100%;padding:12px;font-size:1.05rem;font-weight:700;background:#681C32;color:#ffffff;border-radius:6px;border:none;cursor:pointer;margin-top:10px;transition:background 0.15s ease}
+button.primary:hover:not(:disabled){background:#541628}
 .option-body p{margin:0}
 .provider-key{display:grid;gap:.45rem;min-width:0}
 .provider-key p{margin:0}

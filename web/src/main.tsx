@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import GraphView from './GraphView'
 import { api, apiUrl } from './api'
@@ -107,8 +107,8 @@ function App() {
   const [weatherRefresh, setWeatherRefresh] = useState(0)
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [timeTick, setTimeTick] = useState(Date.now())
-  const [traffic, setTraffic] = useState(false)
-  const [trafficMode, setTrafficMode] = useState<'simulated' | 'current'>('simulated')
+  const [traffic, setTraffic] = useState(true)
+  const [trafficMode, setTrafficMode] = useState<'simulated' | 'current'>('current')
   const [simulatedTime, setSimulatedTime] = useState('13:00')
   const [trafficUseTomTom, setTrafficUseTomTom] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
@@ -212,6 +212,40 @@ function App() {
   const simulatedHour = validSimulatedTime ? Number(simulatedTime.slice(0, 2)) + Number(simulatedTime.slice(3)) / 60 : null
   const canApplyTraffic = !traffic || (trafficMode === 'simulated' ? validSimulatedTime :
     !gpsLoading && !gpsExpired && (!trafficUseTomTom || !preview?.geographic || !!apiKeys.tomtom.trim() || !!catalog?.provider_keys?.tomtom))
+
+  const cuscoLiveDate = useMemo(() => {
+    try {
+      return new Date(new Date(timeTick).toLocaleString('en-US', { timeZone: 'America/Lima' }))
+    } catch {
+      return new Date(timeTick - 5 * 3600 * 1000)
+    }
+  }, [timeTick])
+
+  const cuscoLiveHour = cuscoLiveDate.getHours()
+  const cuscoLiveMinute = cuscoLiveDate.getMinutes()
+  const cuscoLiveSecond = cuscoLiveDate.getSeconds()
+  const cuscoTimeString = `${String(cuscoLiveHour).padStart(2, '0')}:${String(cuscoLiveMinute).padStart(2, '0')}:${String(cuscoLiveSecond).padStart(2, '0')}`
+  const cuscoLiveDecimal = cuscoLiveHour + cuscoLiveMinute / 60 + cuscoLiveSecond / 3600
+
+  const getCuscoTrafficFactor = (h: number) => {
+    if ((7.25 <= h && h <= 9.0) || (18.0 <= h && h <= 20.25)) {
+      return { factor: 2.20, label: 'Hora punta (crítico)' }
+    } else if (12.5 <= h && h <= 14.25) {
+      return { factor: 1.65, label: 'Tráfico denso (almuerzo)' }
+    } else if ((9.0 < h && h < 12.5) || (14.25 < h && h < 18.0)) {
+      return { factor: 1.25, label: 'Comercial (moderado)' }
+    } else if (21.5 <= h || h < 6.5) {
+      return { factor: 1.00, label: 'Flujo libre (nocturno)' }
+    } else {
+      return { factor: 1.25, label: 'Transición (regular)' }
+    }
+  }
+
+  const liveTrafficInfo = useMemo(() => getCuscoTrafficFactor(cuscoLiveDecimal), [cuscoLiveDecimal])
+  const simulatedTrafficInfo = useMemo(() => {
+    const h = validSimulatedTime ? Number(simulatedTime.slice(0, 2)) + Number(simulatedTime.slice(3)) / 60 : 13.0
+    return getCuscoTrafficFactor(h)
+  }, [validSimulatedTime, simulatedTime])
   useEffect(() => () => { routeAbort.current?.abort(); conditionAbort.current?.abort(); gpsRequest.current += 1 }, [])
   useEffect(() => {
     if (!rememberKeys) return
@@ -304,6 +338,16 @@ function App() {
         error.code === 3 ? 'La ubicación tardó demasiado. Vuelve a intentarlo o elige un nodo.' :
           'No se pudo conocer tu ubicación. Puedes elegir un nodo manualmente.')
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 })
+  }
+  function setCenterOrigin() {
+    setGpsError('')
+    setGpsFix(null)
+    setSourcePoint({ lat: -13.5165, lon: -71.9788 })
+    if (preview?.geographic && preview?.ids?.length) {
+      if (preview.ids.includes('A')) setSource('A')
+      else setSource(String(preview.ids[0]))
+    }
+    setRoute(null)
   }
   async function runRoute(event: React.FormEvent) {
     event.preventDefault(); routeAbort.current?.abort()
@@ -459,26 +503,103 @@ function App() {
                   <button type="button" onClick={() => { forgetWeather(); setSavedReading(null); setWeather('live') }}>Eliminar lectura guardada</button></>}
                 <p className="fineprint">Estas condiciones ajustan todos los tiempos por igual: no cambian el camino ni son mediciones en cada calle.</p>
               </div>}
-              <label className="check"><input type="checkbox" checked={traffic} onChange={e => setTraffic(e.target.checked)} /> Ajustar tiempo por tráfico</label>
-              {traffic && <fieldset className="traffic-options"><legend>Elige cómo obtener el factor de tráfico</legend>
-                <label className="check"><input type="radio" name="traffic-mode" checked={trafficMode === 'simulated'} onChange={() => setTrafficMode('simulated')} /> Hora simulada</label>
-                {trafficMode === 'simulated' && <div className="option-body"><label>Hora en Cusco (HH:MM)<input type="time" required value={simulatedTime} onChange={e => setSimulatedTime(e.target.value)} /></label>
-                  <p className="fineprint">Elige una hora para comparar el supuesto horario del proyecto. No son velocidades medidas.</p></div>}
-                <label className="check"><input type="radio" name="traffic-mode" checked={trafficMode === 'current'} onChange={() => { setTrafficMode('current'); setTimeTick(Date.now()) }} /> Hora actual de Cusco · GPS opcional</label>
-                {trafficMode === 'current' && <div className="option-body">
-                  <p className="fineprint">La hora exacta de Cusco la calcula el servidor al resolver. El GPS solo coloca el origen; no mide congestión ni se solicita sin pulsar el botón.</p>
-                  {preview?.geographic ? <><button type="button" onClick={useGps} disabled={gpsLoading}>{gpsLoading ? 'Obteniendo ubicación…' : 'Usar mi ubicación como origen'}</button>
-                    {gpsLoading && <p role="status">Solicitando ubicación al navegador…</p>}
-                    {gpsError && <p className="error" role="alert">{gpsError}</p>}
-                    {gpsFix && <p role="status" className={gpsExpired ? 'warning' : 'fineprint'}>GPS: {fmt(sourcePoint?.lat, 5)}, {fmt(sourcePoint?.lon, 5)}; precisión declarada ±{fmt(gpsFix.accuracy, 0)} m. {gpsExpired ? 'La ubicación tiene más de cinco minutos; solicítala de nuevo o selecciona un nodo.' : 'Origen enviado para ajuste al nodo vial próximo.'}</p>}
-                  </> : <p className="fineprint">El GPS requiere seleccionar una de las redes OSM de Cusco.</p>}
-                   <label className="check"><input type="checkbox" checked={trafficUseTomTom} onChange={e => setTrafficUseTomTom(e.target.checked)} disabled={!preview?.geographic} /> Consultar además TomTom en el origen</label>
-                   {trafficUseTomTom && preview?.geographic && <ProviderKeyInput provider="tomtom" configured={catalog?.provider_keys?.tomtom}
-                     value={apiKeys.tomtom} onChange={value => updateKey('tomtom', value)} />}
-                   {trafficUseTomTom && preview?.geographic && !apiKeys.tomtom.trim() && !catalog?.provider_keys?.tomtom && <p className="fineprint">Introduce la clave o desactiva TomTom para calcular con el supuesto horario.</p>}
-                  <p className="fineprint">Sin TomTom se usa el supuesto horario a la hora actual. Con TomTom se aplica la relación entre velocidad libre y velocidad puntual como factor uniforme exploratorio, nunca como medición de toda la ruta.</p>
+              <div className="traffic-container-card">
+                <label className="check traffic-heading">
+                  <input type="checkbox" checked={traffic} onChange={e => setTraffic(e.target.checked)} />
+                  <span>Ajustar tiempo por tráfico horario</span>
+                </label>
+                {traffic && <div className="traffic-content">
+                  <div className="traffic-mode-toggle" role="group" aria-label="Modo de tráfico">
+                    <button
+                      type="button"
+                      className={trafficMode === 'simulated' ? 'active' : ''}
+                      onClick={() => setTrafficMode('simulated')}
+                    >
+                      Hora programada
+                    </button>
+                    <button
+                      type="button"
+                      className={trafficMode === 'current' ? 'active' : ''}
+                      onClick={() => { setTrafficMode('current'); setTimeTick(Date.now()) }}
+                    >
+                      Hora actual Cusco
+                    </button>
+                  </div>
+
+                  {trafficMode === 'current' ? (
+                    <div className="cusco-live-card">
+                      <div className="live-header">
+                        <span className="live-badge"><span className="live-dot" /> EN VIVO</span>
+                        <span className="live-tz">Hora oficial Cusco · UTC-5</span>
+                      </div>
+                      <div className="cusco-live-clock">
+                        <span className="clock-icon" aria-hidden="true">🕒</span>
+                        <span>{cuscoTimeString}</span>
+                      </div>
+                      <div className="traffic-factor-pill">
+                        <span>Factor: <strong>{liveTrafficInfo.factor.toFixed(2)}×</strong> {liveTrafficInfo.label}</span>
+                      </div>
+
+                      <div className="traffic-origin-card">
+                        <div className="origin-title">
+                          <span aria-hidden="true">📍</span> Ubicación de origen para tráfico
+                        </div>
+                        {preview?.geographic ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-gps-origin"
+                              onClick={useGps}
+                              disabled={gpsLoading}
+                            >
+                              📍 {gpsLoading ? 'Obteniendo GPS…' : 'Usar mi ubicación GPS como origen'}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-center-origin"
+                              onClick={setCenterOrigin}
+                            >
+                              🏛️ Centro Cusco
+                            </button>
+                            {gpsLoading && <p role="status" className="fineprint">Solicitando ubicación al navegador…</p>}
+                            {gpsError && <p className="error" role="alert">{gpsError}</p>}
+                            {gpsFix && <p role="status" className={gpsExpired ? 'warning' : 'fineprint'}>GPS: {fmt(sourcePoint?.lat, 5)}, {fmt(sourcePoint?.lon, 5)}; precisión ±{fmt(gpsFix.accuracy, 0)} m.</p>}
+                          </>
+                        ) : (
+                          <p className="fineprint">El GPS y la ubicación requieren una red con coordenadas (ej. Cusco OSM).</p>
+                        )}
+                      </div>
+
+                      <details className="tomtom-toggle">
+                        <summary>Consultar TomTom en tiempo real (opcional)</summary>
+                        <div className="tomtom-body">
+                          <label className="check">
+                            <input
+                              type="checkbox"
+                              checked={trafficUseTomTom}
+                              onChange={e => setTrafficUseTomTom(e.target.checked)}
+                              disabled={!preview?.geographic}
+                            />
+                            Consultar además TomTom en el origen
+                          </label>
+                          {trafficUseTomTom && preview?.geographic && <ProviderKeyInput provider="tomtom" configured={catalog?.provider_keys?.tomtom}
+                            value={apiKeys.tomtom} onChange={value => updateKey('tomtom', value)} />}
+                          {trafficUseTomTom && preview?.geographic && !apiKeys.tomtom.trim() && !catalog?.provider_keys?.tomtom && <p className="fineprint">Introduce la clave o desactiva TomTom para calcular con el supuesto horario.</p>}
+                          <p className="fineprint">Sin TomTom se usa el supuesto horario a la hora actual. Con TomTom se aplica la relación entre velocidad libre y velocidad puntual como factor uniforme exploratorio.</p>
+                        </div>
+                      </details>
+                    </div>
+                  ) : (
+                    <div className="cusco-simulated-card">
+                      <label>Hora programada en Cusco (HH:MM)<input type="time" required value={simulatedTime} onChange={e => setSimulatedTime(e.target.value)} /></label>
+                      <div className="traffic-factor-pill">
+                        <span>Factor: <strong>{simulatedTrafficInfo.factor.toFixed(2)}×</strong> {simulatedTrafficInfo.label}</span>
+                      </div>
+                      <p className="fineprint">Elige una hora para comparar el supuesto horario del proyecto en Cusco. No son velocidades medidas.</p>
+                    </div>
+                  )}
                 </div>}
-              </fieldset>}
+              </div>
             </div>}
             <button type="submit" className="primary" disabled={!preview || routeLoading || (metric === 'time' && preview?.metric !== 'weight' && (!canApplyWeather || !canApplyTraffic))}>{routeLoading ? 'Calculando ruta…' : 'Calcular y contrastar'}</button>
             {routeError && <p className="error" role="alert">{routeError}</p>}
