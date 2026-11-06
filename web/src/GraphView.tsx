@@ -20,30 +20,124 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
       const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys)
       ids.forEach(id => {
         const [x, y] = preview.coords[String(id)]
-        positions.set(String(id), [38 + (x - minX) / (maxX - minX || 1) * 624,
-          30 + (maxY - y) / (maxY - minY || 1) * 350])
+        positions.set(String(id), [50 + (x - minX) / (maxX - minX || 1) * 600,
+          45 + (maxY - y) / (maxY - minY || 1) * 320])
       })
     } else {
       ids.forEach((id, index) => {
         const angle = index * 2 * Math.PI / ids.length - Math.PI / 2
-        positions.set(String(id), [350 + Math.cos(angle) * 250, 205 + Math.sin(angle) * 160])
+        positions.set(String(id), [350 + Math.cos(angle) * 240, 205 + Math.sin(angle) * 150])
       })
     }
     return positions
   }, [preview, route])
+
   if (!preview || !layout) return <div className="empty-map">Valida una instancia para ver su red.</div>
-  const selected = new Set((route?.result.edges ?? []).map(edge => `${edge.from}|${edge.to}`))
-  const edges = [...preview.display_edges, ...(route?.result.edges.map(e => [e.from, e.to] as [string | number, string | number]) ?? [])]
-    .filter(([u, v]) => layout.has(String(u)) && layout.has(String(v)))
+
+  const pathNodes = new Set((route?.result.path ?? []).map(String))
+  const selectedEdges = new Set((route?.result.edges ?? []).map(edge => `${edge.from}|${edge.to}`))
+
+  // Mapeo de pesos para visualizarlos sobre cada arista
+  const weightMap = new Map<string, number | string>()
+  preview.display_edges.forEach(e => {
+    const u = String(e[0]), v = String(e[1])
+    if (e.length >= 3 && e[2] !== undefined && e[2] !== null) {
+      weightMap.set(`${u}|${v}`, e[2])
+    }
+  })
+  if (route?.result?.edges) {
+    route.result.edges.forEach(e => {
+      const u = String(e.from), v = String(e.to)
+      if (e.cost !== undefined && e.cost !== null) {
+        weightMap.set(`${u}|${v}`, Number.isInteger(e.cost) ? e.cost : Number(e.cost.toFixed(2)))
+      }
+    })
+  }
+
+  // Lista desduplicada de aristas dirigidas
+  const edgeMap = new Map<string, { u: string; v: string; weight?: number | string; selected: boolean }>()
+  preview.display_edges.forEach(e => {
+    const u = String(e[0]), v = String(e[1])
+    if (layout.has(u) && layout.has(v)) {
+      const isSel = selectedEdges.has(`${u}|${v}`)
+      edgeMap.set(`${u}|${v}`, { u, v, weight: weightMap.get(`${u}|${v}`), selected: isSel })
+    }
+  })
+  if (route?.result?.edges) {
+    route.result.edges.forEach(e => {
+      const u = String(e.from), v = String(e.to)
+      if (layout.has(u) && layout.has(v)) {
+        edgeMap.set(`${u}|${v}`, { u, v, weight: weightMap.get(`${u}|${v}`) ?? e.cost, selected: true })
+      }
+    })
+  }
+  const edgeList = Array.from(edgeMap.values())
+  const showLabels = preview.nodes <= 45
+
   return <div className="graph-container" role="img" aria-label={`Grafo con ${preview.nodes} nodos y ${preview.edges} aristas. Ruta: ${route?.result.path.join(', ') || 'sin calcular'}`}>
-    <svg viewBox="0 0 700 410" preserveAspectRatio="xMidYMid meet">
-      {edges.map(([u, v], i) => <line key={`${u}-${v}-${i}`} x1={layout.get(String(u))![0]} y1={layout.get(String(u))![1]}
-        x2={layout.get(String(v))![0]} y2={layout.get(String(v))![1]}
-        stroke={selected.has(`${u}|${v}`) ? '#681C32' : '#A89D92'} strokeWidth={selected.has(`${u}|${v}`) ? 3.5 : 1.2} />)}
-      {[...layout].map(([id, [x, y]]) => <g key={id}>
-        <circle cx={x} cy={y} r={preview.nodes < 50 ? 8 : 3} fill={id === String(route?.source) ? '#8A6418' : id === String(route?.target) ? '#681C32' : '#315D65'} />
-        {preview.nodes < 50 && <text x={x + 10} y={y + 4} fontSize="12" fill="#1F1B1C">{id}</text>}
-      </g>)}
+    <svg viewBox="0 0 700 410" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: 'auto' }}>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#8c7e73" />
+        </marker>
+        <marker id="arrow-selected" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#681C32" />
+        </marker>
+      </defs>
+
+      {/* 1. Líneas de aristas */}
+      {edgeList.map(({ u, v, selected }, i) => {
+        const [x1, y1] = layout.get(u)!
+        const [x2, y2] = layout.get(v)!
+        return <line key={`line-${u}-${v}-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke={selected ? '#681C32' : '#A89D92'}
+          strokeWidth={selected ? 4 : 1.5}
+          markerEnd={selected ? 'url(#arrow-selected)' : 'url(#arrow)'} />
+      })}
+
+      {/* 2. Etiquetas de peso y costo */}
+      {showLabels && edgeList.map(({ u, v, weight, selected }, i) => {
+        if (weight === undefined || weight === null) return null
+        const [x1, y1] = layout.get(u)!
+        const [x2, y2] = layout.get(v)!
+        const dx = x2 - x1, dy = y2 - y1
+        const len = Math.hypot(dx, dy) || 1
+        const midX = (x1 + x2) / 2
+        const midY = (y1 + y2) / 2
+        const nx = -dy / len, ny = dx / len
+        const lblX = midX + nx * 11
+        const lblY = midY + ny * 11
+        const textStr = String(weight)
+        const badgeW = Math.max(22, textStr.length * 7 + 8)
+
+        return <g key={`lbl-${u}-${v}-${i}`}>
+          <rect x={lblX - badgeW / 2} y={lblY - 9} width={badgeW} height={17} rx={4}
+            fill={selected ? '#681C32' : '#ffffff'}
+            stroke={selected ? '#dec697' : '#c8b8a8'}
+            strokeWidth={selected ? 1.5 : 1} />
+          <text x={lblX} y={lblY + 3.5} textAnchor="middle" fontSize="10" fontWeight="700"
+            fill={selected ? '#ffffff' : '#3d322c'} fontFamily="'Source Sans 3', monospace">
+            {textStr}
+          </text>
+        </g>
+      })}
+
+      {/* 3. Nodos */}
+      {[...layout].map(([id, [x, y]]) => {
+        const isSource = id === String(route?.source)
+        const isTarget = id === String(route?.target)
+        const isPath = pathNodes.has(id)
+        const r = preview.nodes < 50 ? (isSource || isTarget ? 15 : 13) : 4
+        const fillColor = isSource ? '#8A6418' : isTarget ? '#681C32' : isPath ? '#7a3045' : '#315D65'
+
+        return <g key={`node-${id}`}>
+          <circle cx={x} cy={y} r={r} fill={fillColor} stroke="#ffffff" strokeWidth={preview.nodes < 50 ? 2.5 : 1} />
+          {preview.nodes < 50 && <text x={x} y={y + 4} textAnchor="middle" fontSize={id.length > 2 ? '9.5' : '11'}
+            fontWeight="700" fill="#ffffff" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>}
+          {isSource && preview.nodes < 50 && <text x={x} y={y - 18} textAnchor="middle" fontSize="10" fontWeight="700" fill="#8A6418">Origen</text>}
+          {isTarget && preview.nodes < 50 && <text x={x} y={y + 26} textAnchor="middle" fontSize="10" fontWeight="700" fill="#681C32">Destino</text>}
+        </g>
+      })}
     </svg>
     {preview.nodes > 150 && <p className="fineprint">Se muestran los primeros 150 nodos y todos los nodos de la ruta calculada.</p>}
     {preview.display_limited && <p className="fineprint">Red grande: se limita la vista previa, no el cálculo.</p>}

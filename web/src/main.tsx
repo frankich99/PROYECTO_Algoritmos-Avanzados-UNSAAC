@@ -140,6 +140,51 @@ function App() {
   const [jsonDraft, setJsonDraft] = useState(JSON.stringify(initialGraph, null, 2))
   const [textDraft, setTextDraft] = useState('A B 4\nA C 10\nB C 2')
   const [editorError, setEditorError] = useState('')
+  const [pasteFeedback, setPasteFeedback] = useState('')
+
+  function handlePasteNodesText(rawText: string) {
+    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+    const parsed: { id: string; lat: string; lon: string }[] = []
+    for (const line of lines) {
+      if (line.startsWith('#') || line.startsWith('//') || line.startsWith('---') || line.startsWith('===')) continue
+      if (/^(id|lat|nodo|nombre)/i.test(line)) continue
+      const tokens = line.split(/[|\t,]+/).map(t => t.trim()).filter(Boolean)
+      const cleanTokens = tokens.length > 1 ? tokens : line.split(/\s+/).filter(Boolean)
+      if (cleanTokens.length === 0) continue
+      const id = cleanTokens[0]
+      const lat = cleanTokens[1] && !isNaN(Number(cleanTokens[1])) ? cleanTokens[1] : ''
+      const lon = cleanTokens[2] && !isNaN(Number(cleanTokens[2])) ? cleanTokens[2] : ''
+      parsed.push({ id, lat, lon })
+    }
+    if (parsed.length > 0) {
+      setNodeDraft(parsed)
+      setPasteFeedback(`✓ ${parsed.length} nodos importados correctamente a la tabla.`)
+      setEditorError('')
+      setTimeout(() => setPasteFeedback(''), 4500)
+    }
+  }
+
+  function handlePasteEdgesText(rawText: string) {
+    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+    const parsed: { origin: string; destination: string; weight: string }[] = []
+    for (const line of lines) {
+      if (line.startsWith('#') || line.startsWith('//') || line.startsWith('---') || line.startsWith('===')) continue
+      if (/^(origen|dest|peso|from|to|weight|u|v)/i.test(line)) continue
+      const tokens = line.split(/[|\t,]+/).map(t => t.trim()).filter(Boolean)
+      const cleanTokens = tokens.length > 1 ? tokens : line.split(/\s+/).filter(Boolean)
+      if (cleanTokens.length >= 3) {
+        parsed.push({ origin: cleanTokens[0], destination: cleanTokens[1], weight: cleanTokens[2] })
+      } else if (cleanTokens.length === 2) {
+        parsed.push({ origin: cleanTokens[0], destination: cleanTokens[1], weight: '1' })
+      }
+    }
+    if (parsed.length > 0) {
+      setEdgeDraft(parsed)
+      setPasteFeedback(`✓ ${parsed.length} aristas dirigidas importadas correctamente a la tabla.`)
+      setEditorError('')
+      setTimeout(() => setPasteFeedback(''), 4500)
+    }
+  }
   const [mapRequested, setMapRequested] = useState(0)
   const routeAbort = useRef<AbortController | null>(null)
   const conditionAbort = useRef<AbortController | null>(null)
@@ -478,19 +523,121 @@ function App() {
       {section === 'Instancias' && <div className="reading-page"><p className="section-label">Preparar datos / 02</p><h1>Construye una instancia verificable</h1>
         <p>El docente puede dictar una red nueva. Todos los métodos usarán las mismas aristas y pesos.</p>
         <div className="segmented tabs">{(['tabla', 'json', 'archivo', 'generar'] as const).map(tab => <button type="button" aria-pressed={editorMode === tab} className={editorMode === tab ? 'active' : ''} onClick={() => { setEditorMode(tab); setEditorError('') }} key={tab}>{({ tabla: 'Nodos y aristas', json: 'JSON', archivo: 'CSV / TXT', generar: 'Generar' })[tab]}</button>)}</div>
-        {editorMode === 'tabla' && <div className="editor-grid"><section><h2>Nodos</h2><p className="fineprint">Coordenadas opcionales. Si no se proporcionan, se dibuja un grafo abstracto.</p>
-          {nodeDraft.map((node, i) => <div className="editor-row" key={i}><label>ID<input aria-label={`Nodo ${i + 1} ID`} value={node.id} onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, id: e.target.value } : n))} /></label>
-            <label>Latitud<input aria-label={`Nodo ${i + 1} latitud`} value={node.lat} onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, lat: e.target.value } : n))} /></label>
-            <label>Longitud<input aria-label={`Nodo ${i + 1} longitud`} value={node.lon} onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, lon: e.target.value } : n))} /></label>
-            <button type="button" aria-label={`Eliminar nodo ${i + 1}`} onClick={() => setNodeDraft(old => old.filter((_, j) => j !== i))}>Quitar</button></div>)}
-          <button type="button" onClick={() => setNodeDraft(old => [...old, { id: '', lat: '', lon: '' }])}>Agregar nodo</button></section>
-          <section><h2>Aristas dirigidas</h2><p className="fineprint">Para dos sentidos, introduce dos aristas. El peso debe ser finito y no negativo.</p>
-            {edgeDraft.map((edge, i) => <div className="editor-row" key={i}><label>Origen<input aria-label={`Arista ${i + 1} origen`} value={edge.origin} onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, origin: e.target.value } : n))} /></label>
-              <label>Destino<input aria-label={`Arista ${i + 1} destino`} value={edge.destination} onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, destination: e.target.value } : n))} /></label>
-              <label>Peso<input aria-label={`Arista ${i + 1} peso`} value={edge.weight} onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, weight: e.target.value } : n))} /></label>
+        {editorMode === 'tabla' && <div className="editor-grid">
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <h2 style={{ margin: 0 }}>Nodos</h2>
+              <button
+                type="button"
+                className="text-button"
+                style={{ fontSize: '0.82rem', fontWeight: 600 }}
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText()
+                    if (text && text.trim()) handlePasteNodesText(text)
+                    else {
+                      const p = prompt('Pega aquí los nodos (ej. "A | -13.516 | -71.978" o solo IDs por línea):')
+                      if (p) handlePasteNodesText(p)
+                    }
+                  } catch {
+                    const p = prompt('Pega aquí los nodos (ej. "A | -13.516 | -71.978" o solo IDs por línea):')
+                    if (p) handlePasteNodesText(p)
+                  }
+                }}
+                title="Pega texto de nodos directamente desde el portapapeles"
+              >
+                📋 Pegar tabla de Nodos
+              </button>
+            </div>
+            <p className="fineprint">Coordenadas opcionales. Puedes presionar <strong>Ctrl+V</strong> en cualquier celda para pegar una tabla completa.</p>
+            {nodeDraft.map((node, i) => <div className="editor-row" key={i}>
+              <label>ID<input aria-label={`Nodo ${i + 1} ID`} value={node.id}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteNodesText(clip)
+                  }
+                }}
+                onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, id: e.target.value } : n))} /></label>
+              <label>Latitud<input aria-label={`Nodo ${i + 1} latitud`} value={node.lat}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteNodesText(clip)
+                  }
+                }}
+                onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, lat: e.target.value } : n))} /></label>
+              <label>Longitud<input aria-label={`Nodo ${i + 1} longitud`} value={node.lon}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteNodesText(clip)
+                  }
+                }}
+                onChange={e => setNodeDraft(old => old.map((n, j) => j === i ? { ...n, lon: e.target.value } : n))} /></label>
+              <button type="button" aria-label={`Eliminar nodo ${i + 1}`} onClick={() => setNodeDraft(old => old.filter((_, j) => j !== i))}>Quitar</button></div>)}
+            <button type="button" onClick={() => setNodeDraft(old => [...old, { id: '', lat: '', lon: '' }])}>Agregar nodo</button>
+          </section>
+
+          <section>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+              <h2 style={{ margin: 0 }}>Aristas dirigidas</h2>
+              <button
+                type="button"
+                className="text-button"
+                style={{ fontSize: '0.82rem', fontWeight: 600 }}
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText()
+                    if (text && text.trim()) handlePasteEdgesText(text)
+                    else {
+                      const p = prompt('Pega aquí las aristas (ej. "A | B | 4" o "A B 4"):')
+                      if (p) handlePasteEdgesText(p)
+                    }
+                  } catch {
+                    const p = prompt('Pega aquí las aristas (ej. "A | B | 4" o "A B 4"):')
+                    if (p) handlePasteEdgesText(p)
+                  }
+                }}
+                title="Pega texto de aristas directamente desde el portapapeles"
+              >
+                📋 Pegar tabla de Aristas
+              </button>
+            </div>
+            <p className="fineprint">Para dos sentidos, introduce dos aristas. Puedes presionar <strong>Ctrl+V</strong> en cualquier celda para pegar.</p>
+            {edgeDraft.map((edge, i) => <div className="editor-row" key={i}>
+              <label>Origen<input aria-label={`Arista ${i + 1} origen`} value={edge.origin}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteEdgesText(clip)
+                  }
+                }}
+                onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, origin: e.target.value } : n))} /></label>
+              <label>Destino<input aria-label={`Arista ${i + 1} destino`} value={edge.destination}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteEdgesText(clip)
+                  }
+                }}
+                onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, destination: e.target.value } : n))} /></label>
+              <label>Peso<input aria-label={`Arista ${i + 1} peso`} value={edge.weight}
+                onPaste={e => {
+                  const clip = e.clipboardData.getData('text')
+                  if (clip && (clip.includes('\n') || clip.includes('|') || clip.includes('\t'))) {
+                    e.preventDefault(); handlePasteEdgesText(clip)
+                  }
+                }}
+                onChange={e => setEdgeDraft(old => old.map((n, j) => j === i ? { ...n, weight: e.target.value } : n))} /></label>
               <button type="button" aria-label={`Eliminar arista ${i + 1}`} onClick={() => setEdgeDraft(old => old.filter((_, j) => j !== i))}>Quitar</button></div>)}
-            <button type="button" onClick={() => setEdgeDraft(old => [...old, { origin: '', destination: '', weight: '' }])}>Agregar arista</button></section>
-          <button type="button" className="primary" onClick={applyTable}>Validar tabla y calcular</button></div>}
+            <button type="button" onClick={() => setEdgeDraft(old => [...old, { origin: '', destination: '', weight: '' }])}>Agregar arista</button>
+          </section>
+
+          {pasteFeedback && <p className="status" style={{ gridColumn: '1 / -1', margin: '0.4rem 0', fontWeight: 600, color: '#2e7d32', background: '#edf7ed', border: '1px solid #c8e6c9', padding: '0.6rem 0.9rem', borderRadius: '4px' }}>{pasteFeedback}</p>}
+
+          <button type="button" className="primary" onClick={applyTable}>Validar tabla y calcular</button>
+        </div>}
         {editorMode === 'json' && <div className="editor-box"><label>Instancia JSON: nodos, aristas y pesos<textarea rows={16} spellCheck={false} value={jsonDraft} onChange={e => setJsonDraft(e.target.value)} /></label>
           <button className="primary" type="button" onClick={applyJson}>Validar JSON y calcular</button></div>}
         {editorMode === 'archivo' && <div className="editor-box"><label>Importar JSON, CSV o TXT<input type="file" accept=".json,.csv,.txt" onChange={importFile} /></label>

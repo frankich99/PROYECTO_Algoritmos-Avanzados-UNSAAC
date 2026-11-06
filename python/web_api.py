@@ -439,8 +439,13 @@ def instance_validate(spec: InstanceSpec, metric: Literal["time", "distance"] = 
     try:
         inst = _instance(spec, metric)
         stride = max(1, math.ceil(inst.num_edges / 3000))
-        display_edges = [[u, v] for index, (u, v) in enumerate(
-            (u, v) for u in inst.nodes for v, _ in inst.adj.get(u, [])) if index % stride == 0]
+        display_edges = [
+            [u, v, int(w) if isinstance(w, (int, float)) and float(w).is_integer() else round(float(w), 2)]
+            for index, (u, v, w) in enumerate(
+                (u, v, w) for u in inst.nodes for v, w in inst.adj.get(u, [])
+            )
+            if index % stride == 0
+        ]
         return {"valid": True, "name": inst.name, "nodes": inst.num_nodes, "edges": inst.num_edges,
                  "ids": inst.nodes, "coords": inst.coords, "metric": inst.metric,
                  "geographic": spec.kind in ("center", "urban") and inst.metadata.get("coordinate_kind") == "lon_lat_wgs84",

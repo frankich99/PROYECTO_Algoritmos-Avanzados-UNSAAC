@@ -102,9 +102,60 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
         ids: exampleNodes.map(n => n.id),
         coords,
         geographic: false,
-        display_edges: exampleEdges.map(e => [e.origin, e.destination]),
+        display_edges: exampleEdges.map(e => [e.origin, e.destination, e.weight]),
         display_limited: false,
         metric: 'distancia',
+      }
+      return prev as T
+    }
+
+    if (spec.kind === 'custom' && spec.data) {
+      const data = spec.data as { nodes?: { id: string; lon?: number; lat?: number }[]; edges?: { origin: string; destination: string; weight?: number }[] }
+      const nodes = (data.nodes || []).map(n => typeof n === 'string' ? { id: n } : n)
+      const edges = (data.edges || [])
+      const coords: Record<string, [number, number]> = {}
+      nodes.forEach(n => {
+        if (n.lon !== undefined && n.lat !== undefined && Number.isFinite(n.lon) && Number.isFinite(n.lat)) {
+          coords[n.id] = [n.lon, n.lat]
+        }
+      })
+      const prev: Preview = {
+        name: (spec.data.name as string) || 'Instancia creada en la web',
+        nodes: nodes.length,
+        edges: edges.length,
+        ids: nodes.map(n => n.id),
+        coords,
+        geographic: Object.keys(coords).length === nodes.length && nodes.length > 0,
+        display_edges: edges.map(e => [e.origin, e.destination, e.weight]),
+        display_limited: false,
+        metric: 'peso',
+      }
+      return prev as T
+    }
+
+    if (spec.kind === 'text' && spec.text) {
+      const lines = spec.text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.startsWith('//'))
+      const nodesSet = new Set<string>()
+      const parsedEdges: [string, string, number][] = []
+      lines.forEach(l => {
+        const parts = l.split(/[,\s\t|]+/).filter(Boolean)
+        if (parts.length >= 3 && !isNaN(Number(parts[2]))) {
+          const u = parts[0], v = parts[1], w = Number(parts[2])
+          nodesSet.add(u); nodesSet.add(v)
+          parsedEdges.push([u, v, w])
+        }
+      })
+      const nodeIds = Array.from(nodesSet)
+      const prev: Preview = {
+        name: 'Instancia de texto',
+        nodes: nodeIds.length,
+        edges: parsedEdges.length,
+        ids: nodeIds,
+        coords: {},
+        geographic: false,
+        display_edges: parsedEdges,
+        display_limited: false,
+        metric: 'peso',
       }
       return prev as T
     }
@@ -120,7 +171,7 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
         ids: osm.nodes.map(n => String(n.id)),
         coords,
         geographic: true,
-        display_edges: osm.edges.slice(0, 3000).map(e => [String(e.origin), String(e.destination)]),
+        display_edges: osm.edges.slice(0, 3000).map(e => [String(e.origin), String(e.destination), e.travel_time_sec]),
         display_limited: osm.edges.length > 3000,
         metric: 'tiempo',
       }
@@ -137,7 +188,7 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
       ids: centerNodes.map(n => n.id),
       coords,
       geographic: true,
-      display_edges: centerEdges.map(e => [e.origin, e.destination]),
+      display_edges: centerEdges.map(e => [e.origin, e.destination, e.travel_time_sec]),
       display_limited: false,
       metric: 'tiempo',
     }
@@ -227,6 +278,28 @@ export async function clientFallback<T>(path: string, body?: unknown): Promise<T
     const isUrban = req.instance?.kind === 'urban'
     const isExample = req.instance?.kind === 'example'
     const factor = req.scenario?.factor ?? 1.0
+
+    if (req.instance?.kind === 'custom' && req.instance.data) {
+      const data = req.instance.data as { nodes?: { id: string; lon?: number; lat?: number }[]; edges?: { origin: string; destination: string; weight?: number }[] }
+      const nodes = (data.nodes || []).map(n => typeof n === 'string' ? { id: n, lon: 0, lat: 0 } : { id: n.id, lon: n.lon ?? 0, lat: n.lat ?? 0 })
+      const edges = (data.edges || []).map(e => ({ origin: e.origin, destination: e.destination, length_m: Number(e.weight || 1), travel_time_sec: Number(e.weight || 1) }))
+      return solveGraph(nodes, edges, String(req.source), String(req.target), req.metric ?? 'distance', factor, 'example') as T
+    }
+    if (req.instance?.kind === 'text' && req.instance.text) {
+      const lines = req.instance.text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.startsWith('//'))
+      const nodesSet = new Set<string>()
+      const edges: { origin: string; destination: string; length_m: number; travel_time_sec: number }[] = []
+      lines.forEach(l => {
+        const parts = l.split(/[,\s\t|]+/).filter(Boolean)
+        if (parts.length >= 3 && !isNaN(Number(parts[2]))) {
+          const u = parts[0], v = parts[1], w = Number(parts[2])
+          nodesSet.add(u); nodesSet.add(v)
+          edges.push({ origin: u, destination: v, length_m: w, travel_time_sec: w })
+        }
+      })
+      const nodes = Array.from(nodesSet).map(id => ({ id, lon: 0, lat: 0 }))
+      return solveGraph(nodes, edges, String(req.source), String(req.target), req.metric ?? 'distance', factor, 'example') as T
+    }
 
     if (isUrban) {
       const osm = await getOSM()

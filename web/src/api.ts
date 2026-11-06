@@ -15,7 +15,7 @@ export type InstanceSpec = {
 export type Preview = {
   name: string; nodes: number; edges: number; ids: (string | number)[]
   coords: Record<string, [number, number]>
-  geographic: boolean; display_edges: [string | number, string | number][]
+  geographic: boolean; display_edges: [string | number, string | number, (number | undefined)?][]
   display_limited: boolean; metric: string
 }
 export type RouteRow = {
