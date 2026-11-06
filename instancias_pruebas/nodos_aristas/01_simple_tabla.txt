@@ -27,4 +27,6 @@ D      | F       | 6
 E      | F       | 2
 
 Resultado Optimo desde A hasta F:
-Costo: 7 (Ruta: A -> C -> D -> E -> F)
+Costo: 13 (Ruta: A -> B -> D -> E -> F)
+* Desglose: A->B (4) + B->D (5) + D->E (2) + E->F (2) = 13
+* Nota: La ruta alternativa A->C->D->E->F suma 2+8+2+2 = 14 (subóptima). El algoritmo encuentra 13.
