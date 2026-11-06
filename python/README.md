@@ -3,7 +3,7 @@
 Implementación modular en Python de Dijkstra con tres colas de prioridad intercambiables, $A^*$ con heurística consistente, un certificado de optimalidad y un caso aplicado sobre OpenStreetMap.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-287%20passed-brightgreen.svg)](tests/)
 [![Datos](https://img.shields.io/badge/snapshots-OSM%20%2B%20clima-informational.svg)](data/processed/)
 
 **Asignatura:** Algoritmos Avanzados (2026-II) · UNSAAC  
@@ -77,13 +77,20 @@ Códigos de salida: `0` ejecución correcta; `1` fallo de verificación; `2` ent
 
 ---
 
-## 4. Aplicación Streamlit
+## 4. Aplicación web
 
-```bash
-python -m streamlit run app.py
+La interfaz oficial es React/TypeScript en [`web/`](../web/README.md), con API FastAPI en `web_api.py`. La antigua aplicación Streamlit fue retirada. Para iniciar ambas partes desde la raíz:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn web_api:app --app-dir python --host 127.0.0.1 --port 8000
 ```
 
-Cinco secciones visibles: **Ruta** (OSM, Dijkstra/$A^*$, tres colas, plano offline o mapa base, clima histórico/local y CSV), **Comparación** (benchmark filtrable, relación frente al binario, JSON temporal y CSV), **Clima y tráfico** (fuentes separadas, supuestos y consultas API opcionales), **Traza manual** (pasos y certificado) y **Datos y método** (protocolo, límites e informe PDF). Ruta y Comparación son las tareas principales. Las consultas API no sobrescriben el experimento canónico; TomTom solo consulta un segmento. Consulte [datos y modelo](../docs/DATOS_Y_MODELO.md).
+```powershell
+cd web
+npm run dev
+```
+
+Abrir <http://127.0.0.1:5173/>. Seis vistas: **Rutas**, **Instancias**, **Comparar**, **Experimentos**, **Cobertura Cusco** y **Datos y método**. Las consultas API no sobrescriben el experimento canónico; TomTom solo consulta un segmento. Consulte [datos y modelo](../docs/DATOS_Y_MODELO.md).
 
 ---
 
@@ -92,7 +99,8 @@ Cinco secciones visibles: **Ruta** (OSM, Dijkstra/$A^*$, tres colas, plano offli
 | Archivo | Contenido |
 | :--- | :--- |
 | `data/instances/cusco_centro.json` | Instancia ilustrativa de seis nodos. Nombres reales; longitudes, pendientes y topología esquemáticas. |
-| `data/processed/cusco_osm_drive.json` | Snapshot OSM: 891 vértices y 2139 aristas dirigidas, con coordenadas y metadatos. |
+| `data/processed/cusco_osm_drive.json` | Snapshot OSM central: 891 vértices y 2139 aristas dirigidas, con coordenadas y metadatos. |
+| `data/processed/cusco_urbano_drive.json` | Snapshot OSM ampliado: consulta radial de 3 km recortada por distancia de red, 1938 vértices y 4753 aristas; `coverage_reviewed: true`. |
 | `data/processed/benchmark_results.json` | Protocolo, entorno, muestras, medianas, IQR y operaciones por escala. |
 | `data/processed/applied_results.json` | Consulta OSM, tiempos por cola, $A^*$ y sensibilidad climática. |
 | `data/processed/pilot_benchmark_results.json` | Piloto del 04/11/2026: 18 muestras, posterior al banco canónico del 28/10/2026. |
@@ -131,13 +139,13 @@ estimado de viaje de la consulta OSM, expresado en segundos.
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-La suite contiene **278 pruebas** y cubre:
+La suite contiene **287 pruebas** y cubre:
 
 * contrato común de las tres colas (inserción, extracción, `decrease_key`, claves inválidas y cortes en cascada);
 * equivalencia con Bellman-Ford, Dijkstra con arreglo y NetworkX;
 * certificado de optimalidad: $O(V+E)$ sin caminos materializados, más $O(L)$ al comprobar caminos explícitos de longitud total $L$; rechaza ciclos de peso cero desconectados;
 * validación de JSON, pesos negativos, NaN y estructuras incompletas;
-* CLI, carga OSM, clima, modelo horario de tráfico, análisis aplicado y pruebas de humo de Streamlit (no API TomTom en vivo).
+* CLI, carga OSM, clima, modelo horario de tráfico, análisis aplicado y contratos de la API web (no API TomTom en vivo).
 
 No se reporta cobertura porque no se midió con una herramienta de cobertura.
 
@@ -147,9 +155,11 @@ No se reporta cobertura porque no se midió con una herramienta de cobertura.
 
 ```text
 python/
-├── app.py
+├── web_api.py
 ├── main.py
-├── scripts/reproduce_canonical.py
+├── scripts/
+│   ├── build_urban_snapshot.py
+│   └── reproduce_canonical.py
 ├── data/
 │   ├── instances/
 │   └── processed/

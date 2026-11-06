@@ -42,6 +42,8 @@ guia_ficha_aprendizaje.tex
 .vscode/
 python/results/
 python/cache/
+/cache/
+/dist_publicable/
 
 # Agent internal tooling
 .agents/

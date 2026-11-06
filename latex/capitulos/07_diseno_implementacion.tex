@@ -2,7 +2,7 @@
 \label{sec:implementacion}
 
 \subsection{Arquitectura Modular del Sistema (4 Capas)}
-La Figura~\ref{fig:arquitectura} agrupa módulos por función: datos, colas, algoritmos y pruebas/interfaz. Es un esquema de componentes, no un diagrama literal de llamadas: Dijkstra recibe directamente el grafo y usa la cola elegida. El cálculo no necesita Streamlit ni una consulta web para las instancias locales.
+La Figura~\ref{fig:arquitectura} agrupa módulos por función: datos, colas, algoritmos y pruebas/interfaz. Es un esquema de componentes, no un diagrama literal de llamadas: Dijkstra recibe directamente el grafo y usa la cola elegida. El cálculo no necesita la interfaz web ni una consulta de red para las instancias locales.
 
 \begin{figure}[H]
     \centering
@@ -13,9 +13,9 @@ La Figura~\ref{fig:arquitectura} agrupa módulos por función: datos, colas, alg
     ]
     \node[layer, fill=purple!5, draw=purple!70] (L4) at (0, 8.20) {};
     \node[anchor=north, yshift=-4pt, text=purple!85!black, font=\scriptsize\bfseries] at (L4.north) {4. VALIDACIÓN, EXPERIMENTACIÓN Y APLICACIÓN};
-    \node[box] at (-5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{tests/}}}\\[1pt]{\fontsize{7.3}{9}\selectfont 278 pruebas automatizadas}};
+    \node[box] at (-5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{tests/}}}\\[1pt]{\fontsize{7.3}{9}\selectfont 287 pruebas automatizadas}};
     \node[box] at (0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{scalability\_benchmark.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Benchmark Canónico (1350 corridas)}};
-    \node[box] at (5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{app.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Streamlit Web + Plotly}};
+    \node[box] at (5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{web/} + \texttt{web\_api.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont React + FastAPI}};
 
     \node[layer, fill=green!5, draw=green!60!black] (L3) at (0, 5.55) {};
     \node[anchor=north, yshift=-4pt, text=green!50!black, font=\scriptsize\bfseries] at (L3.north) {3. ALGORITMOS Y VERIFICACIÓN FORMAL};
@@ -55,7 +55,7 @@ El software se estructura modularmente dentro del directorio \texttt{python/}:
     \item \texttt{src/services/traffic.py}: Modelo de congestión vehicular horaria y coeficientes por clase de vía.
     \item \texttt{src/verification/certificate.py}: Verifica distancias y predecesores en $O(|V|+|E|)$, más el recorrido de los caminos explícitos si se proporcionan; compara soluciones.
     \item \texttt{src/benchmarks/scalability\_benchmark.py}: Banco de experimentación sistemática para medir tiempos y primitivas en perfiles sintéticos dispersos y densos.
-    \item \texttt{app.py}: Aplicación web interactiva desarrollada en Streamlit con visualizaciones geográficas Plotly y cinco módulos operativos.
+    \item \texttt{python/web\_api.py} y \texttt{web/}: API FastAPI y aplicación React/TypeScript con MapLibre para consultar rutas, comparar mediciones y revisar la cobertura OSM; no alteran los JSON canónicos.
     \item \texttt{main.py} y \texttt{src/cli.py}: Interfaz de línea de comandos para automatización y demostración en vivo.
 \end{enumerate}
 
@@ -73,12 +73,15 @@ Los resultados y \textit{snapshots} principales se guardan en JSON (Tabla~\ref{t
         \midrule
         \url{data/instances/cusco_centro.json} & Instancia nuclear didáctica (6 nodos, 9 aristas, longitudes, pendientes y tiempos). \\
         \url{data/processed/cusco_osm_drive.json} & Recorte OSM guardado (891 nodos con lat/lon WGS84, 2,139 aristas dirigidas); sin pendientes ni tráfico por tramo. \\
+        \url{data/processed/cusco_urbano_drive.json} & Snapshot OSM ampliado (1,938 nodos y 4,753 aristas) de una consulta radial de 3 km recortada por distancia de red; revisado y separado del caso canónico. \\
         \url{data/processed/benchmark_results.json} & Protocolo experimental, ambiente, muestras cronometradas, medianas e IQR de las 10 escalas. \\
         \url{data/processed/applied_results.json} & Mediciones de la consulta OSM, comparación de colas, poda de $A^*$ y sensibilidad climática. \\
         \url{data/processed/weather_cusco.json} & Respuesta meteorológica posterior; no es la observación usada en \texttt{applied\_results.json}. \\
         \bottomrule
     \end{tabularx}
 \end{table}
+
+\clearpage
 
 \begin{lstlisting}[language=Python, caption={Extracto del esquema JSON serializado para un segmento vial cusqueño}]
 {

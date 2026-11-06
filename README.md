@@ -1,7 +1,8 @@
 # Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](python/tests/)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.2.0-blue.svg)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-289%20passed-brightgreen.svg)](python/tests/)
 [![Documento](https://img.shields.io/badge/informe-LaTeX-orange.svg)](latex/main.pdf)
 [![Red OSM](https://img.shields.io/badge/OSM-891%20nodos%20%7C%202139%20aristas-informational.svg)](python/data/processed/cusco_osm_drive.json)
 
@@ -32,11 +33,14 @@ de esos componentes. Seguimiento y defensa individual: [control de entrega](docs
 
 * **[latex/main.pdf](latex/main.pdf):** informe académico con 14 partes, referencias y anexos.
 * **[GUIA.md](GUIA.md):** guía breve de sustentación con respuestas y comandos.
-* **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** estado técnico al 04/11/2026 y evidencias individuales pendientes; sin calendario retrospectivo de reuniones.
+* **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** estado técnico al 05/11/2026 y evidencias individuales pendientes; sin calendario retrospectivo de reuniones.
 * **[docs/DATOS_Y_MODELO.md](docs/DATOS_Y_MODELO.md):** procedencia, unidades y alcance de la web y del experimento canónico.
-* **[python/app.py](python/app.py):** aplicación Streamlit integrada con mapas cartográficos OpenStreetMap.
+* **[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md):** build de producción, paquete publicable y despliegue en Docker, Render o Railway.
+* **[CHANGELOG.md](CHANGELOG.md):** historial de versiones; la versión actual es **v1.2.0**.
+* **[web/](web/):** aplicación oficial React + TypeScript con API FastAPI, mapas MapLibre e instrucciones en [web/README.md](web/README.md).
+* **[python/scripts/build_publicable.py](python/scripts/build_publicable.py):** genera la carpeta y el ZIP publicables con backend, datos y web compilada.
 * **[python/scripts/reproduce_canonical.py](python/scripts/reproduce_canonical.py):** regeneración del benchmark, del caso OSM, de las tablas y de las figuras.
-* **[colab/rutas_minimas_cusco.ipynb](colab/rutas_minimas_cusco.ipynb):** cuaderno didáctico de 26 celdas listo para Google Colab. No es la fuente de los resultados canónicos del informe.
+* **[colab/rutas_minimas_cusco.ipynb](colab/rutas_minimas_cusco.ipynb):** cuaderno didáctico organizado por modelo, tres colas, Dijkstra, A*, validación y experimento para Colab o Jupyter local; no produce el banco canónico. Véase [su guía](colab/README.md).
 
 ---
 
@@ -75,24 +79,44 @@ $A^*$ se incluye como extensión para consultas punto a punto. Usa una heurísti
 
 ---
 
-## 3. Aplicación Streamlit
+## 3. Aplicación web
 
-La aplicación recupera cinco secciones accesibles desde la navegación, sin la barra superior de despliegue de Streamlit. Las dos primeras siguen siendo las tareas centrales:
+La interfaz oficial es **React + TypeScript** (`web/`), conectada a la API **FastAPI** (`python/web_api.py`). La antigua aplicación Streamlit se retiró. Seis vistas:
 
-1. **Ruta:** seleccionar recorrido o nodos OSM, costo, Dijkstra o $A^*$ y cola; contrastar las tres colas con $A^*$ sobre la misma consulta (sin afirmar tiempos), visualizar un plano local sin teselas o un mapa base opcional, y descargar la secuencia CSV. Clima histórico, snapshot local, consulta temporal y horario simulado son **escenarios uniformes**, no aforos por tramo.
-2. **Comparación:** filtrar topología y escalas, ver medianas, IQR y relación frente al heap binario; descargar CSV e importar temporalmente un benchmark compatible. El archivo externo no acredita que las colas hayan usado las mismas instancias.
-3. **Clima y tráfico:** separar el Open-Meteo histórico del informe y la lectura OpenWeatherMap local posterior, explorar supuestos horarios y consultar opcionalmente un proveedor o un segmento TomTom.
-4. **Traza manual:** recorrer cada extracción de Dijkstra con distancias, predecesores, relajaciones y certificado de optimalidad; exportar CSV.
-5. **Datos y método:** revisar fuentes, protocolo, límites del estudio y descargar el informe PDF si está presente.
+1. **Rutas:** elegir red OSM, instancia ilustrativa o grafo propio; seleccionar origen y destino por ID o coordenadas; resolver con Dijkstra o $A^*$ y contrastar las tres colas. Permite clima histórico, snapshot local o consulta temporal y horario simulado como **escenarios uniformes**, no aforos por tramo.
+2. **Instancias:** construir un grafo dirigido desde tabla, JSON o lista de aristas TXT/CSV, o generarlo con semilla. Los pesos genéricos se muestran como «peso», no como metros o segundos.
+3. **Comparar:** revisar el banco canónico por perfil y escala, y agregar consultas de la sesión sin mezclarlas con el experimento histórico.
+4. **Experimentos:** medir redes sintéticas nuevas, separadas del informe y etiquetadas como resultados de sesión.
+5. **Cobertura Cusco:** consultar el centro de 1,5 km o el centro ampliado de 3 km; cada uno declara su alcance y ninguno representa todo Cusco.
+6. **Datos y método:** revisar fuentes, límites, verificación y enlaces al contrato OpenAPI.
 
 Las consultas de API no escriben en los datos del informe. Si una clave se expuso, rótela antes de usar la integración: la web exige introducir explícitamente una clave nueva en el campo de contraseña; la CLI puede usar `OPENWEATHERMAP_API_KEY` tras sustituir la anterior. Nunca guarde claves en Git.
 
-```bash
-cd python
-..\.venv\Scripts\python.exe -m streamlit run app.py
+En **dos terminales**, desde la raíz y desde `web/`:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn web_api:app --app-dir python --host 127.0.0.1 --port 8000
 ```
 
-La interfaz usa Plotly para la red y los gráficos interactivos. El cálculo y el plano local funcionan sin Internet; solo el mapa base necesita teselas externas. Graphviz exporta `.dot` desde la CLI.
+```powershell
+cd web
+npm run dev
+```
+
+Abrir <http://127.0.0.1:5173/>. Vite reenvía `/api`, `/docs` y `/openapi.json` al backend. La visualización usa MapLibre; el cálculo y el plano local funcionan sin Internet, y solo el mapa base de calles necesita teselas externas. Graphviz exporta `.dot` desde la CLI.
+
+Para producción, un solo proceso sirve la web compilada y la API en el mismo
+origen:
+
+```powershell
+cd web
+npm run build
+cd ..
+.\.venv\Scripts\python.exe -m uvicorn web_api:app --app-dir python --host 0.0.0.0 --port 8000
+```
+
+Abrir <http://127.0.0.1:8000/>. El paquete publicable se genera con
+`python/scripts/build_publicable.py` y se explica en [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
 
 ---
 
@@ -110,7 +134,7 @@ python -m pip install -r python/requirements.txt
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-Última ejecución de esta revisión: **278 pruebas aprobadas**. Cubren las colas, oráculos, certificado, CLI, OSM, clima, validación de benchmark importado y las cinco secciones de la aplicación.
+Última ejecución de esta revisión: **289 pruebas aprobadas**. Cubren las colas, oráculos, certificado, CLI, OSM, clima, validación de benchmark importado y la API de la web nueva.
 
 ### CLI
 
@@ -157,6 +181,9 @@ cd latex
 .
 ├── GUIA.md
 ├── README.md
+├── web/                  # React, TypeScript y mapa MapLibre
+│   ├── README.md         # Inicio de FastAPI + Vite y cobertura real
+│   └── src/              # Formularios, resultados y visualización
 ├── colab/
 │   ├── README.md
 │   └── rutas_minimas_cusco.ipynb   # Cuaderno didáctico para Google Colab
@@ -167,10 +194,12 @@ cd latex
 │   ├── tablas/                     # tablas usadas por el informe
 │   └── figuras/                    # figuras usadas por el informe
 └── python/
-    ├── app.py              # aplicación Streamlit
+    ├── web_api.py          # API FastAPI; reutiliza python/src/
     ├── main.py             # CLI y demostración
     ├── scripts/
-    │   └── reproduce_canonical.py
+    │   ├── reproduce_canonical.py
+    │   ├── build_urban_snapshot.py   # snapshot ampliado con revisión previa
+    │   └── build_publicable.py       # backend + datos + web compilada en un ZIP
     ├── data/
     │   ├── instances/      # instancia ilustrativa y casos de prueba
     │   └── processed/      # snapshots OSM, clima y resultados JSON
@@ -182,7 +211,7 @@ cd latex
     │   ├── services/       # Open-Meteo y factor climático
     │   ├── verification/   # certificado de optimalidad
     │   └── visualization/  # figuras y Graphviz
-    └── tests/              # 278 pruebas
+    └── tests/              # 289 pruebas (incluida la API web)
 ```
 
 ---

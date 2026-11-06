@@ -1,9 +1,10 @@
 # Control de requisitos y cierre del Grupo 5
 
 Referencia: `Descripcion del proyecto.pdf`, apartados 5, 6, 8, 9 y 12.
-Estado revisado al **04/11/2026**. Esta es la fecha objetivo comunicada por
-el equipo, no una fecha oficial ni constancia de recepción. Las fechas
-históricas citadas abajo proceden de commits o registros guardados.
+Estado revisado al **05/11/2026**. La fecha objetivo comunicada por el equipo
+fue el **04/11/2026**; ninguna de las dos es una fecha oficial ni constancia de
+recepción. Las fechas históricas citadas abajo proceden de commits o registros
+guardados.
 
 ## Alcance comprobable
 
@@ -153,8 +154,9 @@ el snapshot posterior o una lectura temporal como opciones distintas. La
 traza permite examinar distancias y predecesores por paso; la comparación
 añade la relación entre medianas sin afirmar significación estadística.
 El botón de despliegue de Streamlit se oculta mediante configuración de
-cliente y estilo de la aplicación. Última suite: **278 pruebas aprobadas**;
-el PDF sigue exigiendo evidencias individuales que la interfaz no genera.
+cliente y estilo de la aplicación. En esa fecha, la suite tenía **278 pruebas
+aprobadas**; el PDF sigue exigiendo evidencias individuales que la interfaz no
+genera.
 
 ## Comprobación del 04/11/2026
 
@@ -173,3 +175,37 @@ el PDF sigue exigiendo evidencias individuales que la interfaz no genera.
 - Sigue sin comprobarse la instalación limpia y sin constancia de bitácoras
   individuales, actas, recepción de la segunda entrega o defensa. Confirmar
   además la revocación de la clave expuesta indicada arriba.
+
+## Actualización del 05/11/2026
+
+- **Interfaz única.** Se retiraron `python/app.py`, `python/tests/test_streamlit_app.py`
+  y `python/.streamlit/`. También se quitaron `streamlit` y `plotly` de
+  `python/requirements.txt`. La interfaz vigente es React/TypeScript en `web/`
+  con API FastAPI en `python/web_api.py`; no queda una segunda web que mantener.
+- **Suite.** Al retirar las 11 pruebas de Streamlit, la suite pasa de 298 a
+  **287 casos**. Las pruebas de `test_web_api.py` cubren catálogo, validación
+  de coberturas, geometría OSM, instancias personalizadas, escenarios uniformes
+  y separación entre banco canónico y experimentos de sesión.
+- **Cobertura ampliada.** Se publicó `python/data/processed/cusco_urbano_drive.json`
+  como snapshot **independiente**: consulta radial de 3000 m alrededor de
+  `(-13.5165, -71.9788)`, recortada por distancia de red, base OSM del
+  10/08/2026, 1938 nodos y 4753 aristas colapsadas (4798 registros). El 47,0 %
+  de las aristas conserva geometría vial; la mayor componente fuertemente
+  conexa cubre el 99,9 % y la débil el 100 %. La distancia máxima al centro es
+  2735 m. Cuatro rutas de muestra resultaron finitas.
+- **Revisión en dos pasos.** `python/scripts/build_urban_snapshot.py --xml`
+  escribe un `*.pending.json`, comprueba límites, distancia, conectividad y
+  rutas, y solo con `--publish --reviewed` escribe `coverage_reviewed: true`.
+  La API mantiene la cobertura oculta si el campo falta, el archivo es inválido
+  o se superan 5000 nodos o 30000 aristas.
+- **Verificación en vivo.** La API en `127.0.0.1:8000` anunció la cobertura
+  ampliada, validó 1938 nodos y 4753 aristas, y resolvió una ruta por ID y por
+  coordenadas con costo de 348,22 s y cuatro comparaciones de cola. El mismo
+  par se rechazó correctamente cuando el punto estaba a 443 m de un nodo vial.
+- **Alcance.** El snapshot ampliado **no es todo Cusco** ni una cobertura
+  administrativa completa; su etiqueta visible es «Centro ampliado, snapshot
+  OSM (radio 3 km)». La web y la documentación declaran ese límite. Ampliar más
+  la cobertura exige una extracción y una revisión nuevas.
+- **Pendiente.** Repetir la suite y el build en un entorno limpio, revisar el
+  PDF recompilado y confirmar la rotación de la clave expuesta. Las evidencias
+  individuales de aprendizaje y defensa siguen fuera del alcance del código.

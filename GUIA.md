@@ -4,7 +4,7 @@
 **Curso:** Algoritmos Avanzados (UNSAAC, 2026-II) · **Grupo 5**  
 **Docente:** Ing. Héctor Eduardo Ugarte Rojas
 
-Esta guía resume qué afirmar y qué comandos ejecutar. Las cifras proceden de los JSON en `python/data/processed/`. Consultar [`docs/DATOS_Y_MODELO.md`](docs/DATOS_Y_MODELO.md) para unidades y campos faltantes y [`docs/CONTROL_ENTREGA.md`](docs/CONTROL_ENTREGA.md) para el estado al 04/11/2026 y las evidencias individuales pendientes.
+Esta guía resume qué afirmar y qué comandos ejecutar. Las cifras proceden de los JSON en `python/data/processed/`. Consultar [`docs/DATOS_Y_MODELO.md`](docs/DATOS_Y_MODELO.md) para unidades y campos faltantes y [`docs/CONTROL_ENTREGA.md`](docs/CONTROL_ENTREGA.md) para el estado al 05/11/2026 y las evidencias individuales pendientes.
 
 ---
 
@@ -51,7 +51,7 @@ No. Dijkstra, las tres colas, $A^*$ y el certificado son código propio. Network
 
 ### ¿Plotly o Graphviz?
 
-Plotly se usa en la aplicación Streamlit para los gráficos interactivos. Graphviz se usa para exportar la especificación `.dot` de la ruta. No se descartó Plotly.
+La web oficial usa React/TypeScript y MapLibre; Plotly se retiró junto con la aplicación Streamlit. Graphviz se usa para exportar la especificación `.dot` de la ruta desde la CLI.
 
 ### ¿Cuánto poda $A^*$?
 
@@ -151,7 +151,7 @@ cd ..
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-Última verificación de esta revisión: **278 passed** (duración variable).
+Última verificación de esta revisión: **287 passed** (duración variable).
 
 ### 3.9 Reproducción canónica
 
@@ -167,14 +167,20 @@ Para reescribir solo tablas y figuras:
 .\.venv\Scripts\python.exe python/scripts/reproduce_canonical.py --skip-benchmark --skip-applied
 ```
 
-### 3.10 Aplicación Streamlit
+### 3.10 Aplicación web (React + FastAPI)
+
+En dos terminales, desde la raíz y desde `web/`:
 
 ```powershell
-cd python
-..\.venv\Scripts\python.exe -m streamlit run app.py
+.\.venv\Scripts\python.exe -m uvicorn web_api:app --app-dir python --host 127.0.0.1 --port 8000
 ```
 
-Abrir la URL que imprime Streamlit (por defecto `http://localhost:8501`).
+```powershell
+cd web
+npm run dev
+```
+
+Abrir <http://127.0.0.1:5173/>. La API queda en <http://127.0.0.1:8000/docs>. La antigua aplicación Streamlit fue retirada.
 
 ### 3.11 Informe
 
@@ -191,13 +197,14 @@ Genera `latex/main.pdf`.
 
 | Vista | Qué mostrar |
 | :--- | :--- |
-| **Ruta** | Mostrar la consulta OSM del informe en el plano local sin conexión; elegir otros nodos, costo, cola y $A^*$. Contrastar tres colas con $A^*$ sin usar la ejecución interactiva como benchmark; seleccionar clima histórico/local y descargar CSV. |
-| **Comparación** | Filtrar perfiles y escalas del experimento, revisar medianas, IQR y relación frente al binario. Un JSON cargado es temporal y su protocolo no se verifica automáticamente. |
-| **Clima y tráfico** | Distinguir la observación histórica Open-Meteo del archivo posterior OpenWeatherMap; explorar el horario supuesto y explicar que TomTom solo consulta un segmento. |
-| **Traza manual** | Seleccionar cada paso para ver distancias, predecesores y relajaciones del grafo de seis nodos; comprobar certificado y descargar CSV. |
-| **Datos y método** | Mostrar fuentes, protocolo guardado, límites y descarga del informe compilado si existe. |
+| **Rutas** | Elegir red central o ampliada, IDs o coordenadas, costo, cola y $A^*$. Contrastar tres colas con $A^*$ sin usar la ejecución interactiva como benchmark; seleccionar clima histórico/local y descargar JSON. |
+| **Instancias** | Crear un grafo desde tabla, JSON o TXT/CSV, o generarlo con semilla; validar nodos, aristas y pesos antes de resolver. |
+| **Comparar** | Revisar el banco canónico por perfil y escala, y agregar consultas de la sesión sin mezclarlas con las mediciones históricas. |
+| **Experimentos** | Medir redes sintéticas nuevas, separadas del informe y etiquetadas como resultados de sesión. |
+| **Cobertura Cusco** | Distinguir el snapshot central de 1,5 km del centro ampliado de 3 km; ninguno es todo Cusco. |
+| **Datos y método** | Mostrar fuentes, verificación, límites y enlaces al contrato OpenAPI. |
 
-El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa base necesita teselas. No aparece la barra «Deploy». Una consulta meteorológica opcional no borra el snapshot si falla.
+El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa base necesita teselas. Una consulta meteorológica opcional no borra el snapshot si falla.
 
 ---
 
@@ -216,7 +223,7 @@ El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa 
 | $A^*$ en OSM | 887 $\to$ 823 expansiones ($-7.2\%$) |
 | $A^*$ manual | 6 $\to$ 5 expansiones ($-16.7\%$) |
 | Clima | $m=1.0691$; 413.952 s; $+6.91\%$; ruta sin cambios |
-| Pruebas | 278 casos aprobados en esta revisión; repetir en el entorno final |
+| Pruebas | 287 casos aprobados en esta revisión; repetir en el entorno final |
 
 ---
 
@@ -231,7 +238,7 @@ El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa 
 * «AG-C06 está cumplido para cada integrante.» Faltan evidencias individuales y defensa; ver el control de entrega.
 * «Medimos memoria.» No se midió.
 * «La instancia de seis nodos es un levantamiento real.» Es ilustrativa.
-* «No usamos Plotly.» Se usa en Streamlit.
+* «La web usa Plotly o Streamlit.» Ya no: la interfaz oficial usa React/TypeScript y MapLibre; Streamlit se retiró.
 * «El notebook de Colab genera los resultados canónicos.» Es didáctico; la fuente canónica es `python/scripts/reproduce_canonical.py` y los JSON versionados.
 
 ---

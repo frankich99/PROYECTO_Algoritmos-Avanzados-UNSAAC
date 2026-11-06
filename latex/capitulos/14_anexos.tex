@@ -11,13 +11,13 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r python/requirements.txt
 \end{lstlisting}
-Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{streamlit}, \texttt{plotly}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
+Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{fastapi}, \texttt{uvicorn}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}; la interfaz requiere Node.js y las dependencias de \texttt{web/}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
 
 \subsection*{Anexo B: Uso del prototipo}
 \label{anexo:uso}
 
 \noindent\textbf{Suite de pruebas.} Desde la raíz:
-\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (278 pruebas)}]
+\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (287 pruebas)}]
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 \end{lstlisting}
 
@@ -44,11 +44,15 @@ El siguiente ejemplo recorre generación, validación, ejecución, exportación 
 \end{lstlisting}
 \texttt{graph\_io.py} acepta JSON, TXT, CSV o aristas en línea; \texttt{run} exporta distancias, rutas y contadores en JSON. Una entrada con peso negativo se rechaza antes de ejecutar Dijkstra. Las mediciones comparativas se obtienen por separado con \texttt{reproduce\_canonical.py}.
 
-\noindent\textbf{Aplicación web.} Desde \texttt{python/}:
-\begin{lstlisting}[language=bash, caption={Ejecución de la aplicación Streamlit}]
-..\.venv\Scripts\python.exe -m streamlit run app.py
+\noindent\textbf{Aplicación web.} En dos terminales, desde la raíz y desde \texttt{web/}:
+\begin{lstlisting}[language=bash, caption={Ejecución de la API FastAPI y de la interfaz React}]
+# Terminal 1, desde la raíz
+.\.venv\Scripts\python.exe -m uvicorn web_api:app --app-dir python --host 127.0.0.1 --port 8000
+# Terminal 2, desde web/
+cd web
+npm run dev
 \end{lstlisting}
-La aplicación tiene cinco secciones visibles. En Ruta se seleccionan costo, recorrido, algoritmo y cola; se pueden contrastar las tres colas de Dijkstra y $A^*$ por costo, elegir una observación histórica, local o temporal como escenario uniforme, y descargar los nodos. El plano local no necesita Internet; solo el mapa base necesita teselas. Comparación filtra perfiles y escalas, muestra mediana e IQR y la relación frente al binario, admite un JSON temporal compatible y descarga CSV. Clima y tráfico separa observaciones y supuestos; Traza manual permite recorrer extracciones y comprobar el certificado; Datos y método presenta protocolo, procedencia, límites y descarga del informe si existe. Ninguna consulta opcional sobrescribe las mediciones.
+Abrir \url{http://127.0.0.1:5173/}. La interfaz tiene seis vistas: Rutas, Instancias, Comparar, Experimentos, Cobertura Cusco y Datos y método. En Rutas se seleccionan red, puntos, costo, algoritmo y cola; se contrastan las tres colas de Dijkstra y $A^*$ por costo y se elige una observación histórica, local o temporal como escenario uniforme. Instancias permite crear o importar grafos; Comparar revisa el banco canónico y agrega consultas de sesión sin mezclarlas; Experimentos mide redes nuevas; Cobertura Cusco distingue el snapshot central de 1,5 km del centro ampliado de 3 km, sin presentar ninguno como toda la ciudad; Datos y método reúne procedencia, límites y contrato OpenAPI. El plano local no necesita Internet; solo el mapa base necesita teselas. Ninguna consulta opcional sobrescribe las mediciones.
 
 \noindent\textbf{Reproducción de tablas y figuras.} Desde la raíz, sin alterar las mediciones del 28/10/2026:
 \begin{lstlisting}[language=bash, caption={Regeneración de tablas y figuras con mediciones guardadas}]
@@ -113,12 +117,12 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 
         \midrule
         OE1 & Modelo de grafo y costo temporal & Sección~\ref{sec:formulacion}; ecuación~\eqref{eq:costo}; instancia ilustrativa y red OSM. \\
         OE2 & Tres colas y Dijkstra parametrizado & Sección~\ref{sec:diseno_algoritmico}; \texttt{src/datastructures/}; 61 pruebas de contrato. \\
-        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 278 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
+        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 287 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
         OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
         AG\_C06.01 & Aprendizaje autónomo & Sección~\ref{sec:fundamentos}; Anexo~C; pendientes individuales en \texttt{docs/CONTROL\_ENTREGA.md}. \\
         AG\_C06.02 & Selección de stack & Sección~\ref{sec:stack}; Tabla~\ref{tab:matriz_multicriterio}; adopción temprana por verificar. \\
         AG\_C06.03 & Experimentación y pensamiento crítico & Sección~\ref{sec:metodologia}; Sección~\ref{sec:discusion}; conclusión condicionada. \\
-        Aplicación & Streamlit integrado & Sección~\ref{sec:implementacion}; \texttt{app.py}; pruebas de humo. \\
+        Aplicación & React + FastAPI & Sección~\ref{sec:implementacion}; \texttt{web/}, \texttt{web\_api.py}; pruebas de API. \\
         \bottomrule
     \end{tabularx}
 \end{table}

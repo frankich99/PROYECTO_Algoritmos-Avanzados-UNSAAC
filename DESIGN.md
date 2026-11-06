@@ -15,5 +15,6 @@
 - Las tarjetas solo agrupan resultados que se comparan; no se usan como relleno.
 - El espaciado separa entrada, cálculo y evidencia para que la secuencia experimental sea legible.
 - No se añaden ilustraciones ni iconos decorativos: la red vial y los gráficos son los activos visuales reales.
-- La cabecera granate hace reconocible la aplicación sin ocupar el espacio del cálculo; cinco secciones visibles recuperan las funciones de la primera versión, con Ruta y Comparación al frente.
-- El plano vial local es el recurso visual principal cuando no hay teselas; la traza usa estados reales del algoritmo, no una animación decorativa.
+- La cabecera granate hace reconocible la aplicación sin ocupar el espacio del cálculo; seis secciones visibles separan consulta, preparación, comparación, experimentos, cobertura y método, con Rutas al frente.
+- El plano vial local es el recurso visual principal cuando no hay teselas; la ruta se dibuja con la geometría revisada del snapshot o, si falta, con segmentos entre nodos advertidos, no con una animación decorativa.
+- Las dos coberturas OSM se presentan con su radio y conteo reales; ninguna se rotula como «todo Cusco».

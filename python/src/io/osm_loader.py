@@ -85,7 +85,7 @@ def _edge_record(u: Hashable, v: Hashable, data: Dict[str, Any]) -> Dict[str, An
         raise InvalidInstanceError(f"Arista OSM {u!r}->{v!r} con tiempo inválido.") from None
     if not math.isfinite(travel_time_s) or travel_time_s < 0:
         raise InvalidInstanceError(f"Arista OSM {u!r}->{v!r} con tiempo inválido: {travel_time_s!r}.")
-    return {
+    record = {
         "origin": _plain_scalar(u),
         "destination": _plain_scalar(v),
         "length_m": round(length_m, 3),
@@ -94,6 +94,10 @@ def _edge_record(u: Hashable, v: Hashable, data: Dict[str, Any]) -> Dict[str, An
         "street_name": str(_first(data.get("name"), "")),
         "maxspeed": str(_first(data.get("maxspeed"), "")),
     }
+    geometry = data.get("geometry")
+    if geometry is not None and hasattr(geometry, "coords"):
+        record["geometry_lonlat"] = [[float(x), float(y)] for x, y in geometry.coords]
+    return record
 
 
 def graph_to_snapshot(
@@ -114,8 +118,10 @@ def graph_to_snapshot(
     # Se preservan aristas paralelas: la mejor puede depender de si se optimiza
     # tiempo o distancia. El orden se fija para que el snapshot sea estable.
     edges = []
-    for u, v, _key, data in graph.edges(keys=True, data=True):
-        edges.append(_edge_record(u, v, data))
+    for u, v, key, data in graph.edges(keys=True, data=True):
+        record = _edge_record(u, v, data)
+        record["edge_key"] = _plain_scalar(key)
+        edges.append(record)
     edges.sort(
         key=lambda edge: (
             str(edge["origin"]),
@@ -163,6 +169,9 @@ def snapshot_to_instance(payload: Dict[str, Any], metric: str = "time") -> Graph
             coords[item["id"]] = (float(item["lon"]), float(item["lat"]))
         except (KeyError, TypeError, ValueError):
             raise InvalidInstanceError(f"Nodo OSM #{index} sin lon/lat numéricas.") from None
+        lon, lat = coords[item["id"]]
+        if not math.isfinite(lon) or not math.isfinite(lat) or abs(lon) > 180 or abs(lat) > 90:
+            raise InvalidInstanceError(f"Nodo OSM #{index} fuera de coordenadas WGS84 válidas.")
         nodes.append(item["id"])
 
     best_weights: Dict[Tuple[Hashable, Hashable], float] = {}

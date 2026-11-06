@@ -328,6 +328,33 @@ def _instance_from_json(data: Any, metric: str, name: str) -> GraphInstance:
     )
 
 
+def parse_instance_json(data: Any, metric: str = "time") -> GraphInstance:
+    """Carga y valida un objeto JSON en memoria, sin archivos temporales."""
+    if metric not in ("time", "distance"):
+        raise InvalidInstanceError(f"Métrica no soportada: {metric!r}.")
+    if isinstance(data, dict):
+        for index, node in enumerate(data.get("nodes", []) if isinstance(data.get("nodes"), list) else [], 1):
+            identifier = node.get("id") if isinstance(node, dict) else node
+            if isinstance(identifier, bool) or not isinstance(identifier, (str, int)):
+                raise InvalidInstanceError(f"Vértice #{index}: ID debe ser texto o entero.")
+        for index, edge in enumerate(data.get("edges", []) if isinstance(data.get("edges"), list) else [], 1):
+            if isinstance(edge, dict):
+                endpoints = (edge.get("origin", edge.get("u", edge.get("from"))),
+                             edge.get("destination", edge.get("v", edge.get("to"))))
+            elif isinstance(edge, list) and len(edge) == 3:
+                endpoints = edge[:2]
+            else:
+                continue
+            if any(isinstance(end, bool) or not isinstance(end, (str, int)) for end in endpoints):
+                raise InvalidInstanceError(f"Arista #{index}: IDs de extremos deben ser texto o entero.")
+    instance = _instance_from_json(data, metric, "instancia_web")
+    validate_graph(instance.nodes, instance.adj, instance.default_source)
+    for node, point in instance.coords.items():
+        if not all(math.isfinite(coordinate) for coordinate in point):
+            raise InvalidInstanceError(f"Coordenadas no finitas del nodo {node!r}.")
+    return instance
+
+
 def load_instance(path: str, metric: str = "time") -> GraphInstance:
     """Carga una instancia desde .json, .txt o .csv. metric aplica a redes viales."""
     p = Path(path)

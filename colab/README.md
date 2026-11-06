@@ -1,35 +1,41 @@
-# Cuaderno Google Colab: Rutas Mínimas en Redes Urbanas del Cusco
+# Cuaderno didáctico: rutas mínimas en Cusco
 
-Este directorio contiene el cuaderno interactivo de Jupyter (`.ipynb`) preparado para ejecutarse directamente en **Google Colab** o en cualquier entorno local con Jupyter Notebook / JupyterLab.
+[`rutas_minimas_cusco.ipynb`](rutas_minimas_cusco.ipynb) contiene **58 celdas**
+(33 de texto y 25 de código). Cada cola tiene su propia sección y celda de
+implementación. El cuaderno implementa Dijkstra con tres colas y A* con una
+heurística escalada para los pesos de la instancia, validación frente a NetworkX,
+visualizaciones y **10 comprobaciones** ejecutables. La red de seis nodos usa
+nombres de lugares reales; sus coordenadas, conexiones, longitudes, pendientes y
+sentidos son **esquemáticos**. No es la fuente de los resultados OSM ni de los
+**1350 tiempos** del banco canónico del 28/10/2026. Véase
+[`docs/DATOS_Y_MODELO.md`](../docs/DATOS_Y_MODELO.md).
 
----
+## Ejecución
 
-## Estructura del Cuaderno (`rutas_minimas_cusco.ipynb`)
+1. Suba el archivo a [Google Colab](https://colab.research.google.com/) y use
+   **Entorno de ejecución > Ejecutar todas**. La primera celda de código instala los
+   paquetes Python `networkx`, `graphviz` y `matplotlib`. El diagrama Graphviz
+   requiere además el ejecutable de sistema `dot`; cuando no esté disponible,
+   se muestra la representación DOT textual.
+2. Para una consulta distinta, cambie `origen_demo`, `destino_demo` y
+   `metrica_demo` (`time` o `distance`) en la sección **11**, y vuelva a ejecutar
+   esa celda. Para cambiar la red se deben modificar también las coordenadas
+   y aristas correspondientes; A* calcula su escala con esos pesos.
+3. En Jupyter local, instale los mismos paquetes y el ejecutable `dot` por
+   separado si necesita el diagrama. El cuaderno no importa módulos del
+   repositorio y no requiere rutas absolutas.
 
-El cuaderno contiene **26 celdas** (14 Markdown y 12 de código). Es material didáctico sobre la instancia ilustrativa; no genera los datos canónicos OSM ni acredita por sí solo los avances o el atributo individual AG-C06:
+La sección **12** mide 15 repeticiones sobre una instancia sintética por tamaño;
+reporta tiempo **transcurrido** en microsegundos, no CPU, memoria ni caché. Sus
+medianas cambian al repetirlo en otra máquina. El caso canónico, con perfiles
+disperso y denso, instancias múltiples y JSON de muestras, se reproduce desde
+[`python/README.md`](../python/README.md) sin sobrescribir archivos históricos
+en esta carpeta.
 
-1. **Configuración del Entorno y Dependencias:** Instalación e importación de `networkx`, `graphviz` y `matplotlib`.
-2. **Red Vial del Centro Histórico del Cusco y Función de Impedancia:** Definición de 6 nodos y 9 tramos dirigidos **esquemáticos** con pendientes supuestas y función de impedancia ($\alpha = 2.5$).
-3. **Implementación de Tres Colas de Prioridad con `Decrease-Key`:**
-   - `IndexedMinHeap`: Montículo binario indexado con tabla de posiciones $O(1)$.
-   - `DAryHeap`: Montículo cuaternario ($d=4$) almacenado de forma contigua; no se midieron fallos de caché L1/L2.
-   - `FibonacciHeap`: Montículo de Fibonacci con enlaces circulares dobles y cortes en cascada.
-4. **Algoritmo de Dijkstra Parametrizado:** Inyección de dependencias (`queue_type`), telemetría de operaciones y reconstrucción de rutas.
-5. **Algoritmo A\* ($A^*$):** Búsqueda orientada por heurística admisible y consistente basada en distancia euclidiana física dividida por $V_{\max}$ ($h(u) \le h^*(u)$).
-6. **Resolución y Validación Cruzada en Cusco:** Equivalencia matemática estricta entre las 3 colas de prioridad y contrastación contra el oráculo `networkx.single_source_dijkstra_path_length`.
-7. **Comparativa Dijkstra vs. A\*:** Evaluación empírica de poda de búsqueda y reducción de nodos expandidos hacia destinos estratégicos (Mercado San Pedro y Limacpampa).
-8. **Visualización Vectorial con Graphviz:** Especificación DOT y renderizado interactivo SVG (`graphviz.Source`) con resaltado de la ruta crítica de emergencia.
-9. **Visualizaciones Cartográficas y de Barras:** Topología vial en plano coordenado y gráfica comparativa de Distancia Física (m) vs. Tiempo con Pendiente (s).
-10. **Batería de Pruebas Automatizadas (Requisito Avance 4):** 7 pruebas automatizadas con `assert` cubriendo casos básicos, límites (grafo desconectado, grafo unitario, caminos simétricos) y adversos (origen inexistente, pesos negativos).
-11. **Demostración con Instancia Interactiva (Requisito Avance 5):** Permite al evaluador seleccionar dinámicamente cualquier par origen-destino y verificar la equivalencia instantánea.
-12. **Banco de Pruebas Experimental de Escalabilidad:** Generación de redes sintéticas ($|V| \in [10, 500]$, $\bar{d} \approx 3.5$) y curvas de tiempo en microsegundos tras múltiples repeticiones.
-13. **Discusión Técnica, Dificultades Encontradas y Trabajo Futuro:** Síntesis del comportamiento de la memoria caché, errores resueltos en sincronización de `Decrease-Key` y trabajo futuro con `OSMnx`.
-
----
-
-## Cómo Ejecutarlo en Google Colab
-
-1. Ingrese a [colab.research.google.com](https://colab.research.google.com/).
-2. Seleccione la pestaña **Subir** (*Upload*) y cargue el archivo `rutas_minimas_cusco.ipynb`.
-3. Ejecute las celdas secuencialmente con `Shift + Enter` o seleccione **Entorno de ejecución > Ejecutar todas**.
-4. En la celda 11, puede modificar las variables `origen_demo` y `destino_demo` para probar cualquier ruta que solicite el docente en vivo.
+Las salidas guardadas se regeneraron en Jupyter local (Python 3.12) el
+05/11/2026: las 24 celdas de cálculo y demostración terminaron, pasaron las 10 comprobaciones
+y se obtuvo un SVG de Graphviz. En esa comprobación se omitió la línea `%pip`
+porque las dependencias ya estaban instaladas; la línea sigue en el cuaderno
+para cuando se suba a Colab. Esto no acredita una ejecución en la plataforma
+Colab, los avances entregados ni la defensa individual ante el docente. La
+copia de `python/colab/` debe permanecer sincronizada con esta.

@@ -1,6 +1,6 @@
 # Datos, unidades y alcance del modelo
 
-Referencia para el informe del Grupo 5. Revisado al 04/11/2026: los datos
+Referencia para el informe del Grupo 5. Revisado al 05/11/2026: los datos
 canónicos siguen fechados el 28/10. No convierte supuestos en observaciones.
 
 ## Tres problemas distintos
@@ -29,7 +29,7 @@ la red de conducción (`network_type="drive"`) alrededor de
 construir el grafo dirigido y repetir las mediciones sin depender de una
 descarga nueva durante cada ejecución.
 
-En `python/app.py`, activar clima y/o un horario simulado multiplica **todos**
+En la aplicación web, activar clima y/o un horario simulado multiplica **todos**
 los pesos temporales por un mismo número mediante `uniformly_scaled`. La
 elección de ruta no cambia. La clase de vía es siempre `avenida`: no se
 clasifican aristas OSM ni se asignan factores por tramo. La lectura opcional
@@ -115,16 +115,30 @@ se corrigió a 651 usando la respuesta original, sin inventar una lectura.
 OpenWeatherMap no identifica una estación física de la UNSAAC en esa respuesta.
 Este archivo posterior **no** es la fuente del factor 1.0691 del informe.
 
-La web muestra cinco secciones de acceso directo, con Ruta y Comparación al
-frente. El plano vial local no necesita teselas; el mapa base sí. En Ruta se
-puede elegir la observación histórica del informe, el archivo local posterior
-o una consulta meteorológica temporal; las fuentes se nombran y nunca se
-confunden. La traza manual permite inspeccionar cada estado de Dijkstra y el
-certificado. Los resultados de ruta se mantienen en sesión; los benchmarks
-cargados por archivo JSON no sobrescriben los datos canónicos y su protocolo
-externo no se valida automáticamente. Se muestran ausencia de datos, espera
-y errores. La consulta
-opcional de APIs no guarda los resultados en disco. Un snapshot local se
-etiqueta como tal, no como lectura en vivo. La suite simula proveedores y
-prueba el flujo principal sin clave ni Internet. Aún faltan datos de tráfico
-por arista y evidencia individual auténtica de AG-C06.
+La antigua aplicación Streamlit (`python/app.py`) y sus pruebas se retiraron el
+05/11/2026. La interfaz vigente es la aplicación React descrita en la sección
+siguiente; no se mantiene una segunda web ni una traza manual separada.
+
+## Interfaz React y API nueva (05/11/2026)
+
+La aplicación nueva de `web/` tiene seis vistas y consume `python/web_api.py`.
+Reutiliza los solvers y snapshots; no modifica los JSON canónicos. Distingue
+costos físicos solo cuando las aristas tienen atributos viales: los grafos
+de pesos genéricos muestran «peso», sin inventar distancia ni tiempo. Para
+escenarios uniformes resuelve con los pesos base y escala los costos de salida:
+redondear antes cada arista podría cambiar la ruta en un empate muy cercano.
+En la vista Rutas se puede elegir la observación histórica del informe, el
+archivo local posterior o una consulta meteorológica temporal; las fuentes se
+nombran y nunca se confunden. La consulta opcional de APIs no guarda resultados
+en disco y un snapshot local se etiqueta como tal, no como lectura en vivo.
+
+Solo una parte de las aristas de los snapshots contiene geometría vial; la API
+devuelve la polilínea completa cuando todos los tramos de la ruta la tienen y,
+si falta alguno, dibuja segmentos entre nodos y lo advierte. El 05/11/2026 se
+publicó `cusco_urbano_drive.json` como cobertura **independiente**: consulta
+radial de 3 km recortada por distancia de red, base OSM del 10/08/2026, 1938
+nodos y 4753 aristas, con `coverage_reviewed: true`. No es todo Cusco ni una
+cobertura administrativa completa. `python/scripts/build_urban_snapshot.py`
+genera primero un pendiente, comprueba límites, distancia al centro,
+conectividad y rutas de muestra, y solo publica tras una segunda revisión.
+Instrucciones: [`web/README.md`](../web/README.md).
