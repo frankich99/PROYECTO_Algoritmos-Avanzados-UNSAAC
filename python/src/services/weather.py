@@ -106,6 +106,14 @@ def weather_multiplier(
     Incorpora precipitación pluvial, visibilidad reducida por neblina, ráfagas
     de viento andino y humedad relativa alta sobre calzada de adoquín/asfalto.
     """
+    return round(1.0 + sum(weather_contributions(observation, coefficients).values()), 4)
+
+
+def weather_contributions(
+    observation: WeatherObservation,
+    coefficients: WeatherImpactCoefficients = WeatherImpactCoefficients(),
+) -> Dict[str, float]:
+    """Aportes aditivos al factor hipotético; temperatura no interviene."""
     rain = min(max(observation.precipitation_mm, 0.0) / coefficients.reference_precipitation_mm, 1.0)
     visibility = max(
         0.0,
@@ -123,14 +131,10 @@ def weather_multiplier(
             / (100.0 - coefficients.humidity_threshold_pct),
         )
 
-    factor = (
-        1.0
-        + coefficients.precipitation * rain
-        + coefficients.low_visibility * visibility
-        + coefficients.wind_gust * gust
-        + coefficients.humidity * humidity_factor
-    )
-    return round(factor, 4)
+    return {"lluvia": coefficients.precipitation * rain,
+            "visibilidad": coefficients.low_visibility * visibility,
+            "rafagas": coefficients.wind_gust * gust,
+            "humedad": coefficients.humidity * humidity_factor}
 
 
 def _snapshot_payload(observation: WeatherObservation, raw_response: Dict[str, Any]) -> Dict[str, Any]:

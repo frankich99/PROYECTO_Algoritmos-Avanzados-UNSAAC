@@ -1,5 +1,19 @@
 # Historial de versiones
 
+## [1.2.1] - 2026-11-06
+
+### Añadido
+
+- Desglose explícito de aportes meteorológicos (`weather_contributions`: lluvia, visibilidad, ráfagas, humedad) en la API y visualización en la interfaz web.
+- Reutilización de lecturas climáticas puntuales (`weather: "saved"`, `weather: "live"`) sin repetir consultas externas al calcular rutas.
+- Persistencia opcional en `localStorage` del navegador para recordar claves de proveedores externos (OpenWeatherMap, TomTom) y lecturas climáticas guardadas (`web/src/localSettings.ts`).
+- Controles de mapa mejorados: preservación de la cámara/zoom entre pestañas, botones «Centrar ruta» y «Red completa», y diseño responsivo para móviles.
+- Proxy de desarrollo configurable con `ROUTES_API_URL` en Vite.
+
+### Cambiado
+
+- La versión del proyecto pasa a `1.2.1`.
+
 ## [1.2.0] - 2026-11-05
 
 ### Añadido

@@ -24,7 +24,8 @@ from src.io.graph_io import GraphInstance, InvalidInstanceError, parse_edge_list
 from src.io.osm_loader import load_snapshot as load_osm_snapshot
 from src.models.cusco_network import load_cusco_instance
 from src.services.traffic import TomTomTrafficClient, calculate_traffic_multiplier, get_traffic_by_schedule
-from src.services.weather import OpenMeteoClient, OpenWeatherMapClient, WeatherServiceError, weather_multiplier
+from src.services.weather import (OpenMeteoClient, OpenWeatherMapClient, WeatherObservation,
+                                  WeatherServiceError, weather_contributions, weather_multiplier)
 from src.utils.cost_model import CuscoCostModel, RoadSegment
 
 DATA = Path(__file__).resolve().parent / "data" / "processed"
@@ -35,7 +36,7 @@ PILOT = DATA / "pilot_benchmark_results.json"
 WEATHER = DATA / "weather_cusco.json"
 MAX_NODES, MAX_EDGES = 5000, 30000
 QUEUES = ("binary_heap", "4ary_heap", "fibonacci_heap")
-API_VERSION = "1.2.0"
+API_VERSION = "1.2.1"
 WEB_DIST = Path(os.environ.get(
     "RUTAS_WEB_DIST", Path(__file__).resolve().parent.parent / "web" / "dist"
 )).resolve()
@@ -77,10 +78,27 @@ class Point(BaseModel):
     lon: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 
+class SessionWeather(BaseModel):
+    observed_at: str = Field(min_length=1, max_length=80)
+    source: str = Field(min_length=1, max_length=120)
+    timezone: str = Field(min_length=1, max_length=60)
+    grid_point: Point
+    temperature_c: float = Field(ge=-100, le=65, allow_inf_nan=False)
+    precipitation_mm: float = Field(ge=0, le=1000, allow_inf_nan=False)
+    visibility_m: float = Field(ge=0, le=100000, allow_inf_nan=False)
+    wind_gusts_kmh: float = Field(ge=0, le=400, allow_inf_nan=False)
+    relative_humidity_pct: float = Field(ge=0, le=100, allow_inf_nan=False)
+    weather_code: int = 0
+    weather_description: str = Field(default="", max_length=120)
+    surface_pressure_hpa: float | None = Field(default=None, ge=0, le=2000, allow_inf_nan=False)
+
+
 class Scenario(BaseModel):
-    weather: Literal["none", "historical", "snapshot", "live"] = "none"
+    weather: Literal["none", "historical", "snapshot", "live", "saved"] = "none"
     weather_provider: Literal["open-meteo", "openweathermap"] = "open-meteo"
     weather_key: str | None = Field(default=None, max_length=200)
+    weather_observation: SessionWeather | None = None
+    weather_request_point: Point | None = None
     traffic_hour: int | None = Field(default=None, ge=0, le=23)
 
 
@@ -288,9 +306,28 @@ def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple
     detail: dict[str, Any] = {"kind": "nominal"}
     if value.weather != "none":
         requested: Point | None = None
-        if value.weather == "historical":
+        if value.weather in ("live", "saved") and value.weather_observation is not None:
+            reading = value.weather_observation
+            if not source_point or not value.weather_request_point or (
+                abs(source_point.lat - value.weather_request_point.lat) > 0.00001 or
+                abs(source_point.lon - value.weather_request_point.lon) > 0.00001
+            ):
+                raise InvalidInstanceError("La lectura meteorológica no corresponde al origen actual. Actualícela.")
+            requested = value.weather_request_point
+            obs = WeatherObservation(observed_at=reading.observed_at,
+                latitude=reading.grid_point.lat, longitude=reading.grid_point.lon,
+                temperature_c=reading.temperature_c, precipitation_mm=reading.precipitation_mm,
+                visibility_m=reading.visibility_m, wind_speed_kmh=0,
+                wind_gusts_kmh=reading.wind_gusts_kmh, weather_code=reading.weather_code,
+                relative_humidity_pct=reading.relative_humidity_pct,
+                surface_pressure_hpa=reading.surface_pressure_hpa,
+                weather_description=reading.weather_description,
+                source=f"Lectura aportada por el navegador ({reading.source})", cached=True)
+            timezone_label = reading.timezone
+        elif value.weather == "saved":
+            raise InvalidInstanceError("No hay una lectura local válida para aplicar.")
+        elif value.weather == "historical":
             payload = json.loads((DATA / "applied_results.json").read_text(encoding="utf-8"))
-            from src.services.weather import WeatherObservation
             obs = WeatherObservation.from_dict(payload["weather_sensitivity"]["observation"], cached=True)
             requested = Point(lat=-13.5165, lon=-71.9788)
         elif value.weather == "snapshot":
@@ -307,11 +344,21 @@ def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple
                 obs = OpenWeatherMapClient(api_key=value.weather_key).fetch_current(coords.lat, coords.lon)
             else:
                 obs = OpenMeteoClient().fetch_current(coords.lat, coords.lon)
+        if value.weather not in ("live", "saved") or value.weather_observation is None:
+            timezone_label = "America/Lima" if "Open-Meteo" in obs.source else "UTC"
         factor *= weather_multiplier(obs)
         detail = {"kind": "uniform_scenario", "weather_source": obs.source,
                   "weather_observed_at": obs.observed_at,
-                  "weather_timezone": "America/Lima" if "Open-Meteo" in obs.source else "UTC",
+                  "weather_timezone": timezone_label,
                   "weather_cached": obs.cached,
+                  "weather_contributions": weather_contributions(obs),
+                  "weather_reading": {"temperature_c": obs.temperature_c,
+                                      "relative_humidity_pct": obs.relative_humidity_pct,
+                                      "precipitation_mm": obs.precipitation_mm,
+                                      "visibility_m": obs.visibility_m,
+                                      "wind_gusts_kmh": obs.wind_gusts_kmh,
+                                      "weather_code": obs.weather_code,
+                                      "surface_pressure_hpa": obs.surface_pressure_hpa},
                   "requested_point": requested.model_dump() if requested else None,
                   "weather_grid_point": {"lat": obs.latitude, "lon": obs.longitude}}
     if value.traffic_hour is not None:
@@ -346,11 +393,13 @@ def catalog():
 def instance_validate(spec: InstanceSpec, metric: Literal["time", "distance"] = "time"):
     try:
         inst = _instance(spec, metric)
+        stride = max(1, math.ceil(inst.num_edges / 3000))
+        display_edges = [[u, v] for index, (u, v) in enumerate(
+            (u, v) for u in inst.nodes for v, _ in inst.adj.get(u, [])) if index % stride == 0]
         return {"valid": True, "name": inst.name, "nodes": inst.num_nodes, "edges": inst.num_edges,
-                "ids": inst.nodes, "coords": inst.coords, "metric": inst.metric,
-                "geographic": spec.kind in ("center", "urban") and inst.metadata.get("coordinate_kind") == "lon_lat_wgs84",
-                "display_edges": [[u, v] for u in inst.nodes for v, _ in inst.adj.get(u, [])][:3000]
-                if inst.num_nodes <= 1200 else [],
+                 "ids": inst.nodes, "coords": inst.coords, "metric": inst.metric,
+                 "geographic": spec.kind in ("center", "urban") and inst.metadata.get("coordinate_kind") == "lon_lat_wgs84",
+                 "display_edges": display_edges[:3000],
                 "display_limited": inst.num_nodes > 1200 or inst.num_edges > 3000}
     except (InvalidInstanceError, ValueError, KeyError, OSError) as exc:
         raise _problem(exc) from exc
@@ -508,11 +557,14 @@ def conditions(request: ConditionRequest):
                OpenWeatherMapClient(api_key=key).fetch_current(lat, lon))
         return {"kind": "model_weather_not_station", "requested": {"lat": lat, "lon": lon},
                 "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
-                "observation": {"temperature_c": obs.temperature_c, "relative_humidity_pct": obs.relative_humidity_pct,
-                                "precipitation_mm": obs.precipitation_mm, "visibility_m": obs.visibility_m,
-                                "wind_gusts_kmh": obs.wind_gusts_kmh, "observed_at": obs.observed_at,
-                                "timezone": "America/Lima" if provider == "open-meteo" else "UTC",
-                                "grid_point": {"lat": obs.latitude, "lon": obs.longitude}, "source": obs.source}}
+                 "multiplier": weather_multiplier(obs), "contributions": weather_contributions(obs),
+                 "observation": {"temperature_c": obs.temperature_c, "relative_humidity_pct": obs.relative_humidity_pct,
+                                 "precipitation_mm": obs.precipitation_mm, "visibility_m": obs.visibility_m,
+                                 "wind_gusts_kmh": obs.wind_gusts_kmh, "observed_at": obs.observed_at,
+                                 "timezone": "America/Lima" if provider == "open-meteo" else "UTC",
+                                 "grid_point": {"lat": obs.latitude, "lon": obs.longitude}, "source": obs.source,
+                                 "weather_code": obs.weather_code, "weather_description": obs.weather_description,
+                                 "surface_pressure_hpa": obs.surface_pressure_hpa}}
     except (InvalidInstanceError, WeatherServiceError, ValueError) as exc:
         raise _problem(exc) from exc
 

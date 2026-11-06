@@ -24,7 +24,7 @@ def test_catalog_and_openapi():
 def test_version_endpoint():
     payload = client.get("/api/v1/version").json()
     assert payload["name"] == "Rutas mínimas en Cusco"
-    assert payload["version"] == "1.2.0"
+    assert payload["version"] == "1.2.1"
 
 
 def test_web_build_served_when_available():
@@ -203,6 +203,58 @@ def test_uniform_scenario_does_not_claim_new_path():
     assert changed["scenario"]["weather_timezone"] == "America/Lima"
     assert changed["result"]["path"] == raw["result"]["path"]
     assert changed["result"]["cost"] > raw["result"]["cost"]
+
+
+def test_session_weather_reuses_exact_reading_without_second_provider_request(monkeypatch):
+    from src.services.weather import WeatherObservation
+
+    calls = []
+    def fake_fetch(_self, lat, lon):
+        calls.append((lat, lon))
+        return WeatherObservation("2026-11-06T08:00", lat + .01, lon, 9, 2, 3000, 3, 15, 0,
+                                  relative_humidity_pct=72)
+
+    monkeypatch.setattr("web_api.OpenMeteoClient.fetch_current", fake_fetch)
+    applied = json.loads((DATA / "applied_results.json").read_text(encoding="utf-8"))
+    request = {"instance": {"kind": "center"}, "source": applied["query"]["source"],
+               "target": applied["query"]["target"], "metric": "time"}
+    # El punto consultado en el panel debe ser el mismo nodo de origen utilizado en la ruta.
+    preview = client.post("/api/v1/instances/validate", json=request["instance"]).json()
+    lon, lat = preview["coords"][str(request["source"])]
+    origin = {"lat": lat, "lon": lon}
+    reading = client.post("/api/v1/conditions", json={"point": origin}).json()
+    assert reading["multiplier"] > 1
+    assert reading["contributions"]["lluvia"] > 0
+    assert reading["observation"]["temperature_c"] == 9
+    scenario = {"weather": "live", "weather_observation": reading["observation"],
+                "weather_request_point": origin}
+    response = client.post("/api/v1/routes/solve", json={**request, "scenario": scenario})
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["scenario"]["factor"] == reading["multiplier"]
+    assert result["scenario"]["weather_contributions"] == reading["contributions"]
+    assert result["scenario"]["weather_observed_at"] == reading["observation"]["observed_at"]
+    assert calls == [(lat, lon)]  # La ruta no vuelve a consultar al proveedor.
+    assert len({row["cost"] for row in result["comparisons"]}) == 1
+
+    saved = client.post("/api/v1/routes/solve", json={**request, "scenario": {**scenario, "weather": "saved"}})
+    assert saved.status_code == 200 and saved.json()["scenario"]["factor"] == reading["multiplier"]
+    assert calls == [(lat, lon)]
+    wrong_point = {**scenario, "weather_request_point": {"lat": origin["lat"] + .01, "lon": origin["lon"]}}
+    assert client.post("/api/v1/routes/solve", json={**request, "scenario": wrong_point}).status_code == 422
+    bad_humidity = {**scenario, "weather_observation": {**reading["observation"], "relative_humidity_pct": 120}}
+    assert client.post("/api/v1/routes/solve", json={**request, "scenario": bad_humidity}).status_code == 422
+    assert client.post("/api/v1/routes/solve", json={**request, "scenario": {"weather": "saved"}}).status_code == 422
+
+
+def test_preview_large_network_keeps_bounded_edges():
+    response = client.post("/api/v1/instances/validate", json={"kind": "urban"})
+    if response.status_code == 422:
+        pytest.skip("No hay snapshot urbano revisado en este entorno")
+    preview = response.json()
+    assert preview["nodes"] > 1200
+    assert 0 < len(preview["display_edges"]) <= 3000
+    assert preview["display_limited"] is True
 
 
 def test_uniform_factor_cannot_flip_near_tied_route_through_edge_rounding():

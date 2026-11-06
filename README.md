@@ -1,8 +1,8 @@
 # Rutas Mínimas con Colas de Prioridad en Redes Viales Urbanas del Cusco
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.2.0-blue.svg)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-289%20passed-brightgreen.svg)](python/tests/)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.2.1-blue.svg)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-291%20passed-brightgreen.svg)](python/tests/)
 [![Documento](https://img.shields.io/badge/informe-LaTeX-orange.svg)](latex/main.pdf)
 [![Red OSM](https://img.shields.io/badge/OSM-891%20nodos%20%7C%202139%20aristas-informational.svg)](python/data/processed/cusco_osm_drive.json)
 
@@ -36,7 +36,7 @@ de esos componentes. Seguimiento y defensa individual: [control de entrega](docs
 * **[docs/CONTROL_ENTREGA.md](docs/CONTROL_ENTREGA.md):** estado técnico al 05/11/2026 y evidencias individuales pendientes; sin calendario retrospectivo de reuniones.
 * **[docs/DATOS_Y_MODELO.md](docs/DATOS_Y_MODELO.md):** procedencia, unidades y alcance de la web y del experimento canónico.
 * **[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md):** build de producción, paquete publicable y despliegue en Docker, Render o Railway.
-* **[CHANGELOG.md](CHANGELOG.md):** historial de versiones; la versión actual es **v1.2.0**.
+* **[CHANGELOG.md](CHANGELOG.md):** historial de versiones; la versión actual es **v1.2.1**.
 * **[web/](web/):** aplicación oficial React + TypeScript con API FastAPI, mapas MapLibre e instrucciones en [web/README.md](web/README.md).
 * **[python/scripts/build_publicable.py](python/scripts/build_publicable.py):** genera la carpeta y el ZIP publicables con backend, datos y web compilada.
 * **[python/scripts/reproduce_canonical.py](python/scripts/reproduce_canonical.py):** regeneración del benchmark, del caso OSM, de las tablas y de las figuras.

@@ -30,7 +30,7 @@ export type RouteResponse = {
   source_snap: { requested: Point; snapped: Point; offset_m_approx: number; node: string | number } | null
   target_snap: { requested: Point; snapped: Point; offset_m_approx: number; node: string | number } | null
   result: RouteRow; comparisons: RouteRow[]; path_coords: [number, number][]
-  scenario: { kind: string; factor: number; weather_source?: string; weather_observed_at?: string; weather_timezone?: string; weather_cached?: boolean; requested_point?: Point; weather_grid_point?: Point; traffic?: string; traffic_hour?: number }
+  scenario: { kind: string; factor: number; weather_source?: string; weather_observed_at?: string; weather_timezone?: string; weather_cached?: boolean; weather_contributions?: Record<string, number>; weather_reading?: Pick<WeatherReading, 'temperature_c' | 'relative_humidity_pct' | 'precipitation_mm' | 'visibility_m' | 'wind_gusts_kmh' | 'weather_code' | 'surface_pressure_hpa'>; requested_point?: Point; weather_grid_point?: Point; traffic?: string; traffic_hour?: number }
   warning: string | null
 }
 export type BenchmarkRow = { nodes: number; edges: number; median_us: number; q1_us: number; q3_us: number; sample_count?: number }
@@ -46,9 +46,15 @@ export type Experiment = {
   kind: string; generated_at_utc: string; profile: string; protocol: Record<string, unknown>
   rows: (BenchmarkRow & { queue: Queue; samples_us: number[]; instance_seeds: number[] })[]
 }
+export type WeatherReading = {
+  temperature_c: number; relative_humidity_pct: number; precipitation_mm: number; visibility_m: number
+  wind_gusts_kmh: number; observed_at: string; timezone: string; grid_point: Point; source: string
+  weather_code: number; weather_description: string; surface_pressure_hpa: number | null
+}
 export type Condition = {
   kind: string; requested: Point; fetched_at_utc: string
-  observation?: { temperature_c: number; relative_humidity_pct: number; precipitation_mm: number; visibility_m: number; wind_gusts_kmh: number; observed_at: string; timezone: string; grid_point: Point; source: string }
+  observation?: WeatherReading
+  multiplier?: number; contributions?: Record<string, number>
   flow?: { current_speed_kmh: number; free_flow_speed_kmh: number; confidence: number | null }
 }
 export type Catalog = { networks: { kind: Kind; label: string; available: boolean }[]; queues: Queue[]; example: string }

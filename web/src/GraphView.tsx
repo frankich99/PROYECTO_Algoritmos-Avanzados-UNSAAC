@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
+import type { GeoJSONSource, Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type { Feature, FeatureCollection, LineString, Point as GeoPoint } from 'geojson'
 import type { Point, Preview, RouteResponse } from './api'
@@ -50,81 +50,154 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
   </div>
 }
 
-function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNetwork }: Props & { basemap: string; showNodes: boolean; showNetwork: boolean }) {
+type Camera = { network: string; center: [number, number]; zoom: number }
+
+function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNetwork, camera }: Props &
+  { basemap: string; showNodes: boolean; showNetwork: boolean; camera: React.RefObject<Camera | null> }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
+  const onPickRef = useRef(onPick)
+  onPickRef.current = onPick
+  const networkRef = useRef('')
+  const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [tileError, setTileError] = useState(false)
+  const networkId = preview ? `${preview.name}:${preview.nodes}:${preview.edges}` : ''
   useEffect(() => {
-    if (!container.current || !preview) return
+    if (!container.current) return
     let disposed = false
-    const networkPreview = preview
-    const coords = networkPreview.coords
-    const center: [number, number] = networkPreview.ids.length ? coords[String(networkPreview.ids[0])] : [-71.9788, -13.5165]
-    const raster: StyleSpecification = basemap === 'calles'
-      ? { version: 8, sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' } }, layers: [{ id: 'osm', type: 'raster', source: 'osm' }] }
-      : { version: 8, sources: {}, layers: [{ id: 'paper', type: 'background', paint: { 'background-color': '#F3EDE3' } }] }
+    const raster: StyleSpecification = { version: 8,
+      sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
+      layers: [{ id: 'paper', type: 'background', paint: { 'background-color': '#F3EDE3' } },
+        { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: 'none' } }] }
+    let observer: ResizeObserver | null = null
     async function mount() {
-    try {
-      const maplibregl = await import('maplibre-gl')
-      if (disposed || !container.current) return
-      maplibregl.setWorkerUrl(workerUrl)
-      const m = new maplibregl.Map({ container: container.current, style: raster, center: center ?? [-71.9788, -13.5165], zoom: 13, attributionControl: false })
-      map.current = m
-      m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-      m.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
-      m.on('error', () => { if (!disposed) setFailed(true) })
-      m.on('click', e => onPick({ lat: e.lngLat.lat, lon: e.lngLat.lng }))
-      m.on('load', () => {
-        const nodes: Feature<GeoPoint>[] = networkPreview.ids.filter(id => coords[String(id)]).map(id => ({ type: 'Feature', properties: { id: String(id) }, geometry: { type: 'Point', coordinates: coords[String(id)] } }))
-        const network: Feature<LineString>[] = networkPreview.display_edges.filter(([u, v]) => coords[String(u)] && coords[String(v)]).map(([u, v]) => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [coords[String(u)], coords[String(v)]] } }))
-        const pathPoints = route?.result.path_geometry?.length ? route.result.path_geometry : route?.path_coords
-        const path: FeatureCollection<LineString> = { type: 'FeatureCollection', features: pathPoints && pathPoints.length > 1 ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pathPoints } }] : [] }
-        m.addSource('network', { type: 'geojson', data: { type: 'FeatureCollection', features: network } })
-        m.addLayer({ id: 'network-line', type: 'line', source: 'network', paint: { 'line-color': '#766F68', 'line-opacity': 0.7, 'line-width': 1 }, layout: { visibility: showNetwork ? 'visible' : 'none' } })
-        m.addSource('route', { type: 'geojson', data: path })
-        m.addLayer({ id: 'route-line', type: 'line', source: 'route', paint: { 'line-color': '#681C32', 'line-width': 5 } })
-        m.addSource('nodes', { type: 'geojson', data: { type: 'FeatureCollection', features: nodes } })
-        m.addLayer({ id: 'node-dots', type: 'circle', source: 'nodes', paint: { 'circle-color': '#315D65', 'circle-radius': 3.5 }, layout: { visibility: showNodes ? 'visible' : 'none' } })
-        const endpoints: Feature<GeoPoint>[] = route ? [route.source, route.target].flatMap((id, index) => {
-          const point = coords[String(id)]
-          return point ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' }, geometry: { type: 'Point' as const, coordinates: point } }] : []
-        }) : []
-        m.addSource('endpoints', { type: 'geojson', data: { type: 'FeatureCollection', features: endpoints } })
-        m.addLayer({ id: 'endpoints', type: 'circle', source: 'endpoints', paint: {
-          'circle-color': ['match', ['get', 'kind'], 'source', '#8A6418', '#681C32'],
-          'circle-radius': 9, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2,
-        } })
-        const picked: Feature<GeoPoint>[] = [sourcePoint, targetPoint].flatMap((p, index) => p
-          ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' },
-            geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] } }] : [])
-        m.addSource('picked', { type: 'geojson', data: { type: 'FeatureCollection', features: picked } })
-        m.addLayer({ id: 'picked', type: 'circle', source: 'picked', paint: {
-          'circle-color': ['match', ['get', 'kind'], 'source', '#8A6418', '#681C32'],
-          'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2,
-        } })
-        if (pathPoints?.length) {
-          const bounds = new maplibregl.LngLatBounds()
-          pathPoints.forEach(([lon, lat]) => bounds.extend([lon, lat]))
-          m.fitBounds(bounds, { padding: 55, maxZoom: 16 })
-        }
-      })
-    } catch { if (!disposed) setFailed(true) }
+      try {
+        const maplibregl = await import('maplibre-gl')
+        if (disposed || !container.current) return
+        maplibregl.setWorkerUrl(workerUrl)
+        const saved = camera.current?.network === networkId ? camera.current : null
+        const m = new maplibregl.Map({ container: container.current, style: raster,
+          center: saved?.center ?? [-71.9788, -13.5165], zoom: saved?.zoom ?? 13, attributionControl: false })
+        map.current = m
+        m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+        m.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+        m.on('error', () => { if (!disposed) setTileError(true) })
+        m.on('click', e => onPickRef.current({ lat: e.lngLat.lat, lon: e.lngLat.lng }))
+        m.on('moveend', () => { camera.current = { network: networkRef.current, center: [m.getCenter().lng, m.getCenter().lat], zoom: m.getZoom() } })
+        m.on('load', () => {
+          const empty = { type: 'FeatureCollection' as const, features: [] }
+          m.addSource('network', { type: 'geojson', data: empty })
+          m.addLayer({ id: 'network-line', type: 'line', source: 'network', paint: { 'line-color': '#766F68', 'line-opacity': 0.7, 'line-width': 1 } })
+          m.addSource('route', { type: 'geojson', data: empty })
+          m.addLayer({ id: 'route-line', type: 'line', source: 'route', paint: { 'line-color': '#681C32', 'line-width': 5 } })
+          m.addSource('nodes', { type: 'geojson', data: empty })
+          m.addLayer({ id: 'node-dots', type: 'circle', source: 'nodes', paint: { 'circle-color': '#315D65', 'circle-radius': 3.5 } })
+          m.addSource('endpoints', { type: 'geojson', data: empty })
+          m.addLayer({ id: 'endpoints', type: 'circle', source: 'endpoints', paint: {
+            'circle-color': ['match', ['get', 'kind'], 'source', '#8A6418', '#681C32'],
+            'circle-radius': 9, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 } })
+          m.addSource('picked', { type: 'geojson', data: empty })
+          m.addLayer({ id: 'picked', type: 'circle', source: 'picked', paint: {
+            'circle-color': ['match', ['get', 'kind'], 'source', '#8A6418', '#681C32'],
+            'circle-radius': 7, 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 } })
+          if (!disposed) setReady(true)
+        })
+        observer = new ResizeObserver(() => m.resize())
+        observer.observe(container.current)
+      } catch { if (!disposed) setFailed(true) }
     }
     void mount()
-    return () => { disposed = true; map.current?.remove(); map.current = null }
-  }, [preview, route, basemap, onPick, showNodes, showNetwork, sourcePoint, targetPoint])
+    return () => {
+      disposed = true
+      observer?.disconnect()
+      if (map.current && networkRef.current) camera.current = { network: networkRef.current,
+        center: [map.current.getCenter().lng, map.current.getCenter().lat], zoom: map.current.getZoom() }
+      map.current?.remove(); map.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    if (!preview) {
+      ;(m.getSource('nodes') as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+      ;(m.getSource('network') as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+      return
+    }
+    const coords = preview.coords
+    const nodes: Feature<GeoPoint>[] = preview.ids.filter(id => coords[String(id)]).map(id => ({ type: 'Feature', properties: { id: String(id) }, geometry: { type: 'Point', coordinates: coords[String(id)] } }))
+    const network: Feature<LineString>[] = preview.display_edges.filter(([u, v]) => coords[String(u)] && coords[String(v)]).map(([u, v]) => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [coords[String(u)], coords[String(v)]] } }))
+    ;(m.getSource('nodes') as GeoJSONSource).setData({ type: 'FeatureCollection', features: nodes })
+    ;(m.getSource('network') as GeoJSONSource).setData({ type: 'FeatureCollection', features: network })
+    if (networkRef.current !== networkId) {
+      networkRef.current = networkId
+      if (camera.current?.network !== networkId && nodes.length) {
+        const points = nodes.map(n => n.geometry.coordinates)
+        m.fitBounds([[Math.min(...points.map(p => p[0])), Math.min(...points.map(p => p[1]))],
+          [Math.max(...points.map(p => p[0])), Math.max(...points.map(p => p[1]))]],
+        { padding: 38, maxZoom: 16, duration: 0 })
+      }
+    }
+  }, [ready, preview, networkId, camera])
+
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    if (!preview) {
+      for (const name of ['route', 'endpoints', 'picked'])
+        (m.getSource(name) as GeoJSONSource).setData({ type: 'FeatureCollection', features: [] })
+      return
+    }
+    const pathPoints = route?.result.path_geometry?.length ? route.result.path_geometry : route?.path_coords
+    const path: FeatureCollection<LineString> = { type: 'FeatureCollection', features: pathPoints && pathPoints.length > 1
+      ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pathPoints } }] : [] }
+    ;(m.getSource('route') as GeoJSONSource).setData(path)
+    const endpoints: Feature<GeoPoint>[] = route ? [route.source, route.target].flatMap((id, index) => {
+      const point = preview.coords[String(id)]
+      return point ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' }, geometry: { type: 'Point' as const, coordinates: point } }] : []
+    }) : []
+    ;(m.getSource('endpoints') as GeoJSONSource).setData({ type: 'FeatureCollection', features: endpoints })
+    const picked: Feature<GeoPoint>[] = [sourcePoint, targetPoint].flatMap((p, index) => p
+      ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' },
+        geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] } }] : [])
+    ;(m.getSource('picked') as GeoJSONSource).setData({ type: 'FeatureCollection', features: picked })
+  }, [ready, route, sourcePoint, targetPoint, preview])
+
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    if (basemap === 'plano') setTileError(false)
+    m.setLayoutProperty('node-dots', 'visibility', showNodes ? 'visible' : 'none')
+    m.setLayoutProperty('network-line', 'visibility', showNetwork ? 'visible' : 'none')
+    m.setLayoutProperty('osm', 'visibility', basemap === 'calles' ? 'visible' : 'none')
+  }, [ready, showNodes, showNetwork, basemap])
+
+  const fit = (which: 'network' | 'route') => {
+    const m = map.current
+    const points = which === 'route' ? (route?.result.path_geometry?.length ? route.result.path_geometry : route?.path_coords) :
+      preview?.ids.map(id => preview.coords[String(id)]).filter((p): p is [number, number] => !!p)
+    if (!m || !points?.length) return
+    const minLon = Math.min(...points.map(p => p[0])), maxLon = Math.max(...points.map(p => p[0]))
+    const minLat = Math.min(...points.map(p => p[1])), maxLat = Math.max(...points.map(p => p[1]))
+    m.fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: 44, maxZoom: 16, duration: 0 })
+  }
   return <div className="map-wrap">
     {failed && <p className="map-note" role="status">No se pudo cargar el mapa. Usa «Grafo» para ver la red sin WebGL ni teselas.</p>}
+    {tileError && basemap === 'calles' && <p className="map-note" role="status">No se cargaron algunas teselas. Puedes seguir usando el plano sin conexión.</p>}
+    <div className="map-actions"><button type="button" onClick={() => fit('network')} disabled={!ready}>Ver toda la red</button>
+      <button type="button" onClick={() => fit('route')} disabled={!ready || !route?.result.path.length}>Centrar ruta</button></div>
     <div className="map-canvas" ref={container} aria-label="Mapa interactivo. Selecciona origen o destino antes de pulsar un punto." />
   </div>
 }
 
 export default function GraphView({ preview, route, onPick, pick, onPickMode, mapRequested, sourcePoint, targetPoint }: Props) {
-  const [mode, setMode] = useState<'mapa' | 'grafo'>('grafo')
+  const [mode, setMode] = useState<'mapa' | 'grafo'>('mapa')
   const [basemap, setBasemap] = useState('plano')
   const [showNodes, setShowNodes] = useState(true)
   const [showNetwork, setShowNetwork] = useState(true)
   const section = useRef<HTMLElement>(null)
+  const camera = useRef<Camera | null>(null)
   useEffect(() => { if (preview && !preview.geographic) setMode('grafo') }, [preview])
   useEffect(() => {
     if (!mapRequested) return
@@ -143,13 +216,19 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
           <button type="button" aria-pressed={pick === 'source'} className={pick === 'source' ? 'active' : ''} onClick={() => onPickMode('source')}>Origen</button>
           <button type="button" aria-pressed={pick === 'target'} className={pick === 'target' ? 'active' : ''} onClick={() => onPickMode('target')}>Destino</button>
         </div>
-        <label>Base <select value={basemap} onChange={e => setBasemap(e.target.value)}><option value="plano">Plano sin teselas</option><option value="calles">Calles OSM</option></select></label>
-        <label className="check"><input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos</label>
-        <label className="check"><input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} /> Aristas</label>
+        <div className="map-options" role="group" aria-label="Base y capas del mapa">
+          <label>Mapa base <select value={basemap} onChange={e => setBasemap(e.target.value)}><option value="plano">Plano sin teselas</option><option value="calles">Calles OSM</option></select></label>
+          <div className="map-layers" role="group" aria-label="Capas visibles">
+            <label className="check"><input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos</label>
+            <label className="check"><input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} /> Aristas</label>
+          </div>
+        </div>
       </>}
     </div>
-    {mode === 'mapa' && preview?.geographic ? <MapView preview={preview} route={route} onPick={onPick} pick={pick} onPickMode={onPickMode} mapRequested={mapRequested} sourcePoint={sourcePoint} targetPoint={targetPoint} basemap={basemap} showNodes={showNodes} showNetwork={showNetwork} /> : <GraphSVG preview={preview} route={route} />}
-    <p className="legend"><span className="legend-node" /> Nodo <span className="legend-route" /> Ruta <span className="legend-origin" /> Origen <span className="legend-target" /> Destino</p>
+    {mode === 'mapa' && preview?.geographic ? <MapView preview={preview} route={route} onPick={onPick} pick={pick} onPickMode={onPickMode} mapRequested={mapRequested} sourcePoint={sourcePoint} targetPoint={targetPoint} basemap={basemap} showNodes={showNodes} showNetwork={showNetwork} camera={camera} /> : <GraphSVG preview={preview} route={route} />}
+    <p className="legend">{(mode !== 'mapa' || showNodes) && <><span className="legend-node" /> Nodo </>}
+      <span className="legend-route" /> Ruta <span className="legend-origin" /> Origen <span className="legend-target" /> Destino</p>
     {mode === 'mapa' && <p className="fineprint">{route?.warning ?? 'Solo la base «Calles OSM» solicita teselas externas.'}</p>}
+    {mode === 'mapa' && preview?.display_limited && <p className="fineprint">Se muestra una parte de las aristas para mantener fluido el mapa; la ruta se calcula con la red completa.</p>}
   </section>
 }

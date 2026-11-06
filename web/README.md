@@ -30,6 +30,11 @@ npm run dev
 Abrir <http://127.0.0.1:5173/>. Vite reenvía `/api`, `/docs` y
 `/openapi.json` al backend local.
 
+Después de modificar la API Python hay que reiniciar uvicorn si se inició
+sin `--reload`. Para probar otro servidor local sin detener el puerto 8000,
+definir `ROUTES_API_URL=http://127.0.0.1:8001` antes de iniciar Vite en otro
+puerto. No guardar claves de proveedores en esa variable.
+
 ## Producción en un solo servicio
 
 FastAPI sirve la web compilada y la API desde el mismo origen:
@@ -69,8 +74,30 @@ experimentos de CPU y consultas a proveedores externos.
   etiquetados como resultados nuevos de sesión.
 - Consultar el modelo Open-Meteo sin clave, o OpenWeatherMap/TomTom con una
   clave suministrada para esa consulta. TomTom cubre un punto, no toda la red.
-  Las claves no se escriben en los archivos del proyecto. Usar HTTPS si se
-  despliega fuera de `127.0.0.1`.
+  Las claves no se escriben en los archivos del proyecto. Por defecto viven
+  solo en la memoria del navegador; «Recordar claves» las guarda en
+  `localStorage` únicamente con consentimiento, y «Olvidar claves» borra las
+  guardadas y las de la sesión. El almacenamiento del navegador no protege
+  frente a scripts ejecutados en el mismo origen. Usar HTTPS si se despliega
+  fuera de `127.0.0.1`.
+
+### Visor y condiciones
+
+- El mapa se abre por defecto para redes geográficas. Las casillas «Nodos» y
+  «Aristas» y el cambio de base no reinician el encuadre; los botones «Ver toda
+  la red» y «Centrar ruta» sí lo ajustan expresamente. «Grafo» funciona sin
+  WebGL. La vista previa grande limita las aristas visibles a 3000, sin
+  recortar el grafo que utilizan los algoritmos.
+- La casilla «Aplicar datos meteorológicos» consulta las condiciones para el
+  origen seleccionado y la ruta utiliza **esa misma observación**. La
+  actualización manual y la opcional cada 10 minutos requieren conexión;
+  una lectura actual de más de 30 minutos se debe actualizar. La lectura se
+  puede guardar y eliminar localmente en el navegador para repetir el
+  escenario aun sin Internet; al recuperarla no se presenta como actual.
+- El factor hipotético usa lluvia, visibilidad, ráfagas y humedad; la
+  temperatura se muestra, **pero no está en la fórmula**. Es uniforme: cambia
+  el tiempo estimado, no la ruta ni las operaciones de las colas. Los
+  resultados JSON contienen fuente, fecha, valores y aportes, no claves.
 
 La base cartográfica **plana** no requiere Internet; la opción «Calles OSM»
 solicita teselas externas y su disponibilidad depende del proveedor. Solo una
@@ -117,6 +144,10 @@ Contrato interactivo: <http://127.0.0.1:8000/docs>.
 `POST /api/v1/experiments` mide redes sintéticas nuevas;
 `POST /api/v1/conditions` consulta el proveedor seleccionado. Validaciones
 fallidas devuelven HTTP 422; ausencia de ruta devuelve `cost: null`.
+`/conditions` devuelve el factor y sus aportes; `/routes/solve` acepta una
+observación aportada por la sesión y comprueba que coincida con el origen.
+La respuesta indica que una observación reenviada por el navegador no fue
+verificada por el servidor. La web no reescribe el benchmark canónico.
 
 ```powershell
 .\.venv\Scripts\python.exe -B -m pytest python/tests -q -p no:cacheprovider

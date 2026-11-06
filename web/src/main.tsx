@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import GraphView from './GraphView'
 import { api, apiUrl } from './api'
 import type { Benchmark, Catalog, Condition, Experiment, InstanceSpec, Metric, Pilot, Point, Preview, Queue, RouteResponse } from './api'
+import { emptyKeys, forgetKeys, forgetWeather, readKeys, readWeather, saveKeys, saveWeather } from './localSettings'
+import type { ProviderKeys } from './localSettings'
+import WeatherReading from './WeatherReading'
+import { fmt } from './format'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './style.css'
 
@@ -13,7 +17,6 @@ const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Cobertura Cusc
 type Section = typeof menu[number]
 type Saved = { name: string; metric: string; network: string; nodes: number; edges: number; route: RouteResponse }
 
-const fmt = (value: number | null | undefined, digits = 2) => value == null ? 'No disponible' : value.toLocaleString('es-PE', { maximumFractionDigits: digits })
 function download(name: string, data: string, type = 'application/json') {
   const url = URL.createObjectURL(new Blob([data], { type }))
   const a = document.createElement('a')
@@ -41,9 +44,22 @@ function App() {
   const [pick, setPick] = useState<'source' | 'target'>('source')
   const [algorithm, setAlgorithm] = useState<'dijkstra' | 'astar'>('dijkstra')
   const [queue, setQueue] = useState<Queue>('binary_heap')
-  const [weather, setWeather] = useState<'none' | 'historical' | 'snapshot' | 'live'>('none')
-  const [provider, setProvider] = useState<'open-meteo' | 'openweathermap' | 'tomtom'>('open-meteo')
-  const [apiKey, setApiKey] = useState('')
+  const [weatherEnabled, setWeatherEnabled] = useState(false)
+  const [weather, setWeather] = useState<'historical' | 'snapshot' | 'live' | 'saved'>('live')
+  const [weatherProvider, setWeatherProvider] = useState<'open-meteo' | 'openweathermap'>('open-meteo')
+  const [conditionProvider, setConditionProvider] = useState<'open-meteo' | 'openweathermap' | 'tomtom'>('open-meteo')
+  const [rememberKeys, setRememberKeys] = useState(() => {
+    try { return localStorage.getItem('cusco-provider-keys-v1') !== null } catch { return false }
+  })
+  const [apiKeys, setApiKeys] = useState<ProviderKeys>(() => readKeys())
+  const [storageError, setStorageError] = useState('')
+  const [liveReading, setLiveReading] = useState<Condition | null>(null)
+  const [savedReading, setSavedReading] = useState<Condition | null>(() => readWeather())
+  const [weatherLoading, setWeatherLoading] = useState(false)
+  const [weatherError, setWeatherError] = useState('')
+  const [weatherRefresh, setWeatherRefresh] = useState(0)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const [timeTick, setTimeTick] = useState(Date.now())
   const [traffic, setTraffic] = useState(false)
   const [hour, setHour] = useState(13)
   const [route, setRoute] = useState<RouteResponse | null>(null)
@@ -73,7 +89,47 @@ function App() {
   const [mapRequested, setMapRequested] = useState(0)
   const routeAbort = useRef<AbortController | null>(null)
   const conditionAbort = useRef<AbortController | null>(null)
+  const sourceCoords = preview?.geographic ? preview.coords[source] : undefined
+  const conditionPoint = sourcePoint ?? (sourceCoords ? { lat: sourceCoords[1], lon: sourceCoords[0] } : { lat: -13.5165, lon: -71.9788 })
+  const activeReading = weather === 'saved' ? savedReading : liveReading
+  const observedAt = liveReading?.observation?.observed_at
+  const zone = liveReading?.observation?.timezone === 'America/Lima' ? '-05:00' : 'Z'
+  const observedTime = observedAt ? Date.parse(observedAt + (/[Z+-]\d\d:?\d\d$/.test(observedAt) || observedAt.endsWith('Z') ? '' : zone)) : NaN
+  const staleLive = weather === 'live' && (!Number.isFinite(observedTime) || Math.abs(timeTick - observedTime) > 30 * 60 * 1000)
+  const samePoint = !!activeReading && Math.abs(activeReading.requested.lat - conditionPoint.lat) < 0.00001 &&
+    Math.abs(activeReading.requested.lon - conditionPoint.lon) < 0.00001
+  const canApplyWeather = !weatherEnabled || weather === 'historical' || weather === 'snapshot' ||
+    (!!activeReading?.observation && typeof activeReading.multiplier === 'number' && samePoint &&
+      (weather !== 'live' || !staleLive) && !weatherLoading && !weatherError)
   useEffect(() => () => { routeAbort.current?.abort(); conditionAbort.current?.abort() }, [])
+  useEffect(() => {
+    if (!rememberKeys) return
+    setStorageError(saveKeys(apiKeys) ? '' : 'El navegador no permitió guardar las claves. Permanecen solo en esta sesión.')
+  }, [rememberKeys, apiKeys])
+  useEffect(() => {
+    if (!weatherEnabled || weather !== 'live' || metric !== 'time' || !preview || preview.metric === 'weight') {
+      setWeatherLoading(false)
+      return
+    }
+    const controller = new AbortController()
+    setWeatherLoading(true); setWeatherError(''); setLiveReading(null)
+    api<Condition>('/conditions', { point: conditionPoint, provider: weatherProvider,
+      key: weatherProvider === 'openweathermap' ? apiKeys.openweathermap || null : null }, controller.signal)
+      .then(value => { if (!controller.signal.aborted) { setLiveReading(value); setTimeTick(Date.now()) } })
+      .catch(error => { if (!controller.signal.aborted) setWeatherError(error instanceof Error ? error.message : 'No se obtuvo el clima actual.') })
+      .finally(() => { if (!controller.signal.aborted) setWeatherLoading(false) })
+    return () => controller.abort()
+  }, [weatherEnabled, weather, metric, weatherProvider, apiKeys.openweathermap, conditionPoint.lat, conditionPoint.lon, preview, weatherRefresh])
+  useEffect(() => {
+    if (!autoRefresh || !weatherEnabled || weather !== 'live') return
+    const timer = window.setInterval(() => setWeatherRefresh(n => n + 1), 10 * 60 * 1000)
+    return () => window.clearInterval(timer)
+  }, [autoRefresh, weatherEnabled, weather])
+  useEffect(() => {
+    if (!weatherEnabled || weather !== 'live') return
+    const timer = window.setInterval(() => setTimeTick(Date.now()), 60 * 1000)
+    return () => window.clearInterval(timer)
+  }, [weatherEnabled, weather])
   useEffect(() => { api<Catalog>('/catalog').then(setCatalog).catch(() => { /* La selección local sigue disponible. */ }) }, [])
   useEffect(() => {
     const controller = new AbortController()
@@ -102,8 +158,8 @@ function App() {
     api<Pilot>('/benchmarks/pilot/summary', undefined, controller.signal).then(setPilot).catch(() => { /* El piloto es opcional. */ })
     return () => controller.abort()
   }, [section])
-  useEffect(() => { routeAbort.current?.abort(); setRouteLoading(false); setRoute(null) }, [algorithm, queue, weather, provider, apiKey, traffic, hour])
-  useEffect(() => { conditionAbort.current?.abort(); setConditionLoading(false); setCondition(null); setConditionError('') }, [sourcePoint, source, preview, provider, apiKey])
+  useEffect(() => { routeAbort.current?.abort(); setRouteLoading(false); setRoute(null) }, [algorithm, queue, weatherEnabled, weather, weatherProvider, liveReading, savedReading, traffic, hour])
+  useEffect(() => { conditionAbort.current?.abort(); setConditionLoading(false); setCondition(null); setConditionError('') }, [sourcePoint, source, preview, conditionProvider, apiKeys])
   useEffect(() => { routeAbort.current?.abort(); setRouteLoading(false); setRoute(null); setRouteError('') }, [source, target, sourcePoint, targetPoint])
 
   const setInstance = (value: InstanceSpec) => { setSourcePoint(null); setTargetPoint(null); setSpec(value); setSection('Rutas') }
@@ -115,14 +171,20 @@ function App() {
   }, [pick])
   async function runRoute(event: React.FormEvent) {
     event.preventDefault(); routeAbort.current?.abort()
+    if (!canApplyWeather && metric === 'time' && preview?.metric !== 'weight') {
+      setRouteError('Actualiza la lectura meteorológica del origen antes de calcular.'); return
+    }
     const controller = new AbortController(); routeAbort.current = controller
     setRoute(null); setRouteError(''); setRouteLoading(true)
     try {
       const response = await api<RouteResponse>('/routes/solve', { instance: spec, metric, source: sourcePoint ? null : source,
         target: targetPoint ? null : target, source_point: sourcePoint, target_point: targetPoint,
         algorithm, queue, compare: true,
-        scenario: { weather: metric === 'time' ? weather : 'none', weather_provider: provider === 'tomtom' ? 'open-meteo' : provider,
-          weather_key: apiKey || null, traffic_hour: metric === 'time' && traffic ? hour : null } }, controller.signal)
+         scenario: { weather: metric === 'time' && preview?.metric !== 'weight' && weatherEnabled ? weather : 'none',
+           weather_provider: weatherProvider,
+           weather_observation: weatherEnabled && (weather === 'live' || weather === 'saved') ? activeReading?.observation : null,
+           weather_request_point: weatherEnabled && (weather === 'live' || weather === 'saved') ? activeReading?.requested : null,
+           traffic_hour: metric === 'time' && preview?.metric !== 'weight' && traffic ? hour : null } }, controller.signal)
       if (!controller.signal.aborted) setRoute(response)
     } catch (e) { if (!controller.signal.aborted) setRouteError(e instanceof Error ? e.message : 'No se pudo calcular la ruta.') }
     finally { if (!controller.signal.aborted) setRouteLoading(false) }
@@ -131,7 +193,8 @@ function App() {
     conditionAbort.current?.abort(); const controller = new AbortController(); conditionAbort.current = controller
     setCondition(null); setConditionError(''); setConditionLoading(true)
     try {
-      const response = await api<Condition>('/conditions', { point: conditionPoint, provider, key: apiKey || null }, controller.signal)
+      const response = await api<Condition>('/conditions', { point: conditionPoint, provider: conditionProvider,
+        key: conditionProvider === 'open-meteo' ? null : apiKeys[conditionProvider] || null }, controller.signal)
       if (!controller.signal.aborted) setCondition(response)
     } catch (e) { if (!controller.signal.aborted) setConditionError(e instanceof Error ? e.message : 'No se pudo consultar el proveedor.') }
     finally { if (!controller.signal.aborted) setConditionLoading(false) }
@@ -164,8 +227,15 @@ function App() {
     } catch { setEditorError('No se pudo leer el archivo como texto.') }
     event.target.value = ''
   }
-  const sourceCoords = preview?.geographic ? preview.coords[source] : undefined
-  const conditionPoint = sourcePoint ?? (sourceCoords ? { lat: sourceCoords[1], lon: sourceCoords[0] } : { lat: -13.5165, lon: -71.9788 })
+  const updateKey = (provider: keyof ProviderKeys, value: string) => setApiKeys(old => ({ ...old, [provider]: value }))
+  const toggleRemember = (value: boolean) => {
+    if (!value) { forgetKeys(); setStorageError('') }
+    setRememberKeys(value)
+  }
+  const saveReading = (value: Condition) => {
+    if (!saveWeather(value)) { setStorageError('No se pudo guardar la lectura en este navegador.'); return false }
+    setSavedReading(value); setStorageError('Lectura guardada en este navegador, sin credenciales.'); return true
+  }
 
   return <>
     <a className="skip-link" href="#contenido">Saltar al contenido</a>
@@ -220,15 +290,33 @@ function App() {
               <label>Algoritmo<select value={algorithm} onChange={e => setAlgorithm(e.target.value as 'dijkstra' | 'astar')}><option value="dijkstra">Dijkstra</option><option value="astar">A* consistente</option></select></label>
               <label>Cola<select value={queue} onChange={e => setQueue(e.target.value as Queue)}>{(Object.keys(queueNames) as Queue[]).map(q => <option key={q} value={q}>{queueNames[q]}</option>)}</select></label></div>
               <p className="fineprint">Se ejecutan también los tres Dijkstra y A* con la cola elegida para contrastar costos.</p></div>
-            {metric === 'time' && <details className="form-section scenario"><summary>Condiciones y escenarios optativos</summary><div className="details-body">
-              <label>Fuente climática<select value={weather} onChange={e => setWeather(e.target.value as typeof weather)}><option value="none">Sin clima: peso nominal</option><option value="historical">Lectura histórica del informe</option><option value="snapshot">Snapshot local posterior</option><option value="live">Consulta actual al calcular</option></select></label>
-              {weather === 'live' && <label>Proveedor<select value={provider === 'tomtom' ? 'open-meteo' : provider} onChange={e => setProvider(e.target.value as typeof provider)}><option value="open-meteo">Open-Meteo</option><option value="openweathermap">OpenWeatherMap</option></select></label>}
-              {weather === 'live' && provider === 'openweathermap' && <label>Clave para esta consulta<input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} autoComplete="off" /></label>}
+            {metric === 'time' && preview?.metric !== 'weight' && <div className="form-section scenario"><h2>04 / Condiciones</h2>
+              <label className="check"><input type="checkbox" checked={weatherEnabled} onChange={e => setWeatherEnabled(e.target.checked)} /> Aplicar datos meteorológicos al tiempo estimado</label>
+              {weatherEnabled && <div className="details-body"><label>Fuente climática<select value={weather} onChange={e => setWeather(e.target.value as typeof weather)}>
+                <option value="live">Consultar condiciones actuales</option><option value="historical">Lectura histórica del informe</option>
+                <option value="snapshot">Snapshot incluido en el proyecto</option><option value="saved" disabled={!savedReading}>Lectura guardada en este navegador</option></select></label>
+                {weather === 'live' && <><label>Proveedor<select value={weatherProvider} onChange={e => setWeatherProvider(e.target.value as typeof weatherProvider)}>
+                  <option value="open-meteo">Open-Meteo, sin clave</option><option value="openweathermap">OpenWeatherMap</option></select></label>
+                  {weatherProvider === 'openweathermap' && <label>Clave OpenWeatherMap<input type="password" maxLength={200} value={apiKeys.openweathermap}
+                    onChange={e => updateKey('openweathermap', e.target.value)} autoComplete="off" /></label>}
+                  <div className="inline-actions"><button type="button" onClick={() => setWeatherRefresh(n => n + 1)} disabled={weatherLoading}>Actualizar lectura</button>
+                    <label className="check"><input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} /> Actualizar cada 10 min</label></div>
+                  {weatherLoading && <p role="status">Consultando las condiciones del origen…</p>}
+                  {weatherError && <p className="error" role="alert">{weatherError}</p>}
+                  {liveReading && <><WeatherReading data={liveReading} />{liveReading.multiplier == null && <p className="warning">Reinicia la API Python para habilitar el cálculo con esta lectura.</p>}
+                    {staleLive && <p className="warning">Esta lectura tiene más de 30 minutos o no tiene hora válida. Actualízala antes de calcular.</p>}
+                    <button type="button" onClick={() => saveReading(liveReading)} disabled={liveReading.multiplier == null}>Guardar esta lectura localmente</button></>}
+                </>}
+                {weather === 'saved' && <>{savedReading && <WeatherReading data={savedReading} />}{!samePoint && <p className="warning">La lectura guardada pertenece a otro punto. Cambia el origen o actualiza el clima.</p>}
+                  <p className="fineprint">Una lectura guardada es un escenario reproducible, no una observación actual.</p>
+                  <button type="button" onClick={() => { forgetWeather(); setSavedReading(null); setWeather('live') }}>Eliminar lectura guardada</button></>}
+                <p className="fineprint">Estas condiciones ajustan todos los tiempos por igual: no cambian el camino ni son mediciones en cada calle.</p>
+              </div>}
               <label className="check"><input type="checkbox" checked={traffic} onChange={e => setTraffic(e.target.checked)} /> Aplicar tráfico horario supuesto</label>
               {traffic && <label>Hora simulada en Cusco <input type="number" min="0" max="23" value={hour} onChange={e => setHour(Number(e.target.value))} /></label>}
-              <p className="fineprint">El factor es uniforme. Cambia el costo estimado, no el camino; no hay aforo por arista.</p>
-            </div></details>}
-            <button type="submit" className="primary" disabled={!preview || routeLoading}>{routeLoading ? 'Calculando ruta…' : 'Calcular y contrastar'}</button>
+              {traffic && <p className="fineprint">El tráfico es un supuesto por hora, no un aforo vial por arista.</p>}
+            </div>}
+            <button type="submit" className="primary" disabled={!preview || routeLoading || (weatherEnabled && !canApplyWeather && metric === 'time' && preview?.metric !== 'weight')}>{routeLoading ? 'Calculando ruta…' : 'Calcular y contrastar'}</button>
             {routeError && <p className="error" role="alert">{routeError}</p>}
           </form></div>
           <div className="main-pane">
@@ -244,7 +332,11 @@ function App() {
                 {route.source_snap && <p className="fineprint">Origen solicitado: {fmt(route.source_snap.requested.lat, 5)}, {fmt(route.source_snap.requested.lon, 5)}. Ajustado al nodo {route.source_snap.node}, a unos {fmt(route.source_snap.offset_m_approx, 1)} m.</p>}
                 {route.target_snap && <p className="fineprint">Destino solicitado: {fmt(route.target_snap.requested.lat, 5)}, {fmt(route.target_snap.requested.lon, 5)}. Ajustado al nodo {route.target_snap.node}, a unos {fmt(route.target_snap.offset_m_approx, 1)} m.</p>}
                 {route.warning && <p className="warning">{route.warning}</p>}
-                {route.scenario.kind === 'uniform_scenario' && <p className="warning">Escenario uniforme {route.scenario.factor}×, no tiempo observado. {route.scenario.weather_source ? `${route.scenario.weather_source}; lectura ${route.scenario.weather_observed_at} (${route.scenario.weather_timezone})${route.scenario.weather_cached ? ' (guardada)' : ''}.` : ''} {route.scenario.requested_point ? `Consulta en ${fmt(route.scenario.requested_point.lat, 5)}, ${fmt(route.scenario.requested_point.lon, 5)}.` : ''} {route.scenario.weather_grid_point ? `Punto de grilla: ${fmt(route.scenario.weather_grid_point.lat, 5)}, ${fmt(route.scenario.weather_grid_point.lon, 5)}.` : ''} {route.scenario.traffic ? `Hora simulada: ${route.scenario.traffic_hour}:00 (Cusco).` : ''} La ruta no cambia por un factor uniforme.</p>}
+                {route.scenario.kind === 'uniform_scenario' && <div className="scenario-result"><h3>Impacto del escenario</h3>
+                  <p>Tiempo nominal de esta ruta: <strong>{fmt(route.result.cost != null ? route.result.cost / route.scenario.factor : null, 2)} s</strong>. Tiempo ajustado: <strong>{fmt(route.result.time_sec, 2)} s</strong>. Diferencia: <strong>+{fmt(route.result.cost != null ? route.result.cost - route.result.cost / route.scenario.factor : null, 2)} s</strong> ({fmt((route.scenario.factor - 1) * 100, 2)} %).</p>
+                  <p>Factor uniforme {fmt(route.scenario.factor, 4)}×, estimación hipotética, no tiempo de viaje observado. {route.scenario.weather_source ? `${route.scenario.weather_source}; lectura ${route.scenario.weather_observed_at} (${route.scenario.weather_timezone})${route.scenario.weather_cached ? ' (reutilizada)' : ''}.` : ''} {route.scenario.requested_point ? `Consulta en ${fmt(route.scenario.requested_point.lat, 5)}, ${fmt(route.scenario.requested_point.lon, 5)}.` : ''} {route.scenario.weather_grid_point ? `Punto de grilla: ${fmt(route.scenario.weather_grid_point.lat, 5)}, ${fmt(route.scenario.weather_grid_point.lon, 5)}.` : ''} {route.scenario.traffic ? `Hora simulada: ${route.scenario.traffic_hour}:00 (Cusco).` : ''}</p>
+                  {route.scenario.weather_contributions && <p>Aportes al factor climático: {Object.entries(route.scenario.weather_contributions).map(([name, value]) => `${name} +${fmt(value * 100, 2)} %`).join(' · ')}. Temperatura informativa, no aplicada.</p>}
+                  <p>La ruta y las operaciones de las colas se calculan sobre la red nominal: un factor común no cambia el camino ni mide ventajas de rendimiento.</p></div>}
                 <div className="result-actions"><button type="button" onClick={() => { setSaved(old => [...old, { name: `${route.network}: ${route.source} a ${route.target}`, metric: route.unit, network: route.network, nodes: route.counts.nodes, edges: route.counts.edges, route }]); setSection('Comparar') }}>Agregar al comparador de consultas</button>
                   <button type="button" onClick={() => download('ruta-cusco.json', JSON.stringify(route, null, 2))}>Descargar resultado JSON</button></div>
                 <details><summary>Tramos y costos de la ruta</summary><Table headers={['Desde', 'Hasta', 'Calle registrada', `Costo (${route.unit})`, 'Distancia (m)', 'Tiempo estimado (s)']} rows={route.result.edges.map(e => [String(e.from), String(e.to), e.street ?? 'Sin nombre', fmt(e.cost, 3), fmt(e.length_m, 2), fmt(e.time_sec, 2)])} /></details>
@@ -255,19 +347,21 @@ function App() {
               <p className="fineprint">Una ejecución sirve para inspección, no para declarar la cola más rápida. A* cambia la estrategia de búsqueda y se informa por separado.</p>
             </section>}
           </div>
-          <aside className="context-pane"><h2>Condiciones en el punto</h2><p className="fineprint">Punto consultado: {fmt(conditionPoint.lat, 5)}, {fmt(conditionPoint.lon, 5)}{sourceCoords || sourcePoint ? ' (origen seleccionado)' : ' (centro de Cusco)'}.</p>
-            <label>Fuente<select value={provider} onChange={e => { setProvider(e.target.value as typeof provider); setCondition(null) }}><option value="open-meteo">Open-Meteo</option><option value="openweathermap">OpenWeatherMap</option><option value="tomtom">TomTom, segmento puntual</option></select></label>
-            {provider !== 'open-meteo' && <label>Clave del proveedor<input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} autoComplete="off" /></label>}
-            <button type="button" onClick={fetchConditions} disabled={conditionLoading} className="secondary">{conditionLoading ? 'Consultando…' : 'Consultar ahora'}</button>
+           <aside className="context-pane"><h2>Consultar una fuente</h2><p className="fineprint">Punto consultado: {fmt(conditionPoint.lat, 5)}, {fmt(conditionPoint.lon, 5)}{sourceCoords || sourcePoint ? ' (origen seleccionado)' : ' (centro de Cusco)'}.</p>
+             <label>Fuente<select value={conditionProvider} onChange={e => { setConditionProvider(e.target.value as typeof conditionProvider); setCondition(null) }}><option value="open-meteo">Open-Meteo</option><option value="openweathermap">OpenWeatherMap</option><option value="tomtom">TomTom, segmento puntual</option></select></label>
+             {conditionProvider !== 'open-meteo' && <label>Clave {conditionProvider === 'tomtom' ? 'TomTom' : 'OpenWeatherMap'}<input type="password" maxLength={200} value={apiKeys[conditionProvider]}
+               onChange={e => updateKey(conditionProvider, e.target.value)} autoComplete="off" /></label>}
+             <button type="button" onClick={fetchConditions} disabled={conditionLoading} className="secondary">{conditionLoading ? 'Consultando…' : 'Consultar ahora'}</button>
             {conditionError && <p className="error" role="alert">{conditionError}</p>}
             {!condition && !conditionLoading && !conditionError && <p className="fineprint">No hay lectura actual para este punto. Pulsa «Consultar ahora» para solicitarla.</p>}
-            {condition && <div className="observation" role="status"><strong>{condition.observation?.source ?? 'TomTom, segmento consultado'}</strong>
-              <p>Solicitado: {fmt(condition.requested.lat, 5)}, {fmt(condition.requested.lon, 5)}</p>
-              {condition.observation ? <><p><b>{fmt(condition.observation.temperature_c, 1)} °C</b> · {fmt(condition.observation.relative_humidity_pct, 0)} % humedad</p>
-                <p>Lluvia {fmt(condition.observation.precipitation_mm)} mm · Visibilidad {fmt(condition.observation.visibility_m, 0)} m · Ráfagas {fmt(condition.observation.wind_gusts_kmh, 1)} km/h</p>
-                <p>Grilla del proveedor: {fmt(condition.observation.grid_point.lat, 5)}, {fmt(condition.observation.grid_point.lon, 5)}.</p>
-                <p>Observado: {condition.observation.observed_at} ({condition.observation.timezone})</p></> : <p>Velocidad en el segmento: {fmt(condition.flow?.current_speed_kmh)} km/h; flujo libre: {fmt(condition.flow?.free_flow_speed_kmh)} km/h. No se aplica al resto de la red.</p>}
-              <p>Consultado: {condition.fetched_at_utc}</p></div>}
+             {condition?.observation && <><WeatherReading data={condition} /><button type="button" disabled={condition.multiplier == null || metric !== 'time' || preview?.metric === 'weight'} onClick={() => {
+               if (saveReading(condition)) { setWeather('saved'); setWeatherEnabled(true) }
+             }}>Guardar y aplicar esta lectura</button></>}
+             {condition?.flow && <p className="observation">TomTom, segmento consultado: {fmt(condition.flow.current_speed_kmh)} km/h; flujo libre: {fmt(condition.flow.free_flow_speed_kmh)} km/h. No se aplica al resto de la red.</p>}
+             <label className="check"><input type="checkbox" checked={rememberKeys} onChange={e => toggleRemember(e.target.checked)} /> Recordar claves en este navegador</label>
+             <button type="button" className="text-button" onClick={() => { forgetKeys(); setApiKeys({ ...emptyKeys }); setRememberKeys(false); setStorageError('Claves olvidadas en este navegador.') }}>Olvidar claves</button>
+             {storageError && <p role="status">{storageError}</p>}
+             <p className="fineprint">Sin base de datos. Guardar claves es opcional; el almacenamiento del navegador no es una bóveda segura. No compartas este perfil ni uses claves expuestas.</p>
             <p className="fineprint">Open-Meteo entrega datos de modelo, no de una estación exactamente en ese punto. La consulta TomTom es puntual y no altera el cálculo vial.</p>
           </aside>
         </div>

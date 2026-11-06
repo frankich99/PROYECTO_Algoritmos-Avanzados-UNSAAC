@@ -129,8 +129,14 @@ escenarios uniformes resuelve con los pesos base y escala los costos de salida:
 redondear antes cada arista podría cambiar la ruta en un empate muy cercano.
 En la vista Rutas se puede elegir la observación histórica del informe, el
 archivo local posterior o una consulta meteorológica temporal; las fuentes se
-nombran y nunca se confunden. La consulta opcional de APIs no guarda resultados
-en disco y un snapshot local se etiqueta como tal, no como lectura en vivo.
+nombran y nunca se confunden. La API no guarda consultas en disco, pero la
+interfaz permite guardar una lectura en `localStorage` del navegador bajo una
+acción explícita. Se rotula como escenario guardado, no como lectura en vivo.
+La consulta actual de ruta reutiliza la lectura obtenida previamente para el
+origen; el servidor comprueba el punto y señala que la lectura reenviada por
+el navegador no fue verificada por él. Las claves solo se guardan localmente
+si se activa «Recordar claves», y no se incluyen en el JSON del resultado.
+La temperatura se muestra, pero no contribuye al factor uniforme de costos.
 
 Solo una parte de las aristas de los snapshots contiene geometría vial; la API
 devuelve la polilínea completa cuando todos los tramos de la ruta la tienen y,
