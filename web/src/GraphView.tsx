@@ -6,7 +6,8 @@ import type { Point, Preview, RouteResponse } from './api'
 
 type Props = { preview: Preview | null; route: RouteResponse | null; onPick: (point: Point) => void;
   pick: 'source' | 'target'; onPickMode: (value: 'source' | 'target') => void; mapRequested: number;
-  sourcePoint: Point | null; targetPoint: Point | null }
+  sourcePoint: Point | null; targetPoint: Point | null;
+  lockSelection?: boolean; onToggleLock?: () => void }
 
 type Layers = { showNodes: boolean; showNames: boolean; showWeights: boolean; showNetwork: boolean; onlyRoute: boolean }
 
@@ -189,14 +190,18 @@ function GraphSVG({ preview, route, showNodes, showNames, showWeights, showNetwo
 
 type Camera = { network: string; center: [number, number]; zoom: number }
 
-function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNames, showWeights, showNetwork, onlyRoute, camera }: Props &
-  Layers & { basemap: string; camera: React.RefObject<Camera | null> }) {
+function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNames, showWeights, showNetwork, onlyRoute, camera, lockSelection }: Props &
+  Layers & { basemap: string; camera: React.RefObject<Camera | null>; lockSelection: boolean }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const markers = useRef<Marker[]>([])
   const markerType = useRef<typeof import('maplibre-gl').Marker | null>(null)
   const onPickRef = useRef(onPick)
   onPickRef.current = onPick
+  const lockRef = useRef(lockSelection)
+  lockRef.current = lockSelection
+  const [toast, setToast] = useState('')
+  const toastTimer = useRef<number | null>(null)
   const networkRef = useRef('')
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -225,7 +230,15 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
         map.current = m
         m.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
         m.on('error', () => { if (!disposed) setTileError(true) })
-        m.on('click', event => { onPickRef.current({ lat: event.lngLat.lat, lon: event.lngLat.lng }) })
+        m.on('click', event => {
+          if (lockRef.current) {
+            if (toastTimer.current) window.clearTimeout(toastTimer.current)
+            setToast('🔒 Selección bloqueada: zoom y exploración libres sin modificar origen ni destino.')
+            toastTimer.current = window.setTimeout(() => setToast(''), 2500)
+            return
+          }
+          onPickRef.current({ lat: event.lngLat.lat, lon: event.lngLat.lng })
+        })
         m.on('load', () => {
           if (disposed) return
           m.addSource('network', { type: 'geojson', data: empty })
@@ -369,6 +382,13 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
     return () => { markers.current.forEach(marker => marker.remove()); markers.current = [] }
   }, [ready, preview, route, showNames, showWeights, showNetwork, showNodes, onlyRoute])
 
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    const canvas = m.getCanvas()
+    if (canvas) canvas.style.cursor = lockSelection ? 'grab' : 'crosshair'
+  }, [ready, lockSelection])
+
   const fit = (which: 'network' | 'route') => {
     const m = map.current
     const points = which === 'route' ? (route?.result.path_geometry?.length ? route.result.path_geometry : route?.path_coords) :
@@ -383,17 +403,22 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
     {tileError && basemap === 'calles' && <p className="map-note" role="status">No se cargaron algunas teselas. Puedes seguir usando el plano sin conexión.</p>}
     <div className="map-actions"><button type="button" onClick={() => fit('network')} disabled={!ready}>Ver toda la red</button>
       <button type="button" onClick={() => fit('route')} disabled={!ready || !route?.result.path.length}>Centrar ruta</button></div>
+    {toast && <div className="map-lock-toast" role="status">{toast}</div>}
     <div className="map-canvas" ref={container} aria-label="Mapa interactivo. Selecciona origen o destino antes de pulsar un punto." />
   </div>
 }
 
-export default function GraphView({ preview, route, onPick, pick, onPickMode, mapRequested, sourcePoint, targetPoint }: Props) {
+export default function GraphView({ preview, route, onPick, pick, onPickMode, mapRequested, sourcePoint, targetPoint, lockSelection: extLock, onToggleLock: extToggle }: Props) {
+  const [internalLock, setInternalLock] = useState(false)
+  const isLocked = extLock !== undefined ? extLock : internalLock
+  const toggleLock = extToggle ?? (() => setInternalLock(l => !l))
+
   const [mode, setMode] = useState<'mapa' | 'grafo'>('mapa')
   const [basemap, setBasemap] = useState('plano')
   const [showNodes, setShowNodes] = useState(true)
   const [showNames, setShowNames] = useState(true)
   const [showNetwork, setShowNetwork] = useState(true)
-  const [showWeights, setShowWeights] = useState(true)
+  const [showWeights] = useState(true)
   const [onlyRoute, setOnlyRoute] = useState(false)
   const routeOnly = onlyRoute && !!route?.result.path.length
   const section = useRef<HTMLElement>(null)
@@ -408,46 +433,71 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
   }, [mapRequested])
 
   return <section ref={section} className="visual" aria-label="Visualización de red y ruta">
-    <div className="visual-tools">
-      <div className="segmented" aria-label="Visualización">
-        <button type="button" aria-pressed={mode === 'grafo'} className={mode === 'grafo' ? 'active' : ''} onClick={() => setMode('grafo')}>Grafo</button>
-        <button type="button" aria-pressed={mode === 'mapa'} className={mode === 'mapa' ? 'active' : ''} onClick={() => setMode('mapa')} disabled={!preview?.geographic}>Mapa</button>
-      </div>
-      {mode === 'mapa' && <>
-        <span className="map-pick" role="status">Pulsa el mapa para elegir {pick === 'source' ? 'origen' : 'destino'}.</span>
-        <div className="segmented" aria-label="Punto a elegir en mapa">
-          <button type="button" aria-pressed={pick === 'source'} className={pick === 'source' ? 'active' : ''} onClick={() => onPickMode('source')}>Origen</button>
-          <button type="button" aria-pressed={pick === 'target'} className={pick === 'target' ? 'active' : ''} onClick={() => onPickMode('target')}>Destino</button>
+    <div className="visual-toolbar">
+      <div className="visual-tools">
+        <div className="segmented" aria-label="Visualización">
+          <button type="button" aria-pressed={mode === 'grafo'} className={mode === 'grafo' ? 'active' : ''} onClick={() => setMode('grafo')}>Grafo</button>
+          <button type="button" aria-pressed={mode === 'mapa'} className={mode === 'mapa' ? 'active' : ''} onClick={() => setMode('mapa')} disabled={!preview?.geographic}>Mapa</button>
         </div>
-      </>}
-      <div className="map-options" role="group" aria-label="Base y capas visibles">
+
+        <button
+          type="button"
+          className={`lock-toolbar-btn ${isLocked ? 'is-locked' : 'is-unlocked'}`}
+          onClick={toggleLock}
+          title={isLocked ? "Selección bloqueada: haz clic para desbloquear y permitir elegir nuevos puntos en el mapa" : "Bloquear selección para hacer zoom y explorar libremente sin modificar origen ni destino"}
+          aria-pressed={isLocked}
+        >
+          {isLocked ? '🔒 Puntos bloqueados' : '🔓 Bloquear puntos'}
+        </button>
+
         {mode === 'mapa' && (
-          <label>
-            Mapa base{' '}
-            <select value={basemap} onChange={e => setBasemap(e.target.value)} disabled={routeOnly}>
-              <option value="plano">Plano sin teselas</option>
-              <option value="calles">Calles OSM</option>
-            </select>
-          </label>
+          isLocked ? (
+            <span className="map-pick locked-indicator" role="status">
+              🔒 Selección fija: zoom y navegación libres
+            </span>
+          ) : (
+            <>
+              <span className="map-pick" role="status">Elegir en mapa:</span>
+              <div className="segmented" aria-label="Punto a elegir en mapa">
+                <button type="button" aria-pressed={pick === 'source'} className={pick === 'source' ? 'active' : ''} onClick={() => onPickMode('source')}>Origen</button>
+                <button type="button" aria-pressed={pick === 'target'} className={pick === 'target' ? 'active' : ''} onClick={() => onPickMode('target')}>Destino</button>
+              </div>
+            </>
+          )
         )}
-        <div className="map-layers" role="group" aria-label="Capas visibles">
-          <label className="check">
-            <input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={showNames} onChange={e => setShowNames(e.target.checked)} disabled={!showNodes} /> Nombres / ID
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} disabled={routeOnly} /> Aristas
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={showWeights} onChange={e => setShowWeights(e.target.checked)} /> Pesos
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={routeOnly} onChange={e => setOnlyRoute(e.target.checked)} disabled={!route?.result.path.length} /> Solo recorrido
-          </label>
-        </div>
       </div>
+
+      <fieldset className="graph-layers">
+        <legend>Mostrar en {mode === 'mapa' ? 'el mapa' : 'el grafo'}</legend>
+        <div className="graph-layer-content">
+          {mode === 'mapa' && (
+            <label className="graph-basemap">
+              Mapa base{' '}
+              <select value={basemap} onChange={e => setBasemap(e.target.value)} disabled={routeOnly}>
+                <option value="plano">Plano sin teselas</option>
+                <option value="calles">Calles OSM</option>
+              </select>
+            </label>
+          )}
+          <div className="graph-layer-list">
+            <label className="check">
+              <input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} disabled={routeOnly} /> Aristas
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={showNames} onChange={e => setShowNames(e.target.checked)} disabled={!showNodes} /> Nombres
+            </label>
+            {route?.result.path.length ? (
+              <label className="check">
+                <input type="checkbox" checked={routeOnly} onChange={e => setOnlyRoute(e.target.checked)} /> Solo recorrido
+              </label>
+            ) : null}
+          </div>
+        </div>
+        {routeOnly && <p className="fineprint">Se ocultan las aristas y los nodos ajenos a la ruta; el origen y el destino permanecen visibles.</p>}
+      </fieldset>
     </div>
     {mode === 'mapa' && preview?.geographic ? (
       <MapView
@@ -466,6 +516,7 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
         showNetwork={showNetwork}
         onlyRoute={routeOnly}
         camera={camera}
+        lockSelection={isLocked}
       />
     ) : (
       <GraphSVG

@@ -114,6 +114,7 @@ function App() {
   const [gpsLoading, setGpsLoading] = useState(false)
   const [gpsError, setGpsError] = useState('')
   const [gpsFix, setGpsFix] = useState<{ timestamp: number; accuracy: number } | null>(null)
+  const [lockSelection, setLockSelection] = useState(false)
   const [route, setRoute] = useState<RouteResponse | null>(null)
   const [routeLoading, setRouteLoading] = useState(false)
   const [routeError, setRouteError] = useState('')
@@ -309,11 +310,12 @@ function App() {
 
   const setInstance = (value: InstanceSpec) => { gpsRequest.current += 1; setGpsLoading(false); setGpsFix(null); setGpsError(''); setSourcePoint(null); setTargetPoint(null); setSpec(value); setSection('Rutas') }
   const mapPick = useCallback((point: Point) => {
+    if (lockSelection) return
     routeAbort.current?.abort(); setRouteLoading(false)
     if (pick === 'source') { gpsRequest.current += 1; setGpsLoading(false); setGpsFix(null); setGpsError(''); setSourcePoint(point); setPick('target') }
     else setTargetPoint(point)
     setRoute(null)
-  }, [pick])
+  }, [pick, lockSelection])
   function useGps() {
     if (!navigator.geolocation) { setGpsError('Este navegador no ofrece ubicación. Selecciona un nodo o escribe coordenadas.'); return }
     const request = ++gpsRequest.current
@@ -605,7 +607,18 @@ function App() {
             {routeError && <p className="error" role="alert">{routeError}</p>}
           </form></div>
           <div className="main-pane">
-            <GraphView preview={preview} route={route} onPick={mapPick} pick={pick} onPickMode={setPick} mapRequested={mapRequested} sourcePoint={sourcePoint} targetPoint={targetPoint} />
+            <GraphView
+              preview={preview}
+              route={route}
+              onPick={mapPick}
+              pick={pick}
+              onPickMode={setPick}
+              mapRequested={mapRequested}
+              sourcePoint={sourcePoint}
+              targetPoint={targetPoint}
+              lockSelection={lockSelection}
+              onToggleLock={() => setLockSelection(l => !l)}
+            />
             {routeLoading && <p role="status" className="status">Ejecutando los algoritmos sobre la misma instancia…</p>}
             {!route && !routeLoading && !routeError && <p className="status">Selecciona los puntos y calcula la ruta. La red del centro procede de un snapshot OSM, no de tráfico actual.</p>}
             {route && <section className="result-block" aria-live="polite"><h2>Resultado de la consulta</h2>
