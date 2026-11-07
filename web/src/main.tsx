@@ -919,7 +919,33 @@ function App() {
           <label>Repeticiones por red (2 a 10)<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="5" value={runs} onChange={e => handleRunsChange(e.target.value)} /></label>
           <button className="primary" type="submit" disabled={experimentLoading}>{experimentLoading ? 'Midiendo…' : 'Ejecutar experimento'}</button>
         </form>
-        {experimentError && <p className="error" role="alert">{experimentError}</p>}
+        {experimentError && (
+          <div className="error" role="alert">
+            <p style={{ margin: 0, fontWeight: 600 }}>{experimentError}</p>
+            {experimentError.includes('FastAPI') && (
+              <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px dashed rgba(180, 40, 40, 0.4)', fontSize: '0.9rem' }}>
+                <p style={{ margin: '0 0 0.35rem 0', fontWeight: 600, color: '#7a192c' }}>
+                  💡 Para ejecutar experimentos en vivo con FastAPI:
+                </p>
+                <ol style={{ margin: '0 0 0.5rem 1.2rem', padding: 0 }}>
+                  <li style={{ marginBottom: '0.25rem' }}>
+                    Abre una terminal en la raíz del proyecto y ejecuta:
+                    <br />
+                    <code style={{ background: '#2c2525', color: '#f8d7da', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.85rem', display: 'inline-block', marginTop: '0.2rem' }}>
+                      .\.venv\Scripts\python.exe -B -m uvicorn web_api:app --app-dir python --host 127.0.0.1 --port 8000
+                    </code>
+                  </li>
+                  <li>
+                    Ingresa desde tu navegador a: <a href="http://127.0.0.1:8000/" target="_blank" rel="noreferrer" style={{ fontWeight: 600, textDecoration: 'underline' }}>http://127.0.0.1:8000/</a>
+                  </li>
+                </ol>
+                <p className="fineprint" style={{ margin: 0, color: '#666' }}>
+                  En <strong>GitHub Pages</strong> puedes consultar las pestañas <strong>Comparar</strong> y <strong>Evidencias</strong> para revisar todas las mediciones canónicas y tablas de percentiles guardadas sin necesidad de backend.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         {!experiment && !experimentLoading && !experimentError && <p className="empty-state">Aún no hay mediciones nuevas. Ejecuta el experimento para obtener una tabla.</p>}
         {experiment && <section className="section-space"><h2>Mediciones de esta sesión</h2><p className="fineprint">Perfil medido: {experiment.profile}. {experiment.generated_at_utc}. Separadas del banco canónico. La mediana observada no prueba una ventaja universal.</p>
           <Table headers={['Vértices', 'Aristas', 'Cola', 'Mediana (µs)', 'Q1 (µs)', 'Q3 (µs)', 'Semillas']} rows={experiment.rows.map(r => [r.nodes, r.edges, queueNames[r.queue], fmt(r.median_us, 1), fmt(r.q1_us, 1), fmt(r.q3_us, 1), r.instance_seeds.join(', ')])} />
