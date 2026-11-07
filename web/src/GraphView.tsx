@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { GeoJSONSource, Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
+import type { GeoJSONSource, Map as MapLibreMap, Marker, StyleSpecification } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import type { Feature, FeatureCollection, LineString, Point as GeoPoint } from 'geojson'
 import type { Point, Preview, RouteResponse } from './api'
@@ -8,7 +8,9 @@ type Props = { preview: Preview | null; route: RouteResponse | null; onPick: (po
   pick: 'source' | 'target'; onPickMode: (value: 'source' | 'target') => void; mapRequested: number;
   sourcePoint: Point | null; targetPoint: Point | null }
 
-function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
+type Layers = { showNodes: boolean; showNames: boolean; showWeights: boolean; showNetwork: boolean; onlyRoute: boolean }
+
+function GraphSVG({ preview, route, showNodes, showNames, showWeights, showNetwork, onlyRoute }: Pick<Props, 'preview' | 'route'> & Layers) {
   const layout = useMemo(() => {
     if (!preview) return null
     const ids = [...new Set([...preview.ids.slice(0, 150).map(String), ...(route?.result.path ?? []).map(String)])]
@@ -35,6 +37,13 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
   if (!preview || !layout) return <div className="empty-map">Valida una instancia para ver su red.</div>
 
   const pathNodes = new Set((route?.result.path ?? []).map(String))
+  const sampleNodes = new Set(preview.ids.slice(0, 20).map(String))
+  const path = route?.result.path ?? []
+  const nodeStep = Math.max(1, Math.ceil(path.length / 100))
+  const namedPathNodes = new Set(path.filter((_, index) => index % nodeStep === 0 || index === path.length - 1).map(String))
+  const routeEdges = route?.result.edges ?? []
+  const weightStep = Math.max(1, Math.ceil(routeEdges.length / 100))
+  const weightedPathEdges = new Set(routeEdges.filter((_, index) => index % weightStep === 0 || index === routeEdges.length - 1).map(edge => `${edge.from}|${edge.to}`))
   const selectedEdges = new Set((route?.result.edges ?? []).map(edge => `${edge.from}|${edge.to}`))
 
   // Mapeo de pesos para visualizarlos sobre cada arista
@@ -72,7 +81,8 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
     })
   }
   const edgeList = Array.from(edgeMap.values())
-  const showLabels = preview.nodes <= 45
+  const showBackgroundWeights = showWeights && showNetwork && !onlyRoute
+  const visibleEdges = edgeList.filter(edge => edge.selected || (showNetwork && !onlyRoute))
 
   return <div className="graph-container" role="img" aria-label={`Grafo con ${preview.nodes} nodos y ${preview.edges} aristas. Ruta: ${route?.result.path.join(', ') || 'sin calcular'}`}>
     <svg viewBox="0 0 700 410" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: 'auto' }}>
@@ -88,7 +98,7 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
       </defs>
 
       {/* 1. Líneas de aristas con grosor refinado */}
-      {edgeList.map(({ u, v, selected }, i) => {
+      {visibleEdges.map(({ u, v, selected }, i) => {
         const [x1, y1] = layout.get(u)!
         const [x2, y2] = layout.get(v)!
         return <line key={`line-${u}-${v}-${i}`} x1={x1} y1={y1} x2={x2} y2={y2}
@@ -98,7 +108,8 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
       })}
 
       {/* 2. Etiquetas de peso y costo compactas y legibles */}
-      {showLabels && edgeList.map(({ u, v, weight, selected }, i) => {
+      {visibleEdges.filter((edge, index) => showWeights && (edge.selected ? weightedPathEdges.has(`${edge.u}|${edge.v}`) :
+        showBackgroundWeights && (preview.nodes <= 45 || index < 20))).map(({ u, v, weight, selected }, i) => {
         if (weight === undefined || weight === null) return null
         const [x1, y1] = layout.get(u)!
         const [x2, y2] = layout.get(v)!
@@ -125,7 +136,7 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
       })}
 
       {/* 3. Nodos proporcionados con borde de alto contraste (sin blanco que se pierda en fondo claro) */}
-      {[...layout].map(([id, [x, y]]) => {
+      {[...layout].filter(([id]) => (!onlyRoute || pathNodes.has(id)) && (showNodes || id === String(route?.source) || id === String(route?.target))).map(([id, [x, y]]) => {
         const isSource = id === String(route?.source)
         const isTarget = id === String(route?.target)
         const isPath = pathNodes.has(id)
@@ -137,79 +148,95 @@ function GraphSVG({ preview, route }: Pick<Props, 'preview' | 'route'>) {
         const nameY = isSource ? y + r + 13 : isTarget ? y - r - 6 : (isUpper ? y - r - 6 : y + r + 13)
         const nameColor = isSource ? '#543b08' : isTarget ? '#4a0e1e' : '#1f1b1c'
 
+        const labels = (preview as Preview & { labels?: Record<string, string> }).labels
+        const name = labels?.[id]
         return <g key={`node-${id}`}>
+          {showNodes && showNames && name && <title>{`${id}: ${name}`}</title>}
           <circle cx={x} cy={y} r={r} fill={fillColor} stroke={strokeColor} strokeWidth={preview.nodes < 50 ? 2 : 1} />
-          {preview.nodes < 50 && (
-            id.length <= 2 ? (
+          {showNodes && showNames && (preview.nodes <= 45 || namedPathNodes.has(id) || (sampleNodes.has(id) && !onlyRoute)) && (
+            id.length <= 2 && preview.nodes < 50 ? (
               <text x={x} y={y + 3.5} textAnchor="middle" fontSize="10"
                 fontWeight="700" fill="#fffbf2" fontFamily="'Source Sans 3', Arial, sans-serif">{id}</text>
             ) : (
               <text x={x} y={nameY} textAnchor="middle" fontSize={id.length > 12 ? '9' : '10'}
                 fontWeight="700" fill={nameColor} stroke="#faf7f1" strokeWidth="3.5" strokeLinejoin="round"
                 paintOrder="stroke fill" fontFamily="'Source Sans 3', Arial, sans-serif">
-                {id}
+                 {name && preview.nodes > 45 ? `${id}: ${name.slice(0, 18)}` : id}
               </text>
             )
           )}
-          {isSource && preview.nodes < 50 && (
+          {showNodes && showNames && name && preview.nodes <= 45 && <text x={x} y={y + r + 23} textAnchor="middle" fontSize="9"
+            fontWeight="700" fill="#341e25" stroke="#faf7f1" strokeWidth="3" paintOrder="stroke fill">
+            {name.length > 22 ? `${name.slice(0, 21)}…` : name}
+          </text>}
+          {isSource && showNames && preview.nodes < 50 && (
             <text x={x} y={y - 16} textAnchor="middle" fontSize="9" fontWeight="700" fill="#6e4e10"
               stroke="#faf7f1" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Origen</text>
           )}
-          {isTarget && preview.nodes < 50 && (
+          {isTarget && showNames && preview.nodes < 50 && (
             <text x={x} y={y + 24} textAnchor="middle" fontSize="9" fontWeight="700" fill="#541224"
               stroke="#faf7f1" strokeWidth="2.5" strokeLinejoin="round" paintOrder="stroke fill">Destino</text>
           )}
         </g>
       })}
     </svg>
-    {preview.nodes > 150 && <p className="fineprint">Se muestran los primeros 150 nodos y todos los nodos de la ruta calculada.</p>}
+    {preview.nodes > 150 && !onlyRoute && <p className="fineprint">Se muestran los primeros 150 nodos y todos los nodos de la ruta calculada.</p>}
+    {preview.nodes > 45 && !onlyRoute && (showNames || showWeights) && <p className="fineprint">En redes grandes se rotulan hasta 20 nodos y 20 aristas de fondo; el recorrido se dibuja completo.</p>}
+    {routeEdges.length > 100 && (showNames || showWeights) && <p className="fineprint">Para evitar solapamientos, se rotulan hasta 100 pasos del recorrido; la ruta se dibuja completa.</p>}
     {preview.display_limited && <p className="fineprint">Red grande: se limita la vista previa, no el cálculo.</p>}
   </div>
 }
 
 type Camera = { network: string; center: [number, number]; zoom: number }
 
-function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNetwork, camera }: Props &
-  { basemap: string; showNodes: boolean; showNetwork: boolean; camera: React.RefObject<Camera | null> }) {
+function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, showNodes, showNames, showWeights, showNetwork, onlyRoute, camera }: Props &
+  Layers & { basemap: string; camera: React.RefObject<Camera | null> }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
+  const markers = useRef<Marker[]>([])
+  const markerType = useRef<typeof import('maplibre-gl').Marker | null>(null)
   const onPickRef = useRef(onPick)
   onPickRef.current = onPick
   const networkRef = useRef('')
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [tileError, setTileError] = useState(false)
-  const networkId = preview ? `${preview.name}:${preview.nodes}:${preview.edges}` : ''
+  const networkId = preview ? `${preview.name}-${preview.nodes}-${preview.edges}` : ''
+
   useEffect(() => {
-    if (!container.current) return
     let disposed = false
-    const raster: StyleSpecification = { version: 8,
-      sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
-      layers: [{ id: 'paper', type: 'background', paint: { 'background-color': '#F3EDE3' } },
-        { id: 'osm', type: 'raster', source: 'osm', layout: { visibility: 'none' } }] }
     let observer: ResizeObserver | null = null
     async function mount() {
+      if (!container.current) return
       try {
         const maplibregl = await import('maplibre-gl')
         if (disposed || !container.current) return
+        markerType.current = maplibregl.Marker
         maplibregl.setWorkerUrl(workerUrl)
         const saved = camera.current?.network === networkId ? camera.current : null
+        const empty: FeatureCollection = { type: 'FeatureCollection', features: [] }
+        const raster: StyleSpecification = {
+          version: 8,
+          sources: { osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
+          layers: [{ id: 'osm', type: 'raster', source: 'osm', minzoom: 0, maxzoom: 19, layout: { visibility: basemap === 'calles' ? 'visible' : 'none' } }]
+        }
         const m = new maplibregl.Map({ container: container.current, style: raster,
-          center: saved?.center ?? [-71.9788, -13.5165], zoom: saved?.zoom ?? 13, attributionControl: false })
+          center: saved ? saved.center : [-71.9788, -13.5165], zoom: saved ? saved.zoom : 13, minZoom: 9, maxZoom: 18 })
         map.current = m
-        m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-        m.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+        m.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
         m.on('error', () => { if (!disposed) setTileError(true) })
-        m.on('click', e => onPickRef.current({ lat: e.lngLat.lat, lon: e.lngLat.lng }))
-        m.on('moveend', () => { camera.current = { network: networkRef.current, center: [m.getCenter().lng, m.getCenter().lat], zoom: m.getZoom() } })
+        m.on('click', event => { onPickRef.current({ lat: event.lngLat.lat, lon: event.lngLat.lng }) })
         m.on('load', () => {
-          const empty = { type: 'FeatureCollection' as const, features: [] }
+          if (disposed) return
           m.addSource('network', { type: 'geojson', data: empty })
-          m.addLayer({ id: 'network-line', type: 'line', source: 'network', paint: { 'line-color': '#766F68', 'line-opacity': 0.7, 'line-width': 1 } })
+          m.addLayer({ id: 'network', type: 'line', source: 'network', layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#8B7355', 'line-width': 1.6, 'line-opacity': 0.75 } })
           m.addSource('route', { type: 'geojson', data: empty })
-          m.addLayer({ id: 'route-line', type: 'line', source: 'route', paint: { 'line-color': '#681C32', 'line-width': 5 } })
+          m.addLayer({ id: 'route', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#681C32', 'line-width': 5.5, 'line-opacity': 0.95 } })
           m.addSource('nodes', { type: 'geojson', data: empty })
-          m.addLayer({ id: 'node-dots', type: 'circle', source: 'nodes', paint: { 'circle-color': '#315D65', 'circle-radius': 3.5 } })
+          m.addLayer({ id: 'nodes', type: 'circle', source: 'nodes', paint: {
+            'circle-color': '#1E3F44', 'circle-radius': 3.5, 'circle-stroke-color': '#dec697', 'circle-stroke-width': 1 } })
           m.addSource('endpoints', { type: 'geojson', data: empty })
           m.addLayer({ id: 'endpoints', type: 'circle', source: 'endpoints', paint: {
             'circle-color': ['match', ['get', 'kind'], 'source', '#8A6418', '#681C32'],
@@ -228,11 +255,20 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
     return () => {
       disposed = true
       observer?.disconnect()
+      markers.current.forEach(marker => marker.remove()); markers.current = []
+      markerType.current = null
       if (map.current && networkRef.current) camera.current = { network: networkRef.current,
         center: [map.current.getCenter().lng, map.current.getCenter().lat], zoom: map.current.getZoom() }
       map.current?.remove(); map.current = null
     }
   }, [])
+
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m || !m.getLayer('osm')) return
+    m.setLayoutProperty('osm', 'visibility', basemap === 'calles' ? 'visible' : 'none')
+    if (basemap === 'plano') setTileError(false)
+  }, [basemap, ready])
 
   useEffect(() => {
     const m = map.current
@@ -243,8 +279,9 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
       return
     }
     const coords = preview.coords
-    const nodes: Feature<GeoPoint>[] = preview.ids.filter(id => coords[String(id)]).map(id => ({ type: 'Feature', properties: { id: String(id) }, geometry: { type: 'Point', coordinates: coords[String(id)] } }))
-    const network: Feature<LineString>[] = preview.display_edges.filter(([u, v]) => coords[String(u)] && coords[String(v)]).map(([u, v]) => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [coords[String(u)], coords[String(v)]] } }))
+    const pathIds = new Set((route?.result.path ?? []).map(String))
+    const nodes: Feature<GeoPoint>[] = preview.ids.filter(id => coords[String(id)] && (!onlyRoute || pathIds.has(String(id)))).map(id => ({ type: 'Feature', properties: { id: String(id) }, geometry: { type: 'Point', coordinates: coords[String(id)] } }))
+    const network: Feature<LineString>[] = onlyRoute ? [] : preview.display_edges.filter(([u, v]) => coords[String(u)] && coords[String(v)]).map(([u, v]) => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [coords[String(u)], coords[String(v)]] } }))
     ;(m.getSource('nodes') as GeoJSONSource).setData({ type: 'FeatureCollection', features: nodes })
     ;(m.getSource('network') as GeoJSONSource).setData({ type: 'FeatureCollection', features: network })
     if (networkRef.current !== networkId) {
@@ -256,7 +293,14 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
         { padding: 38, maxZoom: 16, duration: 0 })
       }
     }
-  }, [ready, preview, networkId, camera])
+  }, [ready, preview, networkId, camera, onlyRoute])
+
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    if (m.getLayer('nodes')) m.setLayoutProperty('nodes', 'visibility', showNodes ? 'visible' : 'none')
+    if (m.getLayer('network')) m.setLayoutProperty('network', 'visibility', showNetwork && !onlyRoute ? 'visible' : 'none')
+  }, [ready, showNodes, showNetwork, onlyRoute])
 
   useEffect(() => {
     const m = map.current
@@ -267,28 +311,63 @@ function MapView({ preview, route, onPick, sourcePoint, targetPoint, basemap, sh
       return
     }
     const pathPoints = route?.result.path_geometry?.length ? route.result.path_geometry : route?.path_coords
-    const path: FeatureCollection<LineString> = { type: 'FeatureCollection', features: pathPoints && pathPoints.length > 1
-      ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pathPoints } }] : [] }
+    const path: FeatureCollection<LineString> = { type: 'FeatureCollection', features: pathPoints && pathPoints.length > 1 ?
+      [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pathPoints } }] : [] }
+    const endpointFeatures: Feature<GeoPoint>[] = []
+    if (route) {
+      const srcCoord = preview.coords[String(route.source)]
+      const tgtCoord = preview.coords[String(route.target)]
+      if (srcCoord) endpointFeatures.push({ type: 'Feature', properties: { kind: 'source' }, geometry: { type: 'Point', coordinates: srcCoord } })
+      if (tgtCoord) endpointFeatures.push({ type: 'Feature', properties: { kind: 'target' }, geometry: { type: 'Point', coordinates: tgtCoord } })
+    }
+    const pickedFeatures: Feature<GeoPoint>[] = []
+    if (sourcePoint) pickedFeatures.push({ type: 'Feature', properties: { kind: 'source' }, geometry: { type: 'Point', coordinates: [sourcePoint.lon, sourcePoint.lat] } })
+    if (targetPoint) pickedFeatures.push({ type: 'Feature', properties: { kind: 'target' }, geometry: { type: 'Point', coordinates: [targetPoint.lon, targetPoint.lat] } })
+
     ;(m.getSource('route') as GeoJSONSource).setData(path)
-    const endpoints: Feature<GeoPoint>[] = route ? [route.source, route.target].flatMap((id, index) => {
-      const point = preview.coords[String(id)]
-      return point ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' }, geometry: { type: 'Point' as const, coordinates: point } }] : []
-    }) : []
-    ;(m.getSource('endpoints') as GeoJSONSource).setData({ type: 'FeatureCollection', features: endpoints })
-    const picked: Feature<GeoPoint>[] = [sourcePoint, targetPoint].flatMap((p, index) => p
-      ? [{ type: 'Feature' as const, properties: { kind: index === 0 ? 'source' : 'target' },
-        geometry: { type: 'Point' as const, coordinates: [p.lon, p.lat] } }] : [])
-    ;(m.getSource('picked') as GeoJSONSource).setData({ type: 'FeatureCollection', features: picked })
-  }, [ready, route, sourcePoint, targetPoint, preview])
+    ;(m.getSource('endpoints') as GeoJSONSource).setData({ type: 'FeatureCollection', features: endpointFeatures })
+    ;(m.getSource('picked') as GeoJSONSource).setData({ type: 'FeatureCollection', features: pickedFeatures })
+  }, [ready, preview, route, sourcePoint, targetPoint])
 
   useEffect(() => {
+    markers.current.forEach(marker => marker.remove()); markers.current = []
     const m = map.current
-    if (!ready || !m) return
-    if (basemap === 'plano') setTileError(false)
-    m.setLayoutProperty('node-dots', 'visibility', showNodes ? 'visible' : 'none')
-    m.setLayoutProperty('network-line', 'visibility', showNetwork ? 'visible' : 'none')
-    m.setLayoutProperty('osm', 'visibility', basemap === 'calles' ? 'visible' : 'none')
-  }, [ready, showNodes, showNetwork, basemap])
+    const MapMarker = markerType.current
+    if (!ready || !m || !preview || !MapMarker || (!showNames && !showWeights)) return
+    const coords = preview.coords
+    const path = route?.result.path ?? []
+    const step = Math.max(1, Math.ceil(path.length / 100))
+    const routeLabelIds = path.filter((_, index) => index % step === 0 || index === path.length - 1).map(String)
+    const labelIds = onlyRoute ? routeLabelIds : preview.nodes <= 45 ? preview.ids.map(String) :
+      [...new Set([...preview.ids.slice(0, 20).map(String), ...routeLabelIds])]
+    const add = (point: [number, number], text: string, className: string) => {
+      const el = document.createElement('div')
+      el.className = className
+      el.textContent = text
+      markers.current.push(new MapMarker({ element: el, anchor: 'bottom', offset: [0, -7] }).setLngLat(point).addTo(m))
+    }
+    const labels = (preview as Preview & { labels?: Record<string, string> }).labels
+    if (showNames && showNodes) labelIds.forEach(id => { if (coords[id]) add(coords[id], labels?.[id] ? `${id}: ${labels[id]}` : id, 'map-data-label map-node-label') })
+    if (showWeights && route) {
+      const step = Math.max(1, Math.ceil(route.result.edges.length / 100))
+      route.result.edges.forEach((edge, index) => {
+        if (index % step !== 0 && index !== route.result.edges.length - 1) return
+        const p1 = coords[String(edge.from)], p2 = coords[String(edge.to)]
+        if (!p1 || !p2) return
+        add([(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2], `${edge.cost != null ? Number(edge.cost.toFixed(1)) : ''}`, 'map-data-label map-weight-label')
+      })
+    }
+    if (showWeights && showNetwork && !onlyRoute) {
+      const pathEdges = new Set((route?.result.edges ?? []).map(edge => `${edge.from}|${edge.to}`))
+      preview.display_edges.slice(0, preview.nodes <= 45 ? 80 : 20).forEach(([u, v, weight]) => {
+        if (pathEdges.has(`${u}|${v}`)) return
+        const p1 = coords[String(u)], p2 = coords[String(v)]
+        if (!p1 || !p2) return
+        add([(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2], String(weight), 'map-data-label map-weight-muted')
+      })
+    }
+    return () => { markers.current.forEach(marker => marker.remove()); markers.current = [] }
+  }, [ready, preview, route, showNames, showWeights, showNetwork, showNodes, onlyRoute])
 
   const fit = (which: 'network' | 'route') => {
     const m = map.current
@@ -312,15 +391,22 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
   const [mode, setMode] = useState<'mapa' | 'grafo'>('mapa')
   const [basemap, setBasemap] = useState('plano')
   const [showNodes, setShowNodes] = useState(true)
+  const [showNames, setShowNames] = useState(true)
   const [showNetwork, setShowNetwork] = useState(true)
+  const [showWeights, setShowWeights] = useState(true)
+  const [onlyRoute, setOnlyRoute] = useState(false)
+  const routeOnly = onlyRoute && !!route?.result.path.length
   const section = useRef<HTMLElement>(null)
   const camera = useRef<Camera | null>(null)
+
   useEffect(() => { if (preview && !preview.geographic) setMode('grafo') }, [preview])
+  useEffect(() => { if (!route) setOnlyRoute(false) }, [route])
   useEffect(() => {
     if (!mapRequested) return
     setMode('mapa')
     section.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }, [mapRequested])
+
   return <section ref={section} className="visual" aria-label="Visualización de red y ruta">
     <div className="visual-tools">
       <div className="segmented" aria-label="Visualización">
@@ -333,19 +419,82 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
           <button type="button" aria-pressed={pick === 'source'} className={pick === 'source' ? 'active' : ''} onClick={() => onPickMode('source')}>Origen</button>
           <button type="button" aria-pressed={pick === 'target'} className={pick === 'target' ? 'active' : ''} onClick={() => onPickMode('target')}>Destino</button>
         </div>
-        <div className="map-options" role="group" aria-label="Base y capas del mapa">
-          <label>Mapa base <select value={basemap} onChange={e => setBasemap(e.target.value)}><option value="plano">Plano sin teselas</option><option value="calles">Calles OSM</option></select></label>
-          <div className="map-layers" role="group" aria-label="Capas visibles">
-            <label className="check"><input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos</label>
-            <label className="check"><input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} /> Aristas</label>
-          </div>
-        </div>
       </>}
+      <div className="map-options" role="group" aria-label="Base y capas visibles">
+        {mode === 'mapa' && (
+          <label>
+            Mapa base{' '}
+            <select value={basemap} onChange={e => setBasemap(e.target.value)} disabled={routeOnly}>
+              <option value="plano">Plano sin teselas</option>
+              <option value="calles">Calles OSM</option>
+            </select>
+          </label>
+        )}
+        <div className="map-layers" role="group" aria-label="Capas visibles">
+          <label className="check">
+            <input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={showNames} onChange={e => setShowNames(e.target.checked)} disabled={!showNodes} /> Nombres / ID
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} disabled={routeOnly} /> Aristas
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={showWeights} onChange={e => setShowWeights(e.target.checked)} /> Pesos
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={routeOnly} onChange={e => setOnlyRoute(e.target.checked)} disabled={!route?.result.path.length} /> Solo recorrido
+          </label>
+        </div>
+      </div>
     </div>
-    {mode === 'mapa' && preview?.geographic ? <MapView preview={preview} route={route} onPick={onPick} pick={pick} onPickMode={onPickMode} mapRequested={mapRequested} sourcePoint={sourcePoint} targetPoint={targetPoint} basemap={basemap} showNodes={showNodes} showNetwork={showNetwork} camera={camera} /> : <GraphSVG preview={preview} route={route} />}
-    <p className="legend">{(mode !== 'mapa' || showNodes) && <><span className="legend-node" /> Nodo </>}
-      <span className="legend-route" /> Ruta <span className="legend-origin" /> Origen <span className="legend-target" /> Destino</p>
+    {mode === 'mapa' && preview?.geographic ? (
+      <MapView
+        preview={preview}
+        route={route}
+        onPick={onPick}
+        pick={pick}
+        onPickMode={onPickMode}
+        mapRequested={mapRequested}
+        sourcePoint={sourcePoint}
+        targetPoint={targetPoint}
+        basemap={basemap}
+        showNodes={showNodes}
+        showNames={showNames}
+        showWeights={showWeights}
+        showNetwork={showNetwork}
+        onlyRoute={routeOnly}
+        camera={camera}
+      />
+    ) : (
+      <GraphSVG
+        preview={preview}
+        route={route}
+        showNodes={showNodes}
+        showNames={showNames}
+        showWeights={showWeights}
+        showNetwork={showNetwork}
+        onlyRoute={routeOnly}
+      />
+    )}
+    <p className="legend">
+      {showNodes && <><span className="legend-node" /> Nodo </>}
+      {route?.result.path.length ? (
+        <><span className="legend-route" /> Ruta <span className="legend-origin" /> Origen <span className="legend-target" /> Destino</>
+      ) : (
+        'Calcula una ruta para resaltar el recorrido.'
+      )}
+    </p>
+    {mode === 'mapa' && preview && preview.nodes > 45 && !routeOnly && (showNames || showWeights) && (
+      <p className="fineprint">En redes grandes se rotulan hasta 20 nodos y 20 aristas de fondo; el recorrido se dibuja completo.</p>
+    )}
+    {mode === 'mapa' && route && route.result.edges.length > 100 && (showNames || showWeights) && (
+      <p className="fineprint">Para evitar solapamientos, se rotulan hasta 100 pasos del recorrido; la ruta se dibuja completa.</p>
+    )}
     {mode === 'mapa' && <p className="fineprint">{route?.warning ?? 'Solo la base «Calles OSM» solicita teselas externas.'}</p>}
-    {mode === 'mapa' && preview?.display_limited && <p className="fineprint">Se muestra una parte de las aristas para mantener fluido el mapa; la ruta se calcula con la red completa.</p>}
+    {mode === 'mapa' && preview?.display_limited && (
+      <p className="fineprint">Se muestra una parte de las aristas para mantener fluido el mapa; la ruta se calcula con la red completa.</p>
+    )}
   </section>
 }

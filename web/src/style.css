@@ -10,9 +10,16 @@
 .map-canvas{height:clamp(500px,80vh,800px)}
 .map-actions{position:absolute;top:.65rem;left:.65rem;z-index:2;display:flex;flex-wrap:wrap;gap:.35rem;max-width:calc(100% - 5rem)}
 .map-actions button{min-height:44px;background:#fff;box-shadow:0 1px 4px #1f1b1c33;font-size:.85rem}
-.map-options{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;border-top:1px solid #d3c7ba;padding-top:.55rem}
-.map-options>label{display:flex;align-items:center;gap:.55rem}
-.map-layers{display:flex;align-items:center;gap:clamp(.7rem,3vw,2.5rem);flex-wrap:wrap}
+.map-options{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.75rem 1.25rem;flex-wrap:wrap;border-top:1px solid #d3c7ba;padding-top:.55rem;margin-top:.4rem}
+.map-options>label{display:flex;align-items:center;gap:.55rem;font-weight:600;color:var(--text);font-size:.92rem}
+.map-options select{padding:4px 8px;border-radius:4px;border:1px solid #c9bdae;background:#fff;font-size:.9rem;font-family:inherit}
+.map-layers{display:flex;align-items:center;gap:clamp(.75rem,2vw,1.25rem);flex-wrap:wrap}
+.map-layers .check{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.92rem;color:#2b211d;cursor:pointer;user-select:none;white-space:nowrap}
+.map-layers .check input[type=checkbox]{width:18px;height:18px;accent-color:#681C32;cursor:pointer}
+.map-layers .check:has(input:disabled){opacity:.55;cursor:not-allowed}
+.map-data-label{display:block;max-width:140px;padding:1px 4px;background:#fffdf9;border:1px solid #8a6418;border-radius:3px;color:#341e25;font:700 12px 'Source Sans 3',Arial,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+.map-weight-label{border-color:#681c32;background:#681c32;color:#fff;font-variant-numeric:tabular-nums}
+.map-weight-muted{border-color:#b8a99a;background:#f7f3ea;color:#341e25}
 .scenario-result{border-top:2px solid var(--wine);background:#f7f3ea;padding:1rem;margin:1.25rem 0}
 .scenario-result p:last-child{margin-bottom:0}
 @media(max-width:590px){.map-canvas{height:clamp(390px,70vh,600px)}.map-actions{top:auto;bottom:2rem;max-width:calc(100% - 1.3rem)}.map-options>label{width:100%}.map-options select{flex:1}.map-layers{justify-content:space-between;width:100%}}
