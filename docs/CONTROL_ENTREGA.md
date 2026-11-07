@@ -1,5 +1,12 @@
 # Control de requisitos y cierre del Grupo 5
 
+**Revisión de la segunda entrega (06/11/2026):** consultar [SEGUNDA_ENTREGA.md](SEGUNDA_ENTREGA.md),
+[BITACORA_GITHUB.md](BITACORA_GITHUB.md) y los resultados fechados en
+`web/public/data/delivery_evidence.json`. El texto de abajo es histórico: sus conteos
+y algunos hashes no representan necesariamente la rama vigente. La bitácora nueva
+se genera del historial alcanzable real, sin reconstruir reuniones ni atribuir
+commits grupales a personas.
+
 Referencia: `Descripcion del proyecto.pdf`, apartados 5, 6, 8, 9 y 12.
 Estado revisado al **05/11/2026**. La fecha objetivo comunicada por el equipo
 fue el **04/11/2026**; ninguna de las dos es una fecha oficial ni constancia de

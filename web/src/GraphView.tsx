@@ -418,7 +418,7 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
   const [showNodes, setShowNodes] = useState(true)
   const [showNames, setShowNames] = useState(true)
   const [showNetwork, setShowNetwork] = useState(true)
-  const [showWeights] = useState(true)
+  const [showWeights, setShowWeights] = useState(true)
   const [onlyRoute, setOnlyRoute] = useState(false)
   const routeOnly = onlyRoute && !!route?.result.path.length
   const section = useRef<HTMLElement>(null)
@@ -440,20 +440,20 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
           <button type="button" aria-pressed={mode === 'mapa'} className={mode === 'mapa' ? 'active' : ''} onClick={() => setMode('mapa')} disabled={!preview?.geographic}>Mapa</button>
         </div>
 
-        <button
+        {mode === 'mapa' && <button
           type="button"
           className={`lock-toolbar-btn ${isLocked ? 'is-locked' : 'is-unlocked'}`}
           onClick={toggleLock}
           title={isLocked ? "Selección bloqueada: haz clic para desbloquear y permitir elegir nuevos puntos en el mapa" : "Bloquear selección para hacer zoom y explorar libremente sin modificar origen ni destino"}
           aria-pressed={isLocked}
         >
-          {isLocked ? '🔒 Puntos bloqueados' : '🔓 Bloquear puntos'}
-        </button>
+          {isLocked ? 'Puntos bloqueados' : 'Bloquear puntos'}
+        </button>}
 
         {mode === 'mapa' && (
           isLocked ? (
             <span className="map-pick locked-indicator" role="status">
-              🔒 Selección fija: zoom y navegación libres
+              Selección fija: zoom y navegación libres
             </span>
           ) : (
             <>
@@ -484,16 +484,13 @@ export default function GraphView({ preview, route, onPick, pick, onPickMode, ma
               <input type="checkbox" checked={showNodes} onChange={e => setShowNodes(e.target.checked)} /> Nodos
             </label>
             <label className="check">
-              <input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} disabled={routeOnly} /> Aristas
+              <input type="checkbox" checked={showNetwork} onChange={e => setShowNetwork(e.target.checked)} disabled={routeOnly} /> Aristas de la red
             </label>
             <label className="check">
-              <input type="checkbox" checked={showNames} onChange={e => setShowNames(e.target.checked)} disabled={!showNodes} /> Nombres
+              <input type="checkbox" checked={showNames} onChange={e => setShowNames(e.target.checked)} disabled={!showNodes} /> Nombres / ID
             </label>
-            {route?.result.path.length ? (
-              <label className="check">
-                <input type="checkbox" checked={routeOnly} onChange={e => setOnlyRoute(e.target.checked)} /> Solo recorrido
-              </label>
-            ) : null}
+            <label className="check"><input type="checkbox" checked={showWeights} onChange={e => setShowWeights(e.target.checked)} /> Pesos</label>
+            <label className="check"><input type="checkbox" checked={routeOnly} onChange={e => setOnlyRoute(e.target.checked)} disabled={!route?.result.path.length} /> Solo recorrido</label>
           </div>
         </div>
         {routeOnly && <p className="fineprint">Se ocultan las aristas y los nodos ajenos a la ruta; el origen y el destino permanecen visibles.</p>}

@@ -53,3 +53,5 @@ skills-lock.json
 data/skills/
 
 .playwright-mcp/
+python/test-results/
+web/test-results/

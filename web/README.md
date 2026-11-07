@@ -206,3 +206,16 @@ cd web
 npm run build
 npm audit
 ```
+## Segunda entrega: verificación y bitácora
+
+La sección **Evidencias** presenta la matriz de productos, resultados de pruebas,
+protocolo/piloto y aportes de GitHub. Los conteos se leen de un JSON fechado, no de
+texto fijo. Ver `../docs/SEGUNDA_ENTREGA.md` para reproducirlos.
+
+```powershell
+npm run test:report
+```
+
+Las pruebas de componentes usan Vitest, Testing Library y jsdom; no prueban el
+renderizado WebGL. La suite Python y el piloto se ejecutan desde la raíz, según la
+guía. Aprobar todas las pruebas no equivale a 100 % de cobertura de líneas.

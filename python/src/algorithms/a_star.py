@@ -27,13 +27,13 @@ def admissible_scale(nodes: List[Hashable], adj: Adjacency, coords: Coords) -> f
     """
     if any(node not in coords for node in nodes):
         return 0.0
-    ratios: List[float] = []
+    scale = math.inf
     for u in nodes:
         for v, weight in adj.get(u, []):
             geometric = euclidean_distance(coords[u], coords[v])
             if geometric > 0:
-                ratios.append(float(weight) / geometric)
-    return min(ratios, default=0.0)
+                scale = min(scale, float(weight) / geometric)
+    return 0.0 if math.isinf(scale) else scale
 
 
 def make_consistent_heuristic(

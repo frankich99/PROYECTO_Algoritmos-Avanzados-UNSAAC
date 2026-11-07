@@ -1,0 +1,90 @@
+# Bitácora de aportes verificables en GitHub
+
+Generada: 2026-11-07T02:32:38.384691+00:00.
+Rama `ramaFRANKI`; base `3b8acae015eea01bfe33eba2f701066f2e7f8723`. Incluye solo commits alcanzables desde esa base.
+HEAD remoto consultado: `3b8acae015eea01bfe33eba2f701066f2e7f8723`.
+
+La autoría de un commit no prueba dedicación, aprendizaje individual ni asistencia a reuniones. Los cambios de Grupo 5 no se asignan a una persona sin respaldo. Las fechas son las declaradas por el autor en Git, no actas ni fechas de recepción.
+
+## Autores registrados
+
+| Autor | Commits |
+| --- | ---: |
+| ramaFRANKI | 46 |
+| Noe Choquenaira | 7 |
+| Aldo Yaranga | 3 |
+| Yeni Porroa | 2 |
+| Romario Quispe | 2 |
+
+## Cronología
+
+| Fecha del autor | Autor | Cambio | Evidencia |
+| --- | --- | --- | --- |
+| 2026-11-06T20:53:31-05:00 | ramaFRANKI | feat: restaurar bloque de capas de grafo/mapa y control de bloqueo de selección | [3b8acae](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/3b8acae015eea01bfe33eba2f701066f2e7f8723) |
+| 2026-11-06T20:19:20-05:00 | ramaFRANKI | feat(web): reconstruir y estilizar checks de activacion de capas (nodos, nombres, aristas, pesos y solo recorrido) | [c998d49](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/c998d4989f44f518303477a47cb83c70ee93a357) |
+| 2026-11-06T17:41:55-05:00 | ramaFRANKI | build(web): compilar assets de produccion actualizados en raiz v1.5.0 | [73c252d](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/73c252d745e87d809cbc188a470f1acb1bf73126) |
+| 2026-11-06T17:36:10-05:00 | ramaFRANKI | feat(web): estilizar panel de trafico horario con reloj en vivo de Cusco y botones de origen | [784c415](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/784c415800c5c0f7500b8da4c526fd57d218ccf2) |
+| 2026-11-06T17:18:35-05:00 | ramaFRANKI | fix(web): restaurar visor limpio original y activar motor de rutas autonomo en GitHub Pages | [a9aa4d5](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a9aa4d5413c4199ce53894ba2b22b17dafd258eb) |
+| 2026-11-06T12:27:49-05:00 | ramaFRANKI | feat(web): integrar snapshots verificados, openapi publico y sincronizacion de despliegue | [7acae1f](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/7acae1fb2c2b8632e5a5fd9a68ebe92314768e30) |
+| 2026-11-06T11:01:31-05:00 | ramaFRANKI | feat(pages): incluir build web compilado v1.5.0 en la raiz para despliegue directo e instantaneo en GitHub Pages | [e6e6056](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/e6e6056613e2913f423916b81c9e87887eebad3a) |
+| 2026-11-06T10:43:32-05:00 | ramaFRANKI | ci(web): agregar .nojekyll en public para despliegue garantizado en GitHub Pages | [0512c33](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/0512c33aef0d5528a8f48860f853dbba03f3664d) |
+| 2026-11-06T10:36:22-05:00 | ramaFRANKI | build(web): sincronizar package-lock.json con version v1.5.0 para despliegue en GitHub Pages | [75c2bf8](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/75c2bf85d1f53cdb48fea11189c4047b976b6609) |
+| 2026-11-06T10:28:01-05:00 | ramaFRANKI | v1.5: corregido instancias y grafos | [ba73f65](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/ba73f650769c59e4e020349bd3efc0ec3635295f) |
+| 2026-11-06T10:09:24-05:00 | ramaFRANKI | fix(web): renderizar nombres de nodos en color oscuro de alto contraste fuera del circulo con halo protector | [21f18ea](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/21f18ea9dafb42a7cbd055e6d93680e37c39b4fd) |
+| 2026-11-06T09:56:02-05:00 | ramaFRANKI | feat(web): estilizar botones de pegar/limpiar en tablas y estilizar flechas y trazos del grafo | [a17bb34](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a17bb34c275e6544011bb807a7c5b25efb0139a2) |
+| 2026-11-06T09:21:21-05:00 | ramaFRANKI | feat(web): permitir pegado directo en celdas de nodos/aristas y renderizar pesos, flechas y rutas en grafo abstracto | [a651c7b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a651c7bc68632752e210c433aa3a597f713f7ae8) |
+| 2026-11-06T08:58:22-05:00 | ramaFRANKI | fix(web): expandir ancho fluido al 100% en datos y metodo eliminando espacio vacio lateral | [2aa5f4d](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/2aa5f4d0f74c36fb4272276dffc29bdd82bd32f8) |
+| 2026-11-06T08:46:41-05:00 | ramaFRANKI | docs: corregir desglose de costo optimo en instancia simple de prueba (13 vs 14) | [a1ecb03](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a1ecb038f592defff21b713a22e248e489eddc78) |
+| 2026-11-06T08:43:05-05:00 | ramaFRANKI | feat(web): integrar zoom interactivo individual y tamaño predeterminado compacto en formulas matematicas | [f2b60d1](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/f2b60d1d47615d4f7b4fc34de3dc306180aec574) |
+| 2026-11-06T08:28:35-05:00 | ramaFRANKI | fix(web): corregir entrada por teclado de semilla y repeticiones evitando ceros indeseados y ejecutar experimentos dinamicos | [af6628d](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/af6628d92eae9be13c662827f25321660d8f3214) |
+| 2026-11-06T08:22:00-05:00 | ramaFRANKI | feat(web): renderizar formulas matematicas con fracciones y notacion estilo LaTeX en datos y metodo | [5f966a9](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/5f966a947c7890ba2720c2632586550473dfbc68) |
+| 2026-11-06T08:15:44-05:00 | ramaFRANKI | feat(web): integrar desglose formal de formulas, relieve, temperatura y trafico en datos y metodo | [9f318ff](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/9f318ff375c8f34185689845781a460b95d5306c) |
+| 2026-11-06T07:45:38-05:00 | ramaFRANKI | feat: incorporar evidencias y datos y metodo en web, graficos de red y carpeta de instancias de prueba | [d7a7721](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/d7a7721bd8df9e12e1ac4333062c959685ec46a6) |
+| 2026-11-06T07:01:29-05:00 | ramaFRANKI | feat(traffic): soporte para hora actual de Cusco, lectura puntual de TomTom y credenciales seguras | [91de35a](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/91de35a4f2975f57858e5c1a4b4df21049f746c2) |
+| 2026-11-06T04:06:20-05:00 | ramaFRANKI | feat(web): soporte de ejecucion directa en el navegador para GitHub Pages sin backend | [bbeec1c](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/bbeec1c0290a3f8ea26b2cf2b765816c574f417e) |
+| 2026-11-06T03:49:19-05:00 | ramaFRANKI | ci(github): configurar despliegue automatico a GitHub Pages y base relativa en Vite | [efc272c](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/efc272cd52c6d37b2629441a765216adfe7739c2) |
+| 2026-11-06T03:42:30-05:00 | ramaFRANKI | docs: actualizar conteo de 291 pruebas en CONTROL_ENTREGA.md | [f15e7eb](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/f15e7eb1f55febf98f1a85633383c17731295225) |
+| 2026-11-06T03:41:36-05:00 | ramaFRANKI | docs: actualizar conteo de pruebas a 291 passed en GUIA.md y python/README.md | [2190e41](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/2190e41740a95f7226c5b55c95617b11ee446565) |
+| 2026-11-06T03:25:42-05:00 | ramaFRANKI | version v1.2.1: persistencia local de claves y lecturas, controles de camara y desglose climatico | [a9ea2d5](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a9ea2d5c7752f9589b8788494e120855463a8d03) |
+| 2026-11-05T21:55:42-05:00 | ramaFRANKI | version v1.2: aplicacion web React + FastAPI, cobertura urbana y paquete publicable | [097fec0](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/097fec0426446f380d8b0f3c92437513396fc26f) |
+| 2026-11-04T12:07:34-05:00 | ramaFRANKI | version v1.1: calibracion academica rigurosa, precision en supuestos y sincronizacion documental completa | [0ae0e6b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/0ae0e6b0bf80e5e48079fa00e8a4b61e7c20b876) |
+| 2026-11-04T07:13:36-05:00 | ramaFRANKI | version v1.0: incorporacion de experimento piloto reproducible, clarificacion de complejidades y rigor estadistico en sintesis comparativa | [f574216](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/f5742163eaae12b7f289a4e8cac1cb176fd6816d) |
+| 2026-11-04T04:56:39-05:00 | ramaFRANKI | version v0.9: precision metodologica, referencia visual OSM de Cusco y actualizacion bibliografica Boeing 2025 | [8e36625](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/8e366250cf9c4f37529f012ac72f96e68020154c) |
+| 2026-11-03T17:04:38-05:00 | ramaFRANKI | version v0.8: actualizacion final de informe, indice tematico sin brechas, definicion AAA y PDF compilado | [6543f89](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/6543f89aa86e42ff5d2c0875cf3984cabb930c1c) |
+| 2026-11-03T16:20:51-05:00 | ramaFRANKI | docs(latex): eliminar ramificacion en indice para conclusiones y anexos (secciones 12 y 14 limpias) | [a8ba08b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/a8ba08b675bbaf40d6db445b2883c3b0f411c8e6) |
+| 2026-11-03T15:30:18-05:00 | ramaFRANKI | docs(latex): estructurar informe en 14 secciones canonicas segun apartado 9 del silabo con contenido tecnico integro | [16b0b9c](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/16b0b9ca85c00519e3deb3c388ff829deabfd813) |
+| 2026-11-03T14:42:01-05:00 | Noe Choquenaira | version v0.8 | [68b2359](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/68b235905f6d1008ef5ce795706aa3713e7c0ad1) |
+| 2026-10-28T14:14:26-05:00 | ramaFRANKI | feat: integrar benchmark canonico, ruta OSM, clima y app Streamlit | [80e2593](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/80e2593a6640a984bdf8b3fe47f706d18c9037d3) |
+| 2026-10-23T16:45:21-05:00 | ramaFRANKI | docs: actualizar conteo de paginas y secciones canonicas en README y GUIA | [55348df](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/55348dfeb893b700b5b618263f6354f7b66d93b7) |
+| 2026-10-23T16:40:10-05:00 | ramaFRANKI | docs(latex): completar las 14 secciones canónicas del silabo con Resumen, Discusion Critica y Conclusiones | [c036edf](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/c036edfb9f5b357d7bc2ac415bcc436fe9cc4034) |
+| 2026-10-23T16:29:02-05:00 | ramaFRANKI | docs(latex): unificar estructura academica, eliminar menciones de avances y depurar codigo fuente redundante | [f9fd7e2](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/f9fd7e262beb5f1ff7ad480e712a9df292f97230) |
+| 2026-10-23T15:18:36-05:00 | Noe Choquenaira | docs: update root and python READMEs with A*, Graphviz, Colab badges and team distribution | [35e2f8d](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/35e2f8d99dd047217033aecab2e853f006c3748e) |
+| 2026-10-23T14:09:33-05:00 | ramaFRANKI | merge(franki): integracion completa de algoritmo A*, Colab 26 celdas e informe final | [856363f](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/856363fc707d51df61f55c656bbcebaeb0d0993f) |
+| 2026-10-23T14:09:33-05:00 | ramaFRANKI | merge(aldo): integrar suite de pruebas QA y opciones CLI | [1198f32](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/1198f324dff9c28272e91c465dce70fe50727541) |
+| 2026-10-23T14:09:33-05:00 | ramaFRANKI | merge(yeni): integrar analisis de localidad de cache L1/L2 y comparativa de colas | [ee64759](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/ee6475907e007e984cf8bd5eada26704e557a9c1) |
+| 2026-10-23T14:09:32-05:00 | Noe Choquenaira | docs(final): informe academico LaTeX de 60 paginas, guia de sustentacion GUIA.md y consolidacion de avances 4 y 5 | [ee12c43](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/ee12c430ce25e58052dacddaa519996ab5c338a6) |
+| 2026-10-23T14:09:32-05:00 | ramaFRANKI | merge(romario): integrar benchmark de escalabilidad y datos de impedancia | [b773021](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/b7730218cb61e38750d68fa1cd5d3d49fbe5cc57) |
+| 2026-10-23T14:09:32-05:00 | Noe Choquenaira | feat(colab): expansion del cuaderno interactivo Google Colab con 26 celdas, suite de pruebas y demo interactiva | [709bde3](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/709bde3e2fe6e90e37915e76e7c6c8332b0791e0) |
+| 2026-10-23T14:09:31-05:00 | Aldo Yaranga | test(qa): suite automatizada de pruebas bajo patron AAA y opciones CLI avanzadas | [82e7dd1](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/82e7dd1b552cb94b49aecbb123115c953930c628) |
+| 2026-10-23T14:09:31-05:00 | Noe Choquenaira | feat(a-star): implementacion del algoritmo A* con heuristica admisible D/V_max y poda de busqueda | [1abbfb5](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/1abbfb5029862b402de824eac5bf66e73b69d99e) |
+| 2026-10-23T14:09:30-05:00 | Yeni Porroa | feat(heaps): analisis comparativo de monticulos, localidad de cache L1/L2 y matriz de seleccion de colas | [fbb14f8](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/fbb14f88eabb22e8e65dd655cf2ccbae897746a8) |
+| 2026-10-23T14:09:30-05:00 | Romario Quispe | feat(scalability): calibracion de funcion de impedancia y benchmark de escalabilidad para redes viales | [83ea30a](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/83ea30aadfb13972d4b6fc0d2245a54d08a880b4) |
+| 2026-10-23T00:32:59-05:00 | ramaFRANKI | docs: integrar retroalimentacion del docente en informe, colab y guia rapida GUIA.md | [00fd4eb](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/00fd4ebc656cfc52c0b49d2dc79ba517a4f953f0) |
+| 2026-10-23T00:23:49-05:00 | ramaFRANKI | test(cli): agregar test unitario para comando graphviz | [c23c33b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/c23c33bf8f756cad97837b8242e988dc658ece46) |
+| 2026-10-23T00:22:57-05:00 | ramaFRANKI | feat(cli): comando graphviz y opcion en menu interactivo para exportar dot | [3096974](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/3096974fedcd64025543e4bbc6d81eac499f783b) |
+| 2026-10-23T00:22:18-05:00 | ramaFRANKI | feat(vis): integrar exportacion de grafos Graphviz en pipeline de demo | [e440487](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/e44048777994373efc25ea78c3887059c3610e7f) |
+| 2026-10-23T00:20:53-05:00 | ramaFRANKI | merge: integrar avances de ramaAldo y ramaYeni en ramaFRANKI | [dd02679](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/dd0267912c598c643a50100d6fafe7126a301a35) |
+| 2026-10-22T22:11:31-05:00 | Aldo Yaranga | Avances 4 y 5: Dijkstra con Binary/4-ary/Fibonacci Heap integrados | [4b080db](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/4b080db2af7c12869ab6cbde42e77d7170df28f8) |
+| 2026-10-04T18:12:54-05:00 | Yeni Porroa | feat(dary-heap): implementacion de DARYHeap con optimizacion de cache y evaluacion del stack tecnologico | [442ea56](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/442ea567a8eb216749c7c1ea052862dd0542c9de) |
+| 2026-10-04T11:25:30-05:00 | Aldo Yaranga | test(qa): suite de validacion con 11 pruebas unitarias, notebook Colab y anexos tecnicos | [ee3109d](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/ee3109d10075b9672c4c81a239a55cfb075cb3d9) |
+| 2026-10-04T07:50:38-05:00 | Romario Quispe | feat(fibonacci-bench): integracion de FibonacciHeap, suite de escalabilidad y analisis de resultados | [221bf21](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/221bf2131d9f381c3f95c9b8d0992481e26cd3cf) |
+| 2026-10-02T22:34:26-05:00 | Noe Choquenaira | feat(core): arquitectura modular, modelo vial Cusco, IndexedMinHeap y algoritmo de Dijkstra | [24e526f](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/24e526f35ce7c02784d22d19d87490188843b400) |
+| 2026-10-02T22:33:47-05:00 | Noe Choquenaira | chore: inicializar repositorio de investigacion | [41f6a3a](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/41f6a3a714e44f4decb3cfa9fc5aa2a9a8c1da44) |
+
+## Correcciones de esta revisión (aún sin commit)
+
+- Se retiran afirmaciones de cobertura al 100 %, superioridad universal y reducción fija de A*.
+- Se rechazan valores no finitos en el modelo; la calibración de A* deja de almacenar O(E) cocientes.
+- Se añaden referencia exhaustiva, flujo HTTP con semillas y pruebas de componentes web.
+- Se separan pruebas, piloto de revisión, banco histórico y contribuciones de Git.
+- Pendientes: actas y reflexiones individuales auténticas, instalación limpia, PDF recompilado y defensa.

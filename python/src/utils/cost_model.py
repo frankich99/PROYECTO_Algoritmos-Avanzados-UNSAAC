@@ -5,6 +5,7 @@ de tránsito. Los experimentos de colas usan los mismos pesos para todas las
 alternativas; por tanto, el modelo de costo no favorece a ninguna estructura.
 """
 from dataclasses import dataclass
+import math
 from typing import Dict, Tuple
 
 @dataclass
@@ -45,6 +46,9 @@ class CuscoCostModel:
         - 'distance': Retorna la distancia física pura en metros.
         - 'time': Retorna el tiempo de viaje estimado en segundos (con pendiente, clima y tráfico).
         """
+        values = (segment.length_m, segment.gradient_pct, weather_multiplier, traffic_multiplier)
+        if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) for value in values):
+            raise ValueError("Longitud, pendiente y multiplicadores deben ser números finitos.")
         if segment.length_m < 0:
             raise ValueError("La longitud del tramo no puede ser negativa.")
         if metric not in ("distance", "time"):

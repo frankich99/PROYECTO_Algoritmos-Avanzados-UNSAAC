@@ -1,0 +1,560 @@
+{
+  "schema_version": 2,
+  "generated_at_utc": "2026-11-07T02:32:36.393240+00:00",
+  "protocol": {
+    "clock": "time.perf_counter_ns",
+    "gc": "desactivado durante cada muestra",
+    "warmup": 2,
+    "runs_per_instance": 5,
+    "instances_per_size": 2,
+    "seed": 12345,
+    "oracle": "NetworkX single_source_dijkstra_path_length + certificado O(V+E+longitud total de caminos)",
+    "primary_statistic": "mediana; dispersión IQR",
+    "timing_scope": "Solo núcleo, sin validación, I/O, trazas ni reconstrucción de caminos"
+  },
+  "environment": {
+    "python": "3.12.8",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD"
+  },
+  "queue_types": [
+    "binary_heap",
+    "4ary_heap",
+    "fibonacci_heap"
+  ],
+  "profiles": {
+    "sparse": {
+      "description": "E=4V",
+      "scales": [
+        30,
+        100
+      ],
+      "data": {
+        "binary_heap": [
+          {
+            "nodes": 30,
+            "edges": 120,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              13275,
+              13276
+            ],
+            "mean_us": 332.49,
+            "median_us": 314.9,
+            "std_us": 52.777,
+            "q1_us": 305.95,
+            "q3_us": 330.825,
+            "iqr_us": 24.875,
+            "mad_us": 11.8,
+            "min_us": 285.3,
+            "max_us": 480.9,
+            "cv_pct": 15.873,
+            "sample_count": 10,
+            "samples_us": [
+              480.9,
+              333.0,
+              356.6,
+              324.3,
+              319.3,
+              308.8,
+              301.2,
+              285.3,
+              310.5,
+              305.0
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 37.0,
+              "relax_attempts": 63.0,
+              "comparisons": 290.0
+            },
+            "speedup_vs_binary": 1.0
+          },
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              15445,
+              15446
+            ],
+            "mean_us": 1187.21,
+            "median_us": 1149.55,
+            "std_us": 116.271,
+            "q1_us": 1130.775,
+            "q3_us": 1207.325,
+            "iqr_us": 76.55,
+            "mad_us": 40.3,
+            "min_us": 1072.3,
+            "max_us": 1504.6,
+            "cv_pct": 9.794,
+            "sample_count": 10,
+            "samples_us": [
+              1094.4,
+              1072.3,
+              1504.6,
+              1139.7,
+              1148.0,
+              1175.0,
+              1241.1,
+              1218.1,
+              1127.8,
+              1151.1
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1365.5
+            },
+            "speedup_vs_binary": 1.0
+          }
+        ],
+        "4ary_heap": [
+          {
+            "nodes": 30,
+            "edges": 120,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              13275,
+              13276
+            ],
+            "mean_us": 396.68,
+            "median_us": 383.65,
+            "std_us": 67.91,
+            "q1_us": 334.3,
+            "q3_us": 453.475,
+            "iqr_us": 119.175,
+            "mad_us": 61.3,
+            "min_us": 314.6,
+            "max_us": 506.9,
+            "cv_pct": 17.12,
+            "sample_count": 10,
+            "samples_us": [
+              486.3,
+              438.4,
+              314.6,
+              458.5,
+              382.9,
+              506.9,
+              384.4,
+              349.9,
+              315.8,
+              329.1
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 37.0,
+              "relax_attempts": 63.0,
+              "comparisons": 296.5
+            },
+            "speedup_vs_binary": 0.8208
+          },
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              15445,
+              15446
+            ],
+            "mean_us": 1293.98,
+            "median_us": 1091.3,
+            "std_us": 364.43,
+            "q1_us": 1063.075,
+            "q3_us": 1422.825,
+            "iqr_us": 359.75,
+            "mad_us": 56.95,
+            "min_us": 1025.9,
+            "max_us": 2220.6,
+            "cv_pct": 28.164,
+            "sample_count": 10,
+            "samples_us": [
+              1233.9,
+              1061.8,
+              1619.5,
+              1485.8,
+              1107.3,
+              1025.9,
+              2220.6,
+              1042.8,
+              1066.9,
+              1075.3
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1386.5
+            },
+            "speedup_vs_binary": 1.0534
+          }
+        ],
+        "fibonacci_heap": [
+          {
+            "nodes": 30,
+            "edges": 120,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              13275,
+              13276
+            ],
+            "mean_us": 528.69,
+            "median_us": 485.95,
+            "std_us": 138.489,
+            "q1_us": 470.725,
+            "q3_us": 499.975,
+            "iqr_us": 29.25,
+            "mad_us": 17.45,
+            "min_us": 456.8,
+            "max_us": 940.4,
+            "cv_pct": 26.195,
+            "sample_count": 10,
+            "samples_us": [
+              458.1,
+              477.4,
+              468.5,
+              520.7,
+              940.4,
+              484.4,
+              489.7,
+              487.5,
+              456.8,
+              503.4
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 37.0,
+              "relax_attempts": 63.0,
+              "comparisons": 257.0
+            },
+            "speedup_vs_binary": 0.648
+          },
+          {
+            "nodes": 100,
+            "edges": 400,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              15445,
+              15446
+            ],
+            "mean_us": 1830.41,
+            "median_us": 1825.05,
+            "std_us": 73.543,
+            "q1_us": 1788.075,
+            "q3_us": 1894.025,
+            "iqr_us": 105.95,
+            "mad_us": 63.0,
+            "min_us": 1697.1,
+            "max_us": 1931.0,
+            "cv_pct": 4.018,
+            "sample_count": 10,
+            "samples_us": [
+              1900.0,
+              1832.9,
+              1931.0,
+              1697.1,
+              1817.2,
+              1791.9,
+              1924.0,
+              1747.1,
+              1786.8,
+              1876.1
+            ],
+            "operations_mean": {
+              "insert_ops": 100.0,
+              "extract_min_ops": 100.0,
+              "decrease_key_ops": 138.0,
+              "relax_attempts": 216.0,
+              "comparisons": 1200.5
+            },
+            "speedup_vs_binary": 0.6299
+          }
+        ]
+      },
+      "winner_counts": {
+        "binary_heap": 1,
+        "4ary_heap": 1,
+        "fibonacci_heap": 0
+      }
+    },
+    "dense": {
+      "description": "E=0.08 V(V-1)",
+      "scales": [
+        30,
+        60
+      ],
+      "data": {
+        "binary_heap": [
+          {
+            "nodes": 30,
+            "edges": 70,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              23275,
+              23276
+            ],
+            "mean_us": 331.98,
+            "median_us": 324.25,
+            "std_us": 53.892,
+            "q1_us": 291.375,
+            "q3_us": 347.85,
+            "iqr_us": 56.475,
+            "mad_us": 32.3,
+            "min_us": 278.1,
+            "max_us": 465.8,
+            "cv_pct": 16.234,
+            "sample_count": 10,
+            "samples_us": [
+              465.8,
+              329.4,
+              354.0,
+              297.3,
+              325.8,
+              322.7,
+              289.4,
+              278.1,
+              280.8,
+              376.5
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 31.0,
+              "relax_attempts": 38.5,
+              "comparisons": 270.5
+            },
+            "speedup_vs_binary": 1.0
+          },
+          {
+            "nodes": 60,
+            "edges": 283,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              24205,
+              24206
+            ],
+            "mean_us": 725.2,
+            "median_us": 664.8,
+            "std_us": 105.714,
+            "q1_us": 648.55,
+            "q3_us": 785.05,
+            "iqr_us": 136.5,
+            "mad_us": 26.75,
+            "min_us": 638.0,
+            "max_us": 980.7,
+            "cv_pct": 14.577,
+            "sample_count": 10,
+            "samples_us": [
+              799.2,
+              638.1,
+              638.0,
+              780.4,
+              647.4,
+              980.7,
+              786.6,
+              652.0,
+              676.7,
+              652.9
+            ],
+            "operations_mean": {
+              "insert_ops": 60.0,
+              "extract_min_ops": 60.0,
+              "decrease_key_ops": 86.5,
+              "relax_attempts": 140.0,
+              "comparisons": 739.5
+            },
+            "speedup_vs_binary": 1.0
+          }
+        ],
+        "4ary_heap": [
+          {
+            "nodes": 30,
+            "edges": 70,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              23275,
+              23276
+            ],
+            "mean_us": 307.27,
+            "median_us": 304.1,
+            "std_us": 21.543,
+            "q1_us": 292.35,
+            "q3_us": 309.3,
+            "iqr_us": 16.95,
+            "mad_us": 10.8,
+            "min_us": 283.1,
+            "max_us": 359.4,
+            "cv_pct": 7.011,
+            "sample_count": 10,
+            "samples_us": [
+              309.8,
+              359.4,
+              307.8,
+              330.1,
+              306.4,
+              283.1,
+              287.7,
+              295.2,
+              301.8,
+              291.4
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 31.0,
+              "relax_attempts": 38.5,
+              "comparisons": 282.5
+            },
+            "speedup_vs_binary": 1.0663
+          },
+          {
+            "nodes": 60,
+            "edges": 283,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              24205,
+              24206
+            ],
+            "mean_us": 764.02,
+            "median_us": 711.55,
+            "std_us": 152.336,
+            "q1_us": 630.85,
+            "q3_us": 867.05,
+            "iqr_us": 236.2,
+            "mad_us": 87.4,
+            "min_us": 622.6,
+            "max_us": 1099.8,
+            "cv_pct": 19.939,
+            "sample_count": 10,
+            "samples_us": [
+              894.6,
+              1099.8,
+              625.7,
+              759.8,
+              630.2,
+              878.4,
+              833.0,
+              622.6,
+              632.8,
+              663.3
+            ],
+            "operations_mean": {
+              "insert_ops": 60.0,
+              "extract_min_ops": 60.0,
+              "decrease_key_ops": 86.5,
+              "relax_attempts": 140.0,
+              "comparisons": 749.5
+            },
+            "speedup_vs_binary": 0.9343
+          }
+        ],
+        "fibonacci_heap": [
+          {
+            "nodes": 30,
+            "edges": 70,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              23275,
+              23276
+            ],
+            "mean_us": 492.32,
+            "median_us": 475.5,
+            "std_us": 63.426,
+            "q1_us": 453.225,
+            "q3_us": 511.25,
+            "iqr_us": 58.025,
+            "mad_us": 30.9,
+            "min_us": 408.0,
+            "max_us": 615.3,
+            "cv_pct": 12.883,
+            "sample_count": 10,
+            "samples_us": [
+              456.1,
+              494.9,
+              592.4,
+              516.4,
+              495.8,
+              455.1,
+              408.0,
+              436.6,
+              615.3,
+              452.6
+            ],
+            "operations_mean": {
+              "insert_ops": 30.0,
+              "extract_min_ops": 30.0,
+              "decrease_key_ops": 31.0,
+              "relax_attempts": 38.5,
+              "comparisons": 232.5
+            },
+            "speedup_vs_binary": 0.6819
+          },
+          {
+            "nodes": 60,
+            "edges": 283,
+            "instance_count": 2,
+            "runs_per_instance": 5,
+            "instance_seeds": [
+              24205,
+              24206
+            ],
+            "mean_us": 1162.18,
+            "median_us": 1083.35,
+            "std_us": 175.202,
+            "q1_us": 1011.65,
+            "q3_us": 1334.95,
+            "iqr_us": 323.3,
+            "mad_us": 91.5,
+            "min_us": 984.9,
+            "max_us": 1449.5,
+            "cv_pct": 15.075,
+            "sample_count": 10,
+            "samples_us": [
+              1407.7,
+              1057.6,
+              1109.1,
+              1018.7,
+              1209.4,
+              998.8,
+              1376.8,
+              1009.3,
+              984.9,
+              1449.5
+            ],
+            "operations_mean": {
+              "insert_ops": 60.0,
+              "extract_min_ops": 60.0,
+              "decrease_key_ops": 86.5,
+              "relax_attempts": 140.0,
+              "comparisons": 663.0
+            },
+            "speedup_vs_binary": 0.6137
+          }
+        ]
+      },
+      "winner_counts": {
+        "binary_heap": 1,
+        "4ary_heap": 1,
+        "fibonacci_heap": 0
+      }
+    }
+  },
+  "kind": "second_delivery_review_pilot"
+}

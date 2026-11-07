@@ -1,0 +1,789 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-11-07T02:32:38.384691+00:00",
+  "git": {
+    "head": "3b8acae015eea01bfe33eba2f701066f2e7f8723",
+    "branch": "ramaFRANKI",
+    "dirty": true,
+    "github_head": "3b8acae015eea01bfe33eba2f701066f2e7f8723",
+    "github_checked_at": "2026-11-07T02:32:38.384691+00:00"
+  },
+  "tests": {
+    "python": {
+      "passed": 346,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 22.97,
+      "modules": [
+        {
+          "name": "python.tests.test_a_star",
+          "passed": 8,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_applied_analysis",
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_benchmark_protocol",
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_cli",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_delivery_pipeline",
+          "passed": 48,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_delivery_report",
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_dijkstra.TestAdverseCases",
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_dijkstra.TestBasicCases",
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_dijkstra.TestBoundaryCases",
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_dijkstra.TestScaleAndEquivalence",
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_dijkstra_manual",
+          "passed": 36,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_equivalence",
+          "passed": 48,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_osm_loader",
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_priority_queues",
+          "passed": 61,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_provider_keys",
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_traffic",
+          "passed": 11,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_validation_io",
+          "passed": 45,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_weather",
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
+          "name": "python.tests.test_web_api",
+          "passed": 27,
+          "failed": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "web": {
+      "passed": 42,
+      "failed": 0,
+      "total": 42
+    }
+  },
+  "pilot": {
+    "generated_at_utc": "2026-11-07T02:32:36.393240+00:00",
+    "protocol": {
+      "clock": "time.perf_counter_ns",
+      "gc": "desactivado durante cada muestra",
+      "warmup": 2,
+      "runs_per_instance": 5,
+      "instances_per_size": 2,
+      "seed": 12345,
+      "oracle": "NetworkX single_source_dijkstra_path_length + certificado O(V+E+longitud total de caminos)",
+      "primary_statistic": "mediana; dispersión IQR",
+      "timing_scope": "Solo núcleo, sin validación, I/O, trazas ni reconstrucción de caminos"
+    },
+    "environment": {
+      "python": "3.12.8",
+      "platform": "Windows-11-10.0.26300-SP0",
+      "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD"
+    },
+    "rows": [
+      {
+        "profile": "dense",
+        "queue": "4ary_heap",
+        "nodes": 30,
+        "edges": 70,
+        "median_us": 304.1,
+        "q1_us": 292.35,
+        "q3_us": 309.3,
+        "sample_count": 10,
+        "instance_seeds": [
+          23275,
+          23276
+        ]
+      },
+      {
+        "profile": "dense",
+        "queue": "binary_heap",
+        "nodes": 30,
+        "edges": 70,
+        "median_us": 324.25,
+        "q1_us": 291.375,
+        "q3_us": 347.85,
+        "sample_count": 10,
+        "instance_seeds": [
+          23275,
+          23276
+        ]
+      },
+      {
+        "profile": "dense",
+        "queue": "fibonacci_heap",
+        "nodes": 30,
+        "edges": 70,
+        "median_us": 475.5,
+        "q1_us": 453.225,
+        "q3_us": 511.25,
+        "sample_count": 10,
+        "instance_seeds": [
+          23275,
+          23276
+        ]
+      },
+      {
+        "profile": "dense",
+        "queue": "4ary_heap",
+        "nodes": 60,
+        "edges": 283,
+        "median_us": 711.55,
+        "q1_us": 630.85,
+        "q3_us": 867.05,
+        "sample_count": 10,
+        "instance_seeds": [
+          24205,
+          24206
+        ]
+      },
+      {
+        "profile": "dense",
+        "queue": "binary_heap",
+        "nodes": 60,
+        "edges": 283,
+        "median_us": 664.8,
+        "q1_us": 648.55,
+        "q3_us": 785.05,
+        "sample_count": 10,
+        "instance_seeds": [
+          24205,
+          24206
+        ]
+      },
+      {
+        "profile": "dense",
+        "queue": "fibonacci_heap",
+        "nodes": 60,
+        "edges": 283,
+        "median_us": 1083.35,
+        "q1_us": 1011.65,
+        "q3_us": 1334.95,
+        "sample_count": 10,
+        "instance_seeds": [
+          24205,
+          24206
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "4ary_heap",
+        "nodes": 30,
+        "edges": 120,
+        "median_us": 383.65,
+        "q1_us": 334.3,
+        "q3_us": 453.475,
+        "sample_count": 10,
+        "instance_seeds": [
+          13275,
+          13276
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "binary_heap",
+        "nodes": 30,
+        "edges": 120,
+        "median_us": 314.9,
+        "q1_us": 305.95,
+        "q3_us": 330.825,
+        "sample_count": 10,
+        "instance_seeds": [
+          13275,
+          13276
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "fibonacci_heap",
+        "nodes": 30,
+        "edges": 120,
+        "median_us": 485.95,
+        "q1_us": 470.725,
+        "q3_us": 499.975,
+        "sample_count": 10,
+        "instance_seeds": [
+          13275,
+          13276
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "4ary_heap",
+        "nodes": 100,
+        "edges": 400,
+        "median_us": 1091.3,
+        "q1_us": 1063.075,
+        "q3_us": 1422.825,
+        "sample_count": 10,
+        "instance_seeds": [
+          15445,
+          15446
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "binary_heap",
+        "nodes": 100,
+        "edges": 400,
+        "median_us": 1149.55,
+        "q1_us": 1130.775,
+        "q3_us": 1207.325,
+        "sample_count": 10,
+        "instance_seeds": [
+          15445,
+          15446
+        ]
+      },
+      {
+        "profile": "sparse",
+        "queue": "fibonacci_heap",
+        "nodes": 100,
+        "edges": 400,
+        "median_us": 1825.05,
+        "q1_us": 1788.075,
+        "q3_us": 1894.025,
+        "sample_count": 10,
+        "instance_seeds": [
+          15445,
+          15446
+        ]
+      }
+    ]
+  },
+  "contributors": [
+    {
+      "name": "ramaFRANKI",
+      "count": 46
+    },
+    {
+      "name": "Noe Choquenaira",
+      "count": 7
+    },
+    {
+      "name": "Aldo Yaranga",
+      "count": 3
+    },
+    {
+      "name": "Yeni Porroa",
+      "count": 2
+    },
+    {
+      "name": "Romario Quispe",
+      "count": 2
+    }
+  ],
+  "commits": [
+    {
+      "hash": "3b8acae015eea01bfe33eba2f701066f2e7f8723",
+      "date": "2026-11-06T20:53:31-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat: restaurar bloque de capas de grafo/mapa y control de bloqueo de selección"
+    },
+    {
+      "hash": "c998d4989f44f518303477a47cb83c70ee93a357",
+      "date": "2026-11-06T20:19:20-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): reconstruir y estilizar checks de activacion de capas (nodos, nombres, aristas, pesos y solo recorrido)"
+    },
+    {
+      "hash": "73c252d745e87d809cbc188a470f1acb1bf73126",
+      "date": "2026-11-06T17:41:55-05:00",
+      "author": "ramaFRANKI",
+      "subject": "build(web): compilar assets de produccion actualizados en raiz v1.5.0"
+    },
+    {
+      "hash": "784c415800c5c0f7500b8da4c526fd57d218ccf2",
+      "date": "2026-11-06T17:36:10-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): estilizar panel de trafico horario con reloj en vivo de Cusco y botones de origen"
+    },
+    {
+      "hash": "a9aa4d5413c4199ce53894ba2b22b17dafd258eb",
+      "date": "2026-11-06T17:18:35-05:00",
+      "author": "ramaFRANKI",
+      "subject": "fix(web): restaurar visor limpio original y activar motor de rutas autonomo en GitHub Pages"
+    },
+    {
+      "hash": "7acae1fb2c2b8632e5a5fd9a68ebe92314768e30",
+      "date": "2026-11-06T12:27:49-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): integrar snapshots verificados, openapi publico y sincronizacion de despliegue"
+    },
+    {
+      "hash": "e6e6056613e2913f423916b81c9e87887eebad3a",
+      "date": "2026-11-06T11:01:31-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(pages): incluir build web compilado v1.5.0 en la raiz para despliegue directo e instantaneo en GitHub Pages"
+    },
+    {
+      "hash": "0512c33aef0d5528a8f48860f853dbba03f3664d",
+      "date": "2026-11-06T10:43:32-05:00",
+      "author": "ramaFRANKI",
+      "subject": "ci(web): agregar .nojekyll en public para despliegue garantizado en GitHub Pages"
+    },
+    {
+      "hash": "75c2bf85d1f53cdb48fea11189c4047b976b6609",
+      "date": "2026-11-06T10:36:22-05:00",
+      "author": "ramaFRANKI",
+      "subject": "build(web): sincronizar package-lock.json con version v1.5.0 para despliegue en GitHub Pages"
+    },
+    {
+      "hash": "ba73f650769c59e4e020349bd3efc0ec3635295f",
+      "date": "2026-11-06T10:28:01-05:00",
+      "author": "ramaFRANKI",
+      "subject": "v1.5: corregido instancias y grafos"
+    },
+    {
+      "hash": "21f18ea9dafb42a7cbd055e6d93680e37c39b4fd",
+      "date": "2026-11-06T10:09:24-05:00",
+      "author": "ramaFRANKI",
+      "subject": "fix(web): renderizar nombres de nodos en color oscuro de alto contraste fuera del circulo con halo protector"
+    },
+    {
+      "hash": "a17bb34c275e6544011bb807a7c5b25efb0139a2",
+      "date": "2026-11-06T09:56:02-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): estilizar botones de pegar/limpiar en tablas y estilizar flechas y trazos del grafo"
+    },
+    {
+      "hash": "a651c7bc68632752e210c433aa3a597f713f7ae8",
+      "date": "2026-11-06T09:21:21-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): permitir pegado directo en celdas de nodos/aristas y renderizar pesos, flechas y rutas en grafo abstracto"
+    },
+    {
+      "hash": "2aa5f4d0f74c36fb4272276dffc29bdd82bd32f8",
+      "date": "2026-11-06T08:58:22-05:00",
+      "author": "ramaFRANKI",
+      "subject": "fix(web): expandir ancho fluido al 100% en datos y metodo eliminando espacio vacio lateral"
+    },
+    {
+      "hash": "a1ecb038f592defff21b713a22e248e489eddc78",
+      "date": "2026-11-06T08:46:41-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs: corregir desglose de costo optimo en instancia simple de prueba (13 vs 14)"
+    },
+    {
+      "hash": "f2b60d1d47615d4f7b4fc34de3dc306180aec574",
+      "date": "2026-11-06T08:43:05-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): integrar zoom interactivo individual y tamaño predeterminado compacto en formulas matematicas"
+    },
+    {
+      "hash": "af6628d92eae9be13c662827f25321660d8f3214",
+      "date": "2026-11-06T08:28:35-05:00",
+      "author": "ramaFRANKI",
+      "subject": "fix(web): corregir entrada por teclado de semilla y repeticiones evitando ceros indeseados y ejecutar experimentos dinamicos"
+    },
+    {
+      "hash": "5f966a947c7890ba2720c2632586550473dfbc68",
+      "date": "2026-11-06T08:22:00-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): renderizar formulas matematicas con fracciones y notacion estilo LaTeX en datos y metodo"
+    },
+    {
+      "hash": "9f318ff375c8f34185689845781a460b95d5306c",
+      "date": "2026-11-06T08:15:44-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): integrar desglose formal de formulas, relieve, temperatura y trafico en datos y metodo"
+    },
+    {
+      "hash": "d7a7721bd8df9e12e1ac4333062c959685ec46a6",
+      "date": "2026-11-06T07:45:38-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat: incorporar evidencias y datos y metodo en web, graficos de red y carpeta de instancias de prueba"
+    },
+    {
+      "hash": "91de35a4f2975f57858e5c1a4b4df21049f746c2",
+      "date": "2026-11-06T07:01:29-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(traffic): soporte para hora actual de Cusco, lectura puntual de TomTom y credenciales seguras"
+    },
+    {
+      "hash": "bbeec1c0290a3f8ea26b2cf2b765816c574f417e",
+      "date": "2026-11-06T04:06:20-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): soporte de ejecucion directa en el navegador para GitHub Pages sin backend"
+    },
+    {
+      "hash": "efc272cd52c6d37b2629441a765216adfe7739c2",
+      "date": "2026-11-06T03:49:19-05:00",
+      "author": "ramaFRANKI",
+      "subject": "ci(github): configurar despliegue automatico a GitHub Pages y base relativa en Vite"
+    },
+    {
+      "hash": "f15e7eb1f55febf98f1a85633383c17731295225",
+      "date": "2026-11-06T03:42:30-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs: actualizar conteo de 291 pruebas en CONTROL_ENTREGA.md"
+    },
+    {
+      "hash": "2190e41740a95f7226c5b55c95617b11ee446565",
+      "date": "2026-11-06T03:41:36-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs: actualizar conteo de pruebas a 291 passed en GUIA.md y python/README.md"
+    },
+    {
+      "hash": "a9ea2d5c7752f9589b8788494e120855463a8d03",
+      "date": "2026-11-06T03:25:42-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v1.2.1: persistencia local de claves y lecturas, controles de camara y desglose climatico"
+    },
+    {
+      "hash": "097fec0426446f380d8b0f3c92437513396fc26f",
+      "date": "2026-11-05T21:55:42-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v1.2: aplicacion web React + FastAPI, cobertura urbana y paquete publicable"
+    },
+    {
+      "hash": "0ae0e6b0bf80e5e48079fa00e8a4b61e7c20b876",
+      "date": "2026-11-04T12:07:34-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v1.1: calibracion academica rigurosa, precision en supuestos y sincronizacion documental completa"
+    },
+    {
+      "hash": "f5742163eaae12b7f289a4e8cac1cb176fd6816d",
+      "date": "2026-11-04T07:13:36-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v1.0: incorporacion de experimento piloto reproducible, clarificacion de complejidades y rigor estadistico en sintesis comparativa"
+    },
+    {
+      "hash": "8e366250cf9c4f37529f012ac72f96e68020154c",
+      "date": "2026-11-04T04:56:39-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v0.9: precision metodologica, referencia visual OSM de Cusco y actualizacion bibliografica Boeing 2025"
+    },
+    {
+      "hash": "6543f89aa86e42ff5d2c0875cf3984cabb930c1c",
+      "date": "2026-11-03T17:04:38-05:00",
+      "author": "ramaFRANKI",
+      "subject": "version v0.8: actualizacion final de informe, indice tematico sin brechas, definicion AAA y PDF compilado"
+    },
+    {
+      "hash": "a8ba08b675bbaf40d6db445b2883c3b0f411c8e6",
+      "date": "2026-11-03T16:20:51-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): eliminar ramificacion en indice para conclusiones y anexos (secciones 12 y 14 limpias)"
+    },
+    {
+      "hash": "16b0b9ca85c00519e3deb3c388ff829deabfd813",
+      "date": "2026-11-03T15:30:18-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): estructurar informe en 14 secciones canonicas segun apartado 9 del silabo con contenido tecnico integro"
+    },
+    {
+      "hash": "68b235905f6d1008ef5ce795706aa3713e7c0ad1",
+      "date": "2026-11-03T14:42:01-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "version v0.8"
+    },
+    {
+      "hash": "80e2593a6640a984bdf8b3fe47f706d18c9037d3",
+      "date": "2026-10-28T14:14:26-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat: integrar benchmark canonico, ruta OSM, clima y app Streamlit"
+    },
+    {
+      "hash": "55348dfeb893b700b5b618263f6354f7b66d93b7",
+      "date": "2026-10-23T16:45:21-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs: actualizar conteo de paginas y secciones canonicas en README y GUIA"
+    },
+    {
+      "hash": "c036edfb9f5b357d7bc2ac415bcc436fe9cc4034",
+      "date": "2026-10-23T16:40:10-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): completar las 14 secciones canónicas del silabo con Resumen, Discusion Critica y Conclusiones"
+    },
+    {
+      "hash": "f9fd7e262beb5f1ff7ad480e712a9df292f97230",
+      "date": "2026-10-23T16:29:02-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): unificar estructura academica, eliminar menciones de avances y depurar codigo fuente redundante"
+    },
+    {
+      "hash": "35e2f8d99dd047217033aecab2e853f006c3748e",
+      "date": "2026-10-23T15:18:36-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "docs: update root and python READMEs with A*, Graphviz, Colab badges and team distribution"
+    },
+    {
+      "hash": "856363fc707d51df61f55c656bbcebaeb0d0993f",
+      "date": "2026-10-23T14:09:33-05:00",
+      "author": "ramaFRANKI",
+      "subject": "merge(franki): integracion completa de algoritmo A*, Colab 26 celdas e informe final"
+    },
+    {
+      "hash": "1198f324dff9c28272e91c465dce70fe50727541",
+      "date": "2026-10-23T14:09:33-05:00",
+      "author": "ramaFRANKI",
+      "subject": "merge(aldo): integrar suite de pruebas QA y opciones CLI"
+    },
+    {
+      "hash": "ee6475907e007e984cf8bd5eada26704e557a9c1",
+      "date": "2026-10-23T14:09:33-05:00",
+      "author": "ramaFRANKI",
+      "subject": "merge(yeni): integrar analisis de localidad de cache L1/L2 y comparativa de colas"
+    },
+    {
+      "hash": "ee12c430ce25e58052dacddaa519996ab5c338a6",
+      "date": "2026-10-23T14:09:32-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "docs(final): informe academico LaTeX de 60 paginas, guia de sustentacion GUIA.md y consolidacion de avances 4 y 5"
+    },
+    {
+      "hash": "b7730218cb61e38750d68fa1cd5d3d49fbe5cc57",
+      "date": "2026-10-23T14:09:32-05:00",
+      "author": "ramaFRANKI",
+      "subject": "merge(romario): integrar benchmark de escalabilidad y datos de impedancia"
+    },
+    {
+      "hash": "709bde3e2fe6e90e37915e76e7c6c8332b0791e0",
+      "date": "2026-10-23T14:09:32-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "feat(colab): expansion del cuaderno interactivo Google Colab con 26 celdas, suite de pruebas y demo interactiva"
+    },
+    {
+      "hash": "82e7dd1b552cb94b49aecbb123115c953930c628",
+      "date": "2026-10-23T14:09:31-05:00",
+      "author": "Aldo Yaranga",
+      "subject": "test(qa): suite automatizada de pruebas bajo patron AAA y opciones CLI avanzadas"
+    },
+    {
+      "hash": "1abbfb5029862b402de824eac5bf66e73b69d99e",
+      "date": "2026-10-23T14:09:31-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "feat(a-star): implementacion del algoritmo A* con heuristica admisible D/V_max y poda de busqueda"
+    },
+    {
+      "hash": "fbb14f88eabb22e8e65dd655cf2ccbae897746a8",
+      "date": "2026-10-23T14:09:30-05:00",
+      "author": "Yeni Porroa",
+      "subject": "feat(heaps): analisis comparativo de monticulos, localidad de cache L1/L2 y matriz de seleccion de colas"
+    },
+    {
+      "hash": "83ea30aadfb13972d4b6fc0d2245a54d08a880b4",
+      "date": "2026-10-23T14:09:30-05:00",
+      "author": "Romario Quispe",
+      "subject": "feat(scalability): calibracion de funcion de impedancia y benchmark de escalabilidad para redes viales"
+    },
+    {
+      "hash": "00fd4ebc656cfc52c0b49d2dc79ba517a4f953f0",
+      "date": "2026-10-23T00:32:59-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs: integrar retroalimentacion del docente en informe, colab y guia rapida GUIA.md"
+    },
+    {
+      "hash": "c23c33bf8f756cad97837b8242e988dc658ece46",
+      "date": "2026-10-23T00:23:49-05:00",
+      "author": "ramaFRANKI",
+      "subject": "test(cli): agregar test unitario para comando graphviz"
+    },
+    {
+      "hash": "3096974fedcd64025543e4bbc6d81eac499f783b",
+      "date": "2026-10-23T00:22:57-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(cli): comando graphviz y opcion en menu interactivo para exportar dot"
+    },
+    {
+      "hash": "e44048777994373efc25ea78c3887059c3610e7f",
+      "date": "2026-10-23T00:22:18-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(vis): integrar exportacion de grafos Graphviz en pipeline de demo"
+    },
+    {
+      "hash": "dd0267912c598c643a50100d6fafe7126a301a35",
+      "date": "2026-10-23T00:20:53-05:00",
+      "author": "ramaFRANKI",
+      "subject": "merge: integrar avances de ramaAldo y ramaYeni en ramaFRANKI"
+    },
+    {
+      "hash": "4b080db2af7c12869ab6cbde42e77d7170df28f8",
+      "date": "2026-10-22T22:11:31-05:00",
+      "author": "Aldo Yaranga",
+      "subject": "Avances 4 y 5: Dijkstra con Binary/4-ary/Fibonacci Heap integrados"
+    },
+    {
+      "hash": "442ea567a8eb216749c7c1ea052862dd0542c9de",
+      "date": "2026-10-04T18:12:54-05:00",
+      "author": "Yeni Porroa",
+      "subject": "feat(dary-heap): implementacion de DARYHeap con optimizacion de cache y evaluacion del stack tecnologico"
+    },
+    {
+      "hash": "ee3109d10075b9672c4c81a239a55cfb075cb3d9",
+      "date": "2026-10-04T11:25:30-05:00",
+      "author": "Aldo Yaranga",
+      "subject": "test(qa): suite de validacion con 11 pruebas unitarias, notebook Colab y anexos tecnicos"
+    },
+    {
+      "hash": "221bf2131d9f381c3f95c9b8d0992481e26cd3cf",
+      "date": "2026-10-04T07:50:38-05:00",
+      "author": "Romario Quispe",
+      "subject": "feat(fibonacci-bench): integracion de FibonacciHeap, suite de escalabilidad y analisis de resultados"
+    },
+    {
+      "hash": "24e526f35ce7c02784d22d19d87490188843b400",
+      "date": "2026-10-02T22:34:26-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "feat(core): arquitectura modular, modelo vial Cusco, IndexedMinHeap y algoritmo de Dijkstra"
+    },
+    {
+      "hash": "41f6a3a714e44f4decb3cfa9fc5aa2a9a8c1da44",
+      "date": "2026-10-02T22:33:47-05:00",
+      "author": "Noe Choquenaira",
+      "subject": "chore: inicializar repositorio de investigacion"
+    }
+  ],
+  "source_sha256": {
+    "python/src/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "python/src/algorithms/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "python/src/algorithms/a_star.py": "80c25cb952b81068cef3b82e9852d1dab689aa1283bd120eb45775c6df273a91",
+    "python/src/algorithms/dijkstra.py": "9920dd0ced25e41f74eb35af53b9c355d3f4cadf581609097e2a9ace028b0001",
+    "python/src/algorithms/reference.py": "abd7e00b00872848b695ea752764fe37c7fbcc457288d8a3e04a42ab0802c0fa",
+    "python/src/algorithms/registry.py": "aa0c3d3092e33002279878c147ec1a2e970b9a8901060eee96fc9673f1db39d3",
+    "python/src/benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/src/benchmarks/applied_analysis.py": "b1653a3366af9a63ea220d655ae24389c683f4c7137844659266d81a884f5cfa",
+    "python/src/benchmarks/scalability_benchmark.py": "143796b09192608f0280536cf8be5f78cba6358047218fb0c7a6bed29bf84523",
+    "python/src/cli.py": "3f12fb5c9d97f5cad738590e2e53b1ee6df67afa99d8f3dff7af15f7462e7402",
+    "python/src/datastructures/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "python/src/datastructures/base.py": "1d90c273fd9f95e0980916e481120630f588a5cb7cb758f10bed319555ccd5e4",
+    "python/src/datastructures/d_ary_heap.py": "e75d7d101ff4ec78a4f32e186cf712b08800400dfd52df2a3c4e7b2ffc061f30",
+    "python/src/datastructures/fibonacci_heap.py": "246383552270dfdf37a3eeabfa60fb9f83b46e4b6cfa44e8da099ef694bdbcc8",
+    "python/src/datastructures/indexed_min_heap.py": "1cd82f04a7d17d68d67f977d139da36addd56f82347ad816010199b2123e4894",
+    "python/src/datastructures/registry.py": "f6a2a4ae087f5892d81ad28f0c16f7e02c8350f494ad5bcd5cd72414beb3d221",
+    "python/src/generators/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/src/generators/instance_generator.py": "979a0715acfbf0d95c7824e4b0778d82eed1af636cda2d898bcd73d72f5f3b4a",
+    "python/src/io/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/src/io/graph_io.py": "ddcdacb4f04a7ef84ba6caad234331c7c48693ecbfa8e6a9fd7625733cf35572",
+    "python/src/io/osm_loader.py": "0914d47535f3419244bca625f0c68c9219aa1848c80dc558d6df54600b7c54ae",
+    "python/src/main.py": "47070fc0dcef34dcdc4a1318860a3f6fb57cf98e5a860992b16962120dadfbf5",
+    "python/src/models/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "python/src/models/cusco_network.py": "21fdf061d0fe0b4f6ff4794330cbfe67dfab2ec4136c3c28b9dae739cb95ca34",
+    "python/src/services/__init__.py": "cc130ec97677a930c0fe5d5343b5a8fd9a40ea385e667245d69c35c7a2eadc57",
+    "python/src/services/provider_keys.py": "49d0a2d0e52ee8a1b1e879e600cd169815a2b862d70fa885bc4fe5e3d81ab410",
+    "python/src/services/traffic.py": "d447f404a19dd5816309e9e14bac6966f7600633960353f08c1ebc87d4dacf98",
+    "python/src/services/weather.py": "c50c534d55612f3eec6b69e0aa0e29d33acb171bb1bd9e29945dd685ecab6d5e",
+    "python/src/utils/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
+    "python/src/utils/cost_model.py": "456c1a53b3a7502f2cefd12dac2df3875baf441ad55fcd8fe322a9c63c75ba92",
+    "python/src/utils/latex_exporter.py": "dbfb7e615201eb8e172d71c61b771f6cc138dd60ba82c743c472ac75d08f059e",
+    "python/src/utils/measurement.py": "faee50711fea0bec2cdeaad292b60e11caad95a514ff53576ba576105aa0e3ed",
+    "python/src/utils/presentation.py": "d4c963290599f4a48d753c6e0f84f83a66205058cc389d60cc93aa791a98b717",
+    "python/src/verification/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/src/verification/certificate.py": "542dc0f9e7138448035bed2f3b9b962d4f3aa20e9cbb749bbd574c179b731492",
+    "python/src/visualization/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/src/visualization/generate_figures.py": "c1fc027559a84f65c93197289f430ee3a7758aa2d736ebf431810839a90c45d4",
+    "python/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python/tests/conftest.py": "c428f9ffdfeecad8079d74ed288fb75c3168f531c65a355228eac968d8fea7c4",
+    "python/tests/test_a_star.py": "64bda7a195c1934954b50898ae6a7dba242dc46634cb644957b5d4aca54151eb",
+    "python/tests/test_applied_analysis.py": "7e31d5598ee75fce1749fc623f4fb4edc86a5cb8f1bff6b6b9ade9bbc5cadee5",
+    "python/tests/test_benchmark_protocol.py": "016224e493f77ff71748a4d7e1ef93bcf2f7bba691fe8162fe6d3f2edb8abccb",
+    "python/tests/test_cli.py": "d784a96c130ca485d8cedd6e4a52e5722642d3ad31f19deb6345655ad817c800",
+    "python/tests/test_delivery_pipeline.py": "3293c8da7647b8a6b813c82bf0aa1e9a35ae6509262f73d60a7f62c57565921e",
+    "python/tests/test_delivery_report.py": "9802196bdb201f643ff13b6d8b11c09d6d3998a651bd17aad6383d68310fe58c",
+    "python/tests/test_dijkstra.py": "68c91c8f9a056780d82588b6477ec3c86bffbf7bb3ad79b1877810629bd27af9",
+    "python/tests/test_dijkstra_manual.py": "492f063400c8c4f136e9e1a04acb2940262bdac30469de4b49c5a3cde483bd82",
+    "python/tests/test_equivalence.py": "a32f73c10570d98992a8098fd3f477b4d92d4c1bd3c13a051451009a2db82a59",
+    "python/tests/test_osm_loader.py": "5ca5e29ecad94a2eadd8560f807556fd8f74c97077240d647f36cd38e207e9a3",
+    "python/tests/test_priority_queues.py": "71c2bc9b5dac6178b9c39e5093859310dac49da67b528baabec54d69f6faf7b9",
+    "python/tests/test_provider_keys.py": "52b6b93f86833361dd1a0c9142be7236dc30a61d22125c644fdfcc1ecd7094c6",
+    "python/tests/test_traffic.py": "d6c3932be17ff8b2ed0bb8be2fcebad6ef136987e031fe54c01987a0cbbd4aee",
+    "python/tests/test_validation_io.py": "82a8a3309b65abd464827a6fad49305fee31c5524d7b74159dd25b7e1f426558",
+    "python/tests/test_weather.py": "6b09bce81b078975c5e7b778109abc6276618498ac4a0a6b79d9644f72de0d41",
+    "python/tests/test_web_api.py": "4c2c3efa10bb10c9aca0b60feb16be318269e20a982f68c658720cae76bed9f8",
+    "web/src/api.ts": "2b04fb8832de8b12813f7761eb71041eb492796538e4ba9814d1b8e0a9f6cf1d",
+    "web/src/clientFallback.ts": "d44b7d1eb3506bd54e27969f8bd529579a42277e58f55291b61dd837dee22ece",
+    "web/src/ComplexityTable.tsx": "93f9bd33e32efc9ec60421d1b7550077c36b188ba8dadded8a0b2ead34b72daa",
+    "web/src/EvidencePage.tsx": "11d021aa8a74d259ebbbfc0d5c17de851eb5f46abca442fad3199daaec2d1e89",
+    "web/src/experimentInput.ts": "1943ff43ab849216cd31ab80d1076653d82a1d1e49558746fd5818322cc6562d",
+    "web/src/format.ts": "93b1f857984bb050f54d3a47095554f1588550eac1d101a68a6755f4ae323f0b",
+    "web/src/GraphView.tsx": "942398a754f84164cbc0365b301a8670529dbeb2c05f5d12adfe9203ce7eead2",
+    "web/src/InstanceGenerator.tsx": "00d9e1c14cf99016c64cfb30273bb2988a59ef799097c1289e963f3c81b460da",
+    "web/src/localSettings.ts": "4cefdeb924b6293294397cd20423960ee8305f0a800808bd6173e4e601e420e0",
+    "web/src/main.tsx": "df7a28ee1c1c43deadbe76d2bfb78db33b0e5366d5d01e0f01da70380f251fc3",
+    "web/src/style.css": "c64105e8f38b8d2a75a864cade0db0a64bcb3c062ad2f89b4e9a64938d3142c7",
+    "web/src/TrafficReading.tsx": "1dcaadf1182995767a66708208c553642fd1dac744b56ab03a6366ed9e82467f",
+    "web/src/vite-env.d.ts": "f1f4b49a6b306663b424a59c59f018fc5e7d0abdcd260940447ba10dacb86b88",
+    "web/src/WeatherReading.tsx": "b0062b491ec568ed145c3dd0a4188fccfc0ba0d82b7980a544f8d3eeb347356f",
+    "web/tests/components.test.tsx": "77d1ef64c0caa1f1767dbe4153e104ea5ea3c9b0140b11f3158944066720d4a1",
+    "web/tests/evidence.test.tsx": "5bd8c3edf52616d0e7bb4210a64c99ee66c802323035d17125a43ccda1f0e348",
+    "web/tests/experimentInput.test.ts": "2fc062d1227b678682b08850c392891c68df40a6ae2fbac5fa9860fc72d44e13",
+    "web/tests/fallback.test.ts": "49b711a55873e4a47bbda27b561876bd46f98dc572070b6223bc955f5e8d2f8f",
+    "web/tests/setup.ts": "a0c4562e90d57d5415aae745df39f3055be71c6822faf690bc8045f38d39429c"
+  }
+}

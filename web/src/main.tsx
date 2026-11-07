@@ -7,6 +7,10 @@ import { emptyKeys, forgetKeys, forgetWeather, readKeys, readWeather, saveKeys, 
 import type { ProviderKeys } from './localSettings'
 import WeatherReading from './WeatherReading'
 import TrafficReading from './TrafficReading'
+import EvidencePage from './EvidencePage'
+import ComplexityTable from './ComplexityTable'
+import InstanceGenerator from './InstanceGenerator'
+import { experimentInput } from './experimentInput'
 import { fmt } from './format'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './style.css'
@@ -62,7 +66,7 @@ function MathEquation({ children, title }: { children: React.ReactNode; title?: 
         <span className="math-title">{title || 'Fórmula'}</span>
         <div className="math-zoom-controls">
           <button type="button" aria-label="Reducir fórmula" onClick={zoomOut} title="Reducir zoom (−)">−</button>
-          <span className="math-zoom-val" onClick={resetZoom} title="Clic para restablecer al 100%">{Math.round(zoom * 100)}%</span>
+          <button type="button" className="math-zoom-val" onClick={resetZoom} aria-label="Restablecer fórmula al 100%">{Math.round(zoom * 100)}%</button>
           <button type="button" aria-label="Ampliar fórmula" onClick={zoomIn} title="Aumentar zoom (+)">+</button>
         </div>
       </div>
@@ -107,7 +111,7 @@ function App() {
   const [weatherRefresh, setWeatherRefresh] = useState(0)
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [timeTick, setTimeTick] = useState(Date.now())
-  const [traffic, setTraffic] = useState(true)
+  const [traffic, setTraffic] = useState(false)
   const [trafficMode, setTrafficMode] = useState<'simulated' | 'current'>('current')
   const [simulatedTime, setSimulatedTime] = useState('13:00')
   const [trafficUseTomTom, setTrafficUseTomTom] = useState(false)
@@ -282,6 +286,7 @@ function App() {
     routeAbort.current?.abort(); setRouteLoading(false)
     setPreviewLoading(true); setPreviewError(''); setPreview(null); setRoute(null); setRouteError('')
     api<Preview>(`/instances/validate?metric=${metric}`, spec, controller.signal).then(data => {
+      if (controller.signal.aborted) return
       setPreview(data)
       setSource(old => data.ids.some(id => String(id) === old) ? old : String(data.ids[0] ?? ''))
       setTarget(old => data.ids.some(id => String(id) === old) ? old : String(data.ids[data.ids.length - 1] ?? ''))
@@ -484,27 +489,68 @@ function App() {
               <label>Cola<select value={queue} onChange={e => setQueue(e.target.value as Queue)}>{(Object.keys(queueNames) as Queue[]).map(q => <option key={q} value={q}>{queueNames[q]}</option>)}</select></label></div>
               <p className="fineprint">Se ejecutan también los tres Dijkstra y A* con la cola elegida para contrastar costos.</p></div>
             {metric === 'time' && preview?.metric !== 'weight' && <div className="form-section scenario"><h2>04 / Condiciones</h2>
-              <label className="check"><input type="checkbox" checked={weatherEnabled} onChange={e => setWeatherEnabled(e.target.checked)} /> Aplicar datos meteorológicos al tiempo estimado</label>
-              {weatherEnabled && <div className="details-body"><label>Fuente climática<select value={weather} onChange={e => setWeather(e.target.value as typeof weather)}>
-                <option value="live">Consultar condiciones actuales</option><option value="historical">Lectura histórica del informe</option>
-                <option value="snapshot">Snapshot incluido en el proyecto</option><option value="saved" disabled={!savedReading}>Lectura guardada en este navegador</option></select></label>
-                {weather === 'live' && <><label>Proveedor<select value={weatherProvider} onChange={e => setWeatherProvider(e.target.value as typeof weatherProvider)}>
-                  <option value="openweathermap">OpenWeatherMap, clave del servidor</option><option value="open-meteo">Open-Meteo, sin clave</option></select></label>
-                  {weatherProvider === 'openweathermap' && <ProviderKeyInput provider="openweathermap" configured={catalog?.provider_keys?.openweathermap}
-                    value={apiKeys.openweathermap} onChange={value => updateKey('openweathermap', value)} />}
-                  <div className="inline-actions"><button type="button" onClick={() => setWeatherRefresh(n => n + 1)} disabled={weatherLoading}>Actualizar lectura</button>
-                    <label className="check"><input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} /> Actualizar cada 10 min</label></div>
-                  {weatherLoading && <p role="status">Consultando las condiciones del origen…</p>}
-                  {weatherError && <p className="error" role="alert">{weatherError}</p>}
-                  {liveReading && <><WeatherReading data={liveReading} />{liveReading.multiplier == null && <p className="warning">Reinicia la API Python para habilitar el cálculo con esta lectura.</p>}
-                    {staleLive && <p className="warning">Esta lectura tiene más de 30 minutos o no tiene hora válida. Actualízala antes de calcular.</p>}
-                    <button type="button" onClick={() => saveReading(liveReading)} disabled={liveReading.multiplier == null}>Guardar esta lectura localmente</button></>}
-                </>}
-                {weather === 'saved' && <>{savedReading && <WeatherReading data={savedReading} />}{!samePoint && <p className="warning">La lectura guardada pertenece a otro punto. Cambia el origen o actualiza el clima.</p>}
-                  <p className="fineprint">Una lectura guardada es un escenario reproducible, no una observación actual.</p>
-                  <button type="button" onClick={() => { forgetWeather(); setSavedReading(null); setWeather('live') }}>Eliminar lectura guardada</button></>}
-                <p className="fineprint">Estas condiciones ajustan todos los tiempos por igual: no cambian el camino ni son mediciones en cada calle.</p>
-              </div>}
+              <div className="weather-container-card">
+                <label className="check weather-heading">
+                  <input type="checkbox" checked={weatherEnabled} onChange={e => setWeatherEnabled(e.target.checked)} />
+                  <span>Ajustar tiempo por clima meteorológico</span>
+                </label>
+                {weatherEnabled && <div className="weather-content">
+                  <div className="weather-grid">
+                    <label><span>Fuente climática</span><select value={weather} onChange={e => setWeather(e.target.value as typeof weather)}>
+                      <option value="live">Condiciones actuales (en vivo)</option>
+                      <option value="historical">Lectura histórica del informe</option>
+                      <option value="snapshot">Snapshot incluido en el proyecto</option>
+                      <option value="saved" disabled={!savedReading}>Lectura guardada en este navegador</option>
+                    </select></label>
+                    {weather === 'live' && <label><span>Proveedor</span><select value={weatherProvider} onChange={e => setWeatherProvider(e.target.value as typeof weatherProvider)}>
+                      <option value="openweathermap">OpenWeatherMap (Servidor)</option>
+                      <option value="open-meteo">Open-Meteo (Sin clave)</option>
+                    </select></label>}
+                  </div>
+
+                  {weather === 'live' && <>
+                    {weatherProvider === 'openweathermap' && (
+                      <details className="weather-key-accordion">
+                        <summary>Configurar clave OpenWeatherMap (opcional)</summary>
+                        <div className="weather-key-body">
+                          <p className="fineprint" style={{ margin: 0 }}>Clave configurada en el servidor por defecto; no se envía al navegador.</p>
+                          <ProviderKeyInput provider="openweathermap" configured={catalog?.provider_keys?.openweathermap}
+                            value={apiKeys.openweathermap} onChange={value => updateKey('openweathermap', value)} />
+                        </div>
+                      </details>
+                    )}
+                    <div className="weather-actions-row">
+                      <button type="button" className="btn-weather-refresh" onClick={() => setWeatherRefresh(n => n + 1)} disabled={weatherLoading}>
+                        {weatherLoading ? 'Consultando…' : '🔄 Actualizar lectura'}
+                      </button>
+                      <label className="check weather-auto-check">
+                        <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} />
+                        <span>Actualizar cada 10 min</span>
+                      </label>
+                    </div>
+                    {weatherLoading && <p role="status" className="fineprint">Consultando las condiciones del origen…</p>}
+                    {weatherError && <p className="error" role="alert">{weatherError}</p>}
+                    {liveReading && <div className="weather-reading-card">
+                      <WeatherReading data={liveReading} />
+                      {liveReading.multiplier == null && <p className="warning">Reinicia la API Python para habilitar el cálculo con esta lectura.</p>}
+                      {staleLive && <p className="warning">Esta lectura tiene más de 30 minutos o no tiene hora válida. Actualízala antes de calcular.</p>}
+                      <button type="button" className="btn-center-origin" onClick={() => saveReading(liveReading)} disabled={liveReading.multiplier == null}>
+                        Guardar esta lectura localmente
+                      </button>
+                    </div>}
+                  </>}
+
+                  {weather === 'saved' && <>
+                    {savedReading && <div className="weather-reading-card"><WeatherReading data={savedReading} /></div>}
+                    {!samePoint && <p className="warning">La lectura guardada pertenece a otro punto. Cambia el origen o actualiza el clima.</p>}
+                    <p className="fineprint">Una lectura guardada es un escenario reproducible, no una observación actual.</p>
+                    <button type="button" className="btn-center-origin" onClick={() => { forgetWeather(); setSavedReading(null); setWeather('live') }}>
+                      Eliminar lectura guardada
+                    </button>
+                  </>}
+                  <p className="fineprint" style={{ margin: '2px 0 0' }}>El factor climático escala proporcionalmente los tiempos de viaje de la red.</p>
+                </div>}
+              </div>
               <div className="traffic-container-card">
                 <label className="check traffic-heading">
                   <input type="checkbox" checked={traffic} onChange={e => setTraffic(e.target.checked)} />
@@ -539,7 +585,7 @@ function App() {
                         <span>{cuscoTimeString}</span>
                       </div>
                       <div className="traffic-factor-pill">
-                        <span>Factor: <strong>{liveTrafficInfo.factor.toFixed(2)}×</strong> {liveTrafficInfo.label}</span>
+                        <span>Nivel horario supuesto: <strong>{liveTrafficInfo.label}</strong>. El factor aplicado aparece al resolver.</span>
                       </div>
 
                       <div className="traffic-origin-card">
@@ -595,7 +641,7 @@ function App() {
                     <div className="cusco-simulated-card">
                       <label>Hora programada en Cusco (HH:MM)<input type="time" required value={simulatedTime} onChange={e => setSimulatedTime(e.target.value)} /></label>
                       <div className="traffic-factor-pill">
-                        <span>Factor: <strong>{simulatedTrafficInfo.factor.toFixed(2)}×</strong> {simulatedTrafficInfo.label}</span>
+                        <span>Nivel horario supuesto: <strong>{simulatedTrafficInfo.label}</strong>. El factor aplicado aparece al resolver.</span>
                       </div>
                       <p className="fineprint">Elige una hora para comparar el supuesto horario del proyecto en Cusco. No son velocidades medidas.</p>
                     </div>
@@ -825,21 +871,7 @@ function App() {
         {editorMode === 'archivo' && <div className="editor-box"><label>Importar JSON, CSV o TXT<input type="file" accept=".json,.csv,.txt" onChange={importFile} /></label>
           <label>Lista de aristas (origen destino peso, una por línea; CSV con cabecera opcional)<textarea rows={10} value={textDraft} onChange={e => setTextDraft(e.target.value)} /></label>
           <button className="primary" type="button" onClick={() => { setEditorError(''); setInstance({ kind: 'text', text: textDraft }) }}>Validar lista y calcular</button></div>}
-        {editorMode === 'generar' && <div className="editor-box"><label>Perfil<select value={spec.kind === 'generated' ? spec.generator : 'random'} onChange={e => setSpec({ kind: 'generated', generator: e.target.value as 'random' | 'grid' | 'sparse' | 'dense', nodes: 30, seed: seed === '' ? 42 : Number(seed) })}><option value="random">Red local aleatoria</option><option value="grid">Cuadrícula</option><option value="sparse">Disperso</option><option value="dense">Denso</option></select></label>
-          <label>Semilla<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="42" value={seed} onChange={e => handleSeedChange(e.target.value)} /></label>
-          <label>Vértices (no aplica a cuadrícula)<input type="number" min="2" max="500" placeholder="30" value={spec.nodes ?? ''} onChange={e => {
-            const cl = e.target.value.replace(/^0+(?=\d)/, '')
-            setSpec({ ...spec, kind: 'generated', nodes: cl === '' ? undefined : Number(cl) })
-          }} /></label>
-          <div className="two-fields"><label>Filas<input type="number" min="1" max="30" placeholder="5" value={spec.rows ?? ''} onChange={e => {
-            const cl = e.target.value.replace(/^0+(?=\d)/, '')
-            setSpec({ ...spec, kind: 'generated', rows: cl === '' ? undefined : Number(cl) })
-          }} /></label>
-            <label>Columnas<input type="number" min="1" max="30" placeholder="5" value={spec.cols ?? ''} onChange={e => {
-              const cl = e.target.value.replace(/^0+(?=\d)/, '')
-              setSpec({ ...spec, kind: 'generated', cols: cl === '' ? undefined : Number(cl) })
-            }} /></label></div>
-          <button className="primary" type="button" onClick={() => setInstance({ kind: 'generated', generator: spec.generator ?? 'random', nodes: spec.nodes ?? 30, rows: spec.rows ?? 5, cols: spec.cols ?? 5, seed: seed === '' ? 42 : Number(seed) })}>Generar y calcular</button></div>}
+         {editorMode === 'generar' && <InstanceGenerator onApply={setInstance} />}
         {editorError && <p className="error" role="alert">{editorError}</p>}
         <p className="fineprint">Para un grafo con pesos genéricos, «tiempo» y «distancia» son etiquetas de consulta, no unidades físicas verificadas. En el resultado solo se muestra el costo abstracto; no se inventa una longitud vial.</p>
       </div>}
@@ -876,10 +908,7 @@ function App() {
         <form className="experiment-form" onSubmit={async e => {
           e.preventDefault(); setExperiment(null); setExperimentError(''); setExperimentLoading(true)
           try {
-            const parsed = sizes.split(',').map(n => Number(n.trim())).filter(n => Number.isFinite(n) && n > 0)
-            const reqSeed = seed.trim() === '' ? 42 : (Number(seed) || 42)
-            const reqRuns = runs.trim() === '' ? 5 : Math.min(Math.max(Number(runs) || 5, 2), 10)
-            setExperiment(await api<Experiment>('/experiments', { profile, sizes: parsed, seed: reqSeed, runs: reqRuns }))
+            setExperiment(await api<Experiment>('/experiments', experimentInput(profile, sizes, seed, runs)))
           }
           catch (err) { setExperimentError(err instanceof Error ? err.message : 'No se pudo medir.') }
           finally { setExperimentLoading(false) }
@@ -923,68 +952,13 @@ function App() {
         <p className="warning">Un punto fuera del snapshot o lejos de un nodo no se conectará artificialmente. Ampliar la cobertura exige adquirir, comprobar y versionar otra red. No cambia el banco histórico.</p>
         <p className="fineprint"><code>python/scripts/build_urban_snapshot.py</code> prepara un pendiente y exige una segunda revisión para publicarlo; las coberturas sin archivo revisado permanecen inactivas.</p>
       </div>}
-      {section === 'Evidencias' && <div className="reading-page"><p className="section-label">Validación académica / 06</p><h1>Evidencias y Resultados de Validación</h1>
-        <p>Garantía de correctitud formal, cobertura de pruebas unitarias al 100%, experimentos reproducibles y documentación oficial del proyecto (UNSAAC - Algoritmos Avanzados).</p>
-        <div className="cards-grid">
-          <section className="info-card">
-            <h2>1. Suite de Pruebas Automatizadas</h2>
-            <div className="badge-pass">✓ 296 de 296 pruebas aprobadas (100%)</div>
-            <p className="fineprint">Ejecutadas con pytest 9.1 sobre Python 3.12. Cobertura completa de requisitos:</p>
-            <div className="table-scroll compact-table">
-              <table>
-                <thead><tr><th>Módulo</th><th>Casos</th><th>Estado</th></tr></thead>
-                <tbody>
-                  <tr><td>Colas de prioridad (Binaria, 4-aria, Fibonacci)</td><td>61</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Equivalencia matemática (Dijkstra vs Bellman-Ford)</td><td>48</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Dijkstra y validación manual paso a paso</td><td>46</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Carga y validación I/O (JSON, CSV, TXT)</td><td>45</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Web API REST (FastAPI + Cliente)</td><td>27</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Línea de comandos (CLI)</td><td>25</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Factores de tráfico y meteorología</td><td>23</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Algoritmo A* y heurísticas admisibles</td><td>8</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Protocolo de benchmarks y reproducible</td><td>7</td><td>✓ Aprobado</td></tr>
-                  <tr><td>Snapshot OSM y topografía urbana</td><td>6</td><td>✓ Aprobado</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section className="info-card">
-            <h2>2. Red Vial y Ruta Óptima en Cusco</h2>
-            <p>Diagrama del Centro Histórico con pendientes topográficas, velocidades nominales y camino mínimo resaltado A → C → F (144.45 s):</p>
-            <img src="./data/grafo_nodos_rutas_centro.png" alt="Ruta mínima en el Centro Histórico de Cusco" className="evidence-img" />
-            <p className="fineprint">Modelo de relieve: subidas con factor penalizador y velocidades nominales según jerarquía vial colonial.</p>
-          </section>
-
-          <section className="info-card">
-            <h2>3. Benchmark Canónico y Experimento Piloto</h2>
-            <p>Comparativa empírica de tiempos de ejecución con IQR y medianas sobre perfiles disperso y denso:</p>
-            <img src="./data/benchmark_canonico.png" alt="Benchmark Canónico de Colas de Prioridad" className="evidence-img" />
-            <p className="fineprint">El montículo 4-ario lidera en redes dispersas por mejor localidad espacial de memoria (líneas de caché de 64 bytes).</p>
-          </section>
-
-          <section className="info-card">
-            <h2>4. Entregables Académicos y Descargas</h2>
-            <p>Acceso directo a la documentación canónica de 14 secciones estructurada según el sílabo oficial:</p>
-            <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <a href="./data/informe_final_unsaac.pdf" download="informe_final_unsaac.pdf" className="download-cta">
-                📄 Descargar Informe Final (PDF - 14 Secciones)
-              </a>
-              <a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer" className="download-cta" style={{ background: '#315d65' }}>
-                📂 Repositorio en GitHub (Código e Historial Limpio)
-              </a>
-            </div>
-            <p className="fineprint" style={{ marginTop: '0.6rem' }}>
-              <strong>Instancias de prueba:</strong> Ubicadas en <code>instancias_pruebas/</code> con formatos JSON, CSV, TXT y tablas manuales clasificadas en simple, intermedio y complejo.
-            </p>
-          </section>
-        </div>
-      </div>}
-      {section === 'Datos y método' && <div className="reading-page method-page"><p className="section-label">Fundamentos / 07</p><h1>Datos, Fórmulas y Métodos</h1>
+      {section === 'Evidencias' && <EvidencePage onMethod={() => setSection('Datos y método')} />}
+      {section === 'Datos y método' && <div className="reading-page method-page"><h1>Datos, modelo y complejidad</h1>
         <p>Estructura matemática transparente: de dónde proviene cada dato, cómo se calcula la distancia y el tiempo con relieve cusqueño, y cómo se aplican la meteorología y la congestión.</p>
 
-        <section>
-          <h2>1. Comparativa de Colas de Prioridad y Algoritmo A*</h2>
+        <ComplexityTable />
+        <details className="method-notes">
+          <summary>Notas de implementación de las colas y A*</summary>
           <div className="table-scroll compact-table">
             <table>
               <thead>
@@ -1011,43 +985,43 @@ function App() {
                   <td>O(log₄ n)</td>
                   <td>O(4 log₄ n)</td>
                   <td>O(log₄ n)</td>
-                  <td><strong>El más veloz en la práctica</strong>. Reduce altura del árbol y aprovecha líneas de caché (64 B).</td>
-                  <td><strong>Estructura óptima</strong> para redes viales urbanas dispersas (|E| ≈ 3-4 |V|).</td>
+                  <td>Reduce la altura; compara hasta cuatro hijos en cada descenso. No se midieron efectos de caché.</td>
+                  <td>Alternativa a contrastar en redes dispersas, no un ganador universal.</td>
                 </tr>
                 <tr>
                   <td><strong>Montículo Fibonacci</strong></td>
                   <td>O(1)</td>
                   <td>O(log n) amort.</td>
                   <td>O(1) amort.</td>
-                  <td>Óptimo teórico en grafos densos; penalizado en la práctica por dispersión de memoria de punteros.</td>
-                  <td>Demuestra la brecha entre teoría asintótica O(·) y hardware real.</td>
+                  <td>Cotas amortizadas; la implementación y sus constantes afectan las mediciones.</td>
+                  <td>Permite estudiar la diferencia entre cota teórica y tiempo observado.</td>
                 </tr>
                 <tr>
                   <td><strong>Algoritmo A*</strong></td>
                   <td>h(v) admisible</td>
-                  <td>Poda direccional</td>
+                  <td>Heurística consistente</td>
                   <td>f(v) = g(v) + h(v)</td>
-                  <td>Expande significativamente menos vértices que Dijkstra al orientar la búsqueda hacia la meta.</td>
-                  <td>Acelera consultas origen-destino punto a punto en Cusco monumental y urbano.</td>
+                  <td>Puede reducir expansiones; si h = 0 no obtiene una ventaja heurística.</td>
+                  <td>Consulta origen-destino. El beneficio depende de la instancia.</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </section>
+        </details>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem', padding: '0.55rem 0.9rem', background: '#fffdf8', border: '1px solid #dcd2c4', borderRadius: '4px', margin: '1.2rem 0 0.8rem' }}>
+        <div className="formula-help">
           <span style={{ fontSize: '0.86rem', fontWeight: 600, color: 'var(--wine)' }}>
-            🔬 Fórmulas con Zoom Interactivo: Usa los botones [ − ] y [ + ] en cada recuadro para ajustar el tamaño.
+            Puedes ampliar cada fórmula con sus botones.
           </span>
           <span className="fineprint" style={{ margin: 0 }}>
             Clic en el porcentaje para restablecer al 100% predeterminado.
           </span>
         </div>
 
-        <div className="cards-grid">
-          <section className="info-card">
-            <h2>2. ¿De dónde sale la Distancia y la Velocidad?</h2>
-            <p><strong>Distancia física pura (metros):</strong> Proviene de la geometría real del segmento vial (cartografía OpenStreetMap o levantamiento métrico colonial):</p>
+        <div className="model-sections">
+          <details className="model-detail">
+            <summary>Distancia y velocidades supuestas</summary>
+            <p><strong>Distancia (metros):</strong> En los snapshots procede de OSM. Las longitudes, pendientes y velocidades de la red de seis nodos son ejemplos didácticos, no un levantamiento de campo.</p>
             <MathEquation title="Distancia Métrica (Σ)">
               <span className="m-var">Distancia</span>(P) = <span className="m-sum">∑</span><sub className="m-sub">e ∈ P</sub> <span className="m-var">longitud</span>(e) &nbsp; [m]
             </MathEquation>
@@ -1066,16 +1040,16 @@ function App() {
               </span>
             </MathEquation>
             <ul className="variable-list">
-              <li><strong>Calles coloniales estrechas:</strong> 15 km/h (4.17 m/s) — Santa Clara, Marqués, Espaderos.</li>
-              <li><strong>Pasajes peatonales:</strong> 8 km/h (2.22 m/s) — Portal de Panes, Loreto, Cuesta San Blas.</li>
-              <li><strong>Avenidas principales:</strong> 35 km/h (9.72 m/s) — Av. El Sol, Av. Tullumayo.</li>
-              <li><strong>Calles residenciales:</strong> 25 km/h (6.94 m/s) — Calles fuera del casco monumental.</li>
+              <li><strong>Calles del ejemplo:</strong> 15 km/h (4,17 m/s).</li>
+              <li><strong>Pasajes del ejemplo:</strong> 8 km/h (2,22 m/s).</li>
+              <li><strong>Avenidas del ejemplo:</strong> 35 km/h (9,72 m/s).</li>
+              <li><strong>Residenciales del ejemplo:</strong> 25 km/h (6,94 m/s). Son velocidades supuestas; OSM usa los atributos y reglas de su importación.</li>
             </ul>
-          </section>
+          </details>
 
-          <section className="info-card">
-            <h2>3. Fórmula de Relieve y Pendientes de Cusco</h2>
-            <p>En la red <strong>«Cusco centro (6 nodos, didáctico)»</strong>, cada calle colonial posee longitud real y pendiente porcentual (g):</p>
+          <details className="model-detail">
+            <summary>Pendientes de la red didáctica</summary>
+            <p>En la red <strong>de seis nodos ilustrativos</strong> se asignan longitudes y pendientes (g) para explicar el cálculo. Los snapshots OSM no tienen pendiente medida por arista:</p>
             <ul className="variable-list">
               <li><strong>Subida de Calle Espaderos:</strong> +1.5%</li>
               <li><strong>Subida de Calle Garcilaso:</strong> +3.0%</li>
@@ -1102,50 +1076,29 @@ function App() {
               <span className="m-b-sq">]</span>
             </MathEquation>
             <ul className="variable-list">
-              <li><strong>Física del modelo:</strong> Solo se penalizan las cuestas arriba (max(0, g)). En las bajadas no hay sobreesfuerzo motriz.</li>
+              <li><strong>Supuesto del modelo:</strong> Solo se penaliza la pendiente positiva. No es una ley física ni una calibración con viajes observados.</li>
               <li><strong>Jerarquía de calzada:</strong> Calles coloniales estrechas a 15 km/h, pasajes peatonales a 8 km/h y avenidas a 35 km/h.</li>
             </ul>
-          </section>
+          </details>
 
-          <section className="info-card">
-            <h2>4. ¿Cómo se usan la Temperatura y el Clima?</h2>
-            <p><strong>Temperatura (°C):</strong> Se consulta en vivo desde Open-Meteo / OpenWeatherMap y se muestra en pantalla como contexto ambiental informativo, <strong>pero no altera la fricción de la vía</strong> (el frío o calor moderado en Cusco no frena el vehículo ni al peatón).</p>
+          <details className="model-detail">
+            <summary>Factor meteorológico y sus límites</summary>
+            <p><strong>Temperatura (°C):</strong> Es contexto informativo y no interviene en el factor del proyecto. Los coeficientes meteorológicos son supuestos de sensibilidad, no efectos demostrados sobre la conducción.</p>
             <p><strong>Factores meteorológicos que sí penalizan el tiempo (F_clima):</strong></p>
             <MathEquation title="Factor Climático Combinado (F_clima)">
-              <span className="m-var">F</span><sub className="m-sub">clima</sub> = 
-              1 + 0.20 <span className="m-op">·</span>
-              <span className="m-frac">
-                <span className="m-num"><span className="m-fn">min</span>(<span className="m-var">lluvia</span>, 10)</span>
-                <span className="m-den">10</span>
-              </span>
-              + 0.15 <span className="m-op">·</span>
-              <span className="m-b-rd">(</span>1 - 
-              <span className="m-frac">
-                <span className="m-num"><span className="m-var">visibilidad</span></span>
-                <span className="m-den">10 000</span>
-              </span>
-              <span className="m-b-rd">)</span>
-              + 0.10 <span className="m-op">·</span>
-              <span className="m-frac">
-                <span className="m-num"><span className="m-var">ráfagas</span></span>
-                <span className="m-den">80</span>
-              </span>
-              + 0.08 <span className="m-op">·</span>
-              <span className="m-frac">
-                <span className="m-num"><span className="m-var">humedad</span> - 65</span>
-                <span className="m-den">35</span>
-              </span>
+              F_clima = 1 + 0,20·C(lluvia/10) + 0,15·(1 − C(visibilidad/10000)) + 0,10·C(ráfagas/80) + 0,08·C((humedad − 65)/35)
             </MathEquation>
+            <p className="fineprint">C(x) = min(1, max(0, x)). Se usan mm, metros, km/h y porcentaje; el resultado se redondea a cuatro decimales.</p>
             <ul className="variable-list">
-              <li><strong>Lluvia (mm):</strong> Moja el adoquín colonial haciéndolo resbaladizo (hasta +20%).</li>
-              <li><strong>Visibilidad (m):</strong> Reduce la velocidad preventiva por niebla matutina (hasta +15%).</li>
-              <li><strong>Ráfagas de viento:</strong> Si superan 25 km/h (hasta +10%).</li>
-              <li><strong>Humedad relativa:</strong> Si supera 65% en calzada de piedra (hasta +8%).</li>
+              <li><strong>Lluvia:</strong> 0,20 × clamp(lluvia / 10, 0, 1).</li>
+              <li><strong>Visibilidad:</strong> 0,15 × (1 − clamp(visibilidad / 10000, 0, 1)).</li>
+              <li><strong>Ráfagas:</strong> 0,10 × clamp(ráfagas / 80, 0, 1); el código no tiene umbral de 25 km/h.</li>
+              <li><strong>Humedad:</strong> 0,08 × clamp((humedad − 65) / 35, 0, 1). Clamp limita a [0, 1] cada término de la fórmula.</li>
             </ul>
-          </section>
+          </details>
 
-          <section className="info-card">
-            <h2>5. Congestión de Tráfico y Tiempo Final</h2>
+          <details className="model-detail">
+            <summary>Tráfico supuesto, lectura puntual y tiempo final</summary>
             <p><strong>Factor de congestión (F_tráfico):</strong></p>
             <MathEquation title="Congestión (TomTom y Horario)">
               <span className="m-var">F</span><sub className="m-sub">TomTom</sub> = <span className="m-fn">max</span><span className="m-b-rd">(</span>1.0, 
@@ -1161,10 +1114,10 @@ function App() {
               <span className="m-var">Tiempo estimado</span>(P) = <span className="m-var">Tiempo base</span>(P) <span className="m-op">×</span> <span className="m-b-rd">(</span><span className="m-var">F</span><sub className="m-sub">clima</sub> <span className="m-op">×</span> <span className="m-var">F</span><sub className="m-sub">tráfico</sub><span className="m-b-rd">)</span>
             </MathEquation>
             <p className="fineprint">La ruta óptima se busca con Dijkstra o A* sobre los pesos base; los factores dinámicos escalan el tiempo de forma uniforme y verificable.</p>
-          </section>
+          </details>
 
-          <section className="info-card">
-            <h2>6. ¿Qué se modifica en A* para ser más eficiente?</h2>
+          <details className="model-detail">
+            <summary>Heurística de A*: qué garantiza y qué no</summary>
             <p><strong>Función de evaluación f(v) = g(v) + h(v):</strong></p>
             <MathEquation title="Función de Evaluación A*">
               <span className="m-var">f</span>(v) = <span className="m-var">g</span>(v) + <span className="m-var">h</span>(v)
@@ -1182,22 +1135,22 @@ function App() {
             </MathEquation>
             <ul className="variable-list">
               <li><strong>Garantía matemática (Admisibilidad):</strong> Al fijar λ como la razón mínima entre costo y distancia de cualquier arista, <code>h(v) ≤ d*(v, destino)</code> siempre, asegurando hallar el camino de costo mínimo exacto.</li>
-              <li><strong>Poda direccional:</strong> No explora calles en direcciones opuestas a la meta, reduciendo hasta un 60% los nodos expandidos frente a Dijkstra.</li>
+              <li><strong>Límite:</strong> A* prioriza g + h, no prohíbe explorar en sentido opuesto a la meta. Sin coordenadas usa h = 0; no se garantiza un porcentaje de reducción.</li>
             </ul>
-          </section>
+          </details>
 
-          <section className="info-card">
-            <h2>7. Verificación Cruzada y Optimalidad Dual</h2>
+          <details className="model-detail">
+            <summary>Certificado y verificación independiente</summary>
             <p>Dijkstra (con montículo binario, 4-ario y Fibonacci) y A* operan sobre la misma red y generan costos idénticos.</p>
             <MathEquation title="Certificado Dual de Holgura Reducida">
-              π(v) - π(u) ≤ <span className="m-var">w</span>(u, v) &nbsp; ∀(u, v) ∈ E &nbsp; ⟺ &nbsp; <span className="m-var">brecha de dualidad</span> = 0
+              π(v) - π(u) ≤ <span className="m-var">w</span>(u, v) &nbsp; ∀(u, v) ∈ E
             </MathEquation>
             <ul className="variable-list">
-              <li><strong>Certificado de holgura reducida:</strong> Para cada arista (u, v), se verifica que <code>π(v) - π(u) ≤ w(u,v)</code> (brecha de dualidad = 0).</li>
-              <li><strong>Referencia independiente:</strong> Comprobado contra Bellman-Ford en todas las instancias de prueba.</li>
+              <li><strong>Certificado:</strong> La desigualdad por arista no basta: se verifican también origen, caminos realizables, costos y nodos inalcanzables.</li>
+              <li><strong>Referencia independiente:</strong> Bellman-Ford en pruebas aleatorias, NetworkX en el benchmark y enumeración exhaustiva en grafos pequeños.</li>
             </ul>
             <p className="fineprint">Contratos y especificación: <a href={apiUrl('/docs')} target="_blank" rel="noreferrer">OpenAPI / Docs</a> y atribución de datos a OpenStreetMap.</p>
-          </section>
+          </details>
         </div>
       </div>}
       {section === 'Acerca de' && <div className="reading-page about-page"><p className="section-label">Proyecto / 08</p>
@@ -1223,7 +1176,7 @@ function App() {
           <p>La autoría se acredita con los commits registrados; la defensa y la evaluación son individuales.</p>
           <div className="team-list">{team.map(member => <article className="team-member" key={member.code}>
             <div className="team-id"><h3>{member.name}</h3><p>Código {member.code}</p></div>
-            <p><span className="team-label">Aportes verificables</span>{member.work}</p>
+            <p><span className="team-label">Área de trabajo declarada</span>{member.work}</p>
           </article>)}</div>
           <p className="fineprint">Detalle de autoría y evidencias: <a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer">repositorio del proyecto</a>.</p>
         </section>
@@ -1242,20 +1195,17 @@ function App() {
         </section>
 
         <section className="section-space">
-          <h2>Stack y versiones verificadas</h2>
-          <Table headers={['Capa', 'Tecnología', 'Versión', 'Uso']} rows={[
-            ['Interfaz', 'React', '19.3.1', 'Componentes y estado'],
-            ['Interfaz', 'TypeScript', '5.9.3', 'Tipado estático'],
-            ['Build', 'Vite', '7.3.7', 'Desarrollo y empaquetado'],
-            ['Mapa', 'MapLibre GL JS', '6.16.0', 'Red vial y ruta'],
-            ['API', 'FastAPI', '0.162.0', 'Contrato HTTP y validación'],
-            ['Servidor', 'Uvicorn', '0.54.0', 'Servicio ASGI'],
-            ['Núcleo', 'Python', '3.12.8', 'Algoritmos, datos y pruebas'],
-            ['Pruebas', 'pytest', '9.1.1', '296 pruebas superadas'],
-            ['Proveedores', 'requests', '2.34.2', 'Clima y tráfico'],
-            ['Móvil', 'Flutter', 'Planificado', 'App futura sobre la misma API'],
+          <h2>Tecnologías y responsabilidades</h2>
+          <Table headers={['Capa', 'Tecnología', 'Uso']} rows={[
+            ['Interfaz', 'React + TypeScript', 'Componentes, estado y tipos'],
+            ['Build', 'Vite', 'Desarrollo y empaquetado'],
+            ['Mapa', 'MapLibre GL JS', 'Red vial y ruta'],
+            ['API', 'FastAPI + Uvicorn', 'Contrato HTTP, validación y servidor'],
+            ['Núcleo', 'Python', 'Algoritmos, datos y pruebas'],
+            ['Pruebas', 'pytest + Vitest', 'Resultados fechados en Evidencias'],
+            ['Proveedores', 'requests', 'Clima y tráfico'],
           ]} />
-          <p className="fineprint">Versiones comprobadas en esta entrega (06/11/2026). Node 24.20 se usó para compilar la web; no es un requisito del informe.</p>
+          <p className="fineprint">Las dependencias web se fijan con package-lock.json; Python declara requisitos en python/requirements.txt. El registro del piloto conserva el intérprete y la máquina reales.</p>
         </section>
 
         <section className="section-space">
