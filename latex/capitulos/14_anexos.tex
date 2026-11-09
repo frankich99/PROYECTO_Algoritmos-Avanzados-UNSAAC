@@ -17,7 +17,7 @@ Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{
 \label{anexo:uso}
 
 \noindent\textbf{Suite de pruebas.} Desde la raíz:
-\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (287 pruebas)}]
+\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (346 pruebas)}]
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 \end{lstlisting}
 
@@ -81,26 +81,28 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 
         \toprule
         \textbf{Autor en Git} & \textbf{Fecha} & \textbf{Commit} & \textbf{Cambios identificables} \\
         \midrule
-        Choquenaira, Noe & 02/10/2026 & \texttt{592589a} & \texttt{dijkstra.py}, \texttt{indexed\_min\_heap.py}, \texttt{cost\_model.py} y primera versión del informe. \\
+        Choquenaira, Noe & 02/10/2026 & \texttt{24e526f} & \texttt{dijkstra.py}, \texttt{indexed\_min\_heap.py}, \texttt{cost\_model.py} y primera versión del informe. \\
         \midrule
-        Porroa, Yeni & 04/10/2026 & \texttt{77983b7} & \texttt{d\_ary\_heap.py}, capítulo de evaluación del stack y tabla comparativa. \\
+        Porroa, Yeni & 04/10/2026 & \texttt{442ea56} & \texttt{d\_ary\_heap.py}, capítulo de evaluación del stack y tabla comparativa. \\
         \midrule
-        Quispe, Romario & 04/10/2026 & \texttt{72df976} & \texttt{fibonacci\_heap.py}, \texttt{scalability\_benchmark.py} y resultados preliminares. \\
+        Quispe, Romario & 04/10/2026 & \texttt{221bf21} & \texttt{fibonacci\_heap.py}, \texttt{scalability\_benchmark.py} y resultados preliminares. \\
         \midrule
-        Yaranga, Aldo & 04/10/2026 & \texttt{d50e67b} & \texttt{test\_dijkstra.py}, cuaderno Colab y exportación de figuras y tablas. \\
+        Yaranga, Aldo & 04/10/2026 & \texttt{ee3109d} & \texttt{test\_dijkstra.py}, cuaderno Colab y exportación de figuras y tablas. \\
         \midrule
-        Choquenaira, Noe & 23/10/2026 & \texttt{b307be4} & \texttt{a\_star.py} y capítulo de aprendizaje. \\
-        Porroa, Yeni & 23/10/2026 & \texttt{3b91a5e} & Capítulo de diseño algorítmico y análisis de estructuras. \\
-        Quispe, Romario & 23/10/2026 & \texttt{e3af921} & Actualización de \texttt{benchmark\_results.json}; el snapshot canónico se integró después como commit grupal. \\
-        Yaranga, Aldo & 23/10/2026 & \texttt{65d303d} & \texttt{cli.py} y \texttt{test\_cli.py}. \\
+        Yaranga, Aldo & 22/10/2026 & \texttt{4b080db} & Integración de avances 4 y 5: \texttt{cli.py}, \texttt{graph\_io.py}, \texttt{instance\_generator.py}, registros de colas e instancias inválidas. \\
         \midrule
-        Grupo 5 & 28/10/2026 & \texttt{7922f52} & \textit{Snapshots} OSM y clima, banco de 1,350 tiempos y caso aplicado. \\
+        Choquenaira, Noe & 23/10/2026 & \texttt{1abbfb5} & \texttt{a\_star.py} y capítulo de aprendizaje. \\
+        Porroa, Yeni & 23/10/2026 & \texttt{fbb14f8} & Capítulo de diseño algorítmico y análisis de estructuras. \\
+        Quispe, Romario & 23/10/2026 & \texttt{83ea30a} & Actualización de \texttt{benchmark\_results.json}; el snapshot canónico se integró después como commit grupal. \\
+        Yaranga, Aldo & 23/10/2026 & \texttt{82e7dd1} & \texttt{cli.py} y \texttt{test\_cli.py}. \\
         \midrule
-        Grupo 5 & 03/11/2026 & \texttt{4025f8f} & Revisión de estructura e índice del informe, PDF compilado. \\
+        Grupo 5 & 28/10/2026 & \texttt{80e2593} & \textit{Snapshots} OSM y clima, banco de 1,350 tiempos y caso aplicado. \\
         \midrule
-        Grupo 5 & 04/11/2026 & \texttt{ced0b82} & Ajustes metodológicos y vista de referencia OSM. \\
+        Grupo 5 & 03/11/2026 & \texttt{6543f89} & Revisión de estructura e índice del informe, PDF compilado. \\
         \midrule
-        Grupo 5 & 04/11/2026 & \texttt{c119aa6} & Piloto reproducible, figura y síntesis comparativa revisada. \\
+        Grupo 5 & 04/11/2026 & \texttt{8e36625} & Ajustes metodológicos y vista de referencia OSM. \\
+        \midrule
+        Grupo 5 & 04/11/2026 & \texttt{f574216} & Piloto reproducible, figura y síntesis comparativa revisada. \\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -117,7 +119,7 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 
         \midrule
         OE1 & Modelo de grafo y costo temporal & Sección~\ref{sec:formulacion}; ecuación~\eqref{eq:costo}; instancia ilustrativa y red OSM. \\
         OE2 & Tres colas y Dijkstra parametrizado & Sección~\ref{sec:diseno_algoritmico}; \texttt{src/datastructures/}; 61 pruebas de contrato. \\
-        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 287 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
+        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 346 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
         OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
         AG\_C06.01 & Aprendizaje autónomo & Sección~\ref{sec:fundamentos}; Anexo~C; pendientes individuales en \texttt{docs/CONTROL\_ENTREGA.md}. \\
         AG\_C06.02 & Selección de stack & Sección~\ref{sec:stack}; Tabla~\ref{tab:matriz_multicriterio}; adopción temprana por verificar. \\
@@ -139,10 +141,10 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 
         \toprule
         \textbf{Integrante} & \textbf{Componentes principales} & \textbf{Evidencia} \\
         \midrule
-        Choquenaira, Noe & Dijkstra, heap binario, modelo didáctico, $A^*$ e informe & \texttt{592589a}, \texttt{b307be4}, \texttt{f0799bf}; archivos en anexo C. \\
-        Porroa, Yeni & Heap 4-ario y análisis de estructuras & \texttt{77983b7}, \texttt{3b91a5e}; \texttt{d\_ary\_heap.py} y Sección~\ref{sec:diseno_algoritmico}. \\
-        Quispe, Romario & Fibonacci heap, benchmark y resultados preliminares & \texttt{72df976}, \texttt{e3af921}; módulos y JSON del anexo C. \\
-        Yaranga, Aldo & Pruebas, CLI, cuaderno y exportadores & \texttt{d50e67b}, \texttt{65d303d}; pruebas y CLI del anexo C. \\
+        Choquenaira, Noe & Dijkstra, heap binario, modelo didáctico, $A^*$ e informe & \texttt{24e526f}, \texttt{1abbfb5}, \texttt{ee12c43}; archivos en anexo C. \\
+        Porroa, Yeni & Heap 4-ario y análisis de estructuras & \texttt{442ea56}, \texttt{fbb14f8}; \texttt{d\_ary\_heap.py} y Sección~\ref{sec:diseno_algoritmico}. \\
+        Quispe, Romario & Fibonacci heap, benchmark y resultados preliminares & \texttt{221bf21}, \texttt{83ea30a}; módulos y JSON del anexo C. \\
+        Yaranga, Aldo & Pruebas, CLI, cuaderno y exportadores & \texttt{ee3109d}, \texttt{4b080db}, \texttt{82e7dd1}; pruebas, CLI y E/S del anexo C. \\
         \bottomrule
     \end{tabularx}
 \end{table}
