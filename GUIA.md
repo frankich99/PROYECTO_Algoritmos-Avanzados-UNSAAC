@@ -151,7 +151,7 @@ cd ..
 .\.venv\Scripts\python.exe -m pytest python/tests -q
 ```
 
-Última verificación de esta revisión: **296 passed** (duración variable).
+Última verificación de esta revisión (08/11/2026): **346 passed** en Python y **42 passed** en la web (duración variable). Una prueba se omite si `web/dist` no existe; ejecutar antes `npm run build`.
 
 ### 3.9 Reproducción canónica
 
@@ -225,7 +225,7 @@ El cálculo, el benchmark y el plano local funcionan sin Internet; solo el mapa 
 | $A^*$ en OSM | 887 $\to$ 823 expansiones ($-7.2\%$) |
 | $A^*$ manual | 6 $\to$ 5 expansiones ($-16.7\%$) |
 | Clima | $m=1.0691$; 413.952 s; $+6.91\%$; ruta sin cambios |
-| Pruebas | 296 casos aprobados en esta revisión; repetir en el entorno final |
+| Pruebas | 346 casos Python y 42 web aprobados el 08/11/2026; repetir en el entorno final |
 
 ---
 

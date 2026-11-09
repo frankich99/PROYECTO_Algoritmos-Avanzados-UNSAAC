@@ -74,19 +74,19 @@ para completar registros. No acreditan planes ni bitácoras firmadas.
 
 | Rama / Integrante | Commit fechado y alcance registrado en Git |
 | --- | --- |
-| `ramaFRANKI`<br>Noe Franklin Choquenaira Quispe (Líder) | Núcleo, Dijkstra y heap binario (`592589a`); A* consistente e informe general (`b307be4`, `f0799bf`); API FastAPI y cliente React v1.5.0. |
-| `ramaAldo`<br>Aldo Yaranga Achahui | Suite de pruebas automatizadas QA (`d50e67b`); opciones de CLI y exportador Graphviz (`65d303d`). |
-| `ramaYeni`<br>Yeni Ruth Porroa Sivana | Montículo 4-ario indexado (`77983b7`); análisis de localidad de caché y comparativa de montículos (`3b91a5e`). |
-| `RamaRomario`<br>Romario Quispe Rimachi | Fibonacci heap y modelo de impedancia vial (`72df976`); benchmark de escalabilidad y datos de percentiles (`e3af921`). |
+| `ramaFRANKI`<br>Noe Franklin Choquenaira Quispe (Líder) | Núcleo, Dijkstra y heap binario (`24e526f`); A* consistente e informe general (`1abbfb5`, `ee12c43`); API FastAPI y cliente React v1.5.0. |
+| `ramaAldo`<br>Aldo Yaranga Achahui | Suite de pruebas automatizadas QA (`ee3109d`, 04/10); integración de avances 4 y 5: CLI, E/S e instancias (`4b080db`, 22/10); opciones de CLI y exportador Graphviz (`82e7dd1`, 23/10). |
+| `ramaYeni`<br>Yeni Ruth Porroa Sivana | Montículo 4-ario indexado (`442ea56`); análisis de localidad de caché y comparativa de montículos (`fbb14f8`). |
+| `RamaRomario`<br>Romario Quispe Rimachi | Fibonacci heap y modelo de impedancia vial (`221bf21`); benchmark de escalabilidad y datos de percentiles (`83ea30a`). |
 
 Los cambios grupales posteriores tienen esta cronología verificable:
 
 | Fecha | Archivo o commit | Alcance comprobable |
 | --- | --- | --- |
-| 28/10 | `7922f52` y `benchmark_results.json` | Integración OSM, clima, aplicación y banco de 1,350 muestras. |
+| 28/10 | `80e2593` y `benchmark_results.json` | Integración OSM, clima, aplicación y banco de 1,350 muestras. |
 | 30/10–01/11 | Secciones históricas de verificación abajo | Pruebas y revisión descritas en los registros; no son actas individuales. |
-| 03/11 | `4025f8f` | Índice e informe revisados; PDF incluido en el commit. |
-| 04/11 | `ced0b82`, `c119aa6` y `pilot_benchmark_results.json` | Referencia OSM, piloto de 18 muestras y figura; el piloto es posterior al banco canónico. |
+| 03/11 | `6543f89` | Índice e informe revisados; PDF incluido en el commit. |
+| 04/11 | `8e36625`, `f574216` y `pilot_benchmark_results.json` | Referencia OSM, piloto de 18 muestras y figura; el piloto es posterior al banco canónico. |
 
 No se reconstruyen reuniones ni compromisos cumplidos a partir de estas fechas.
 
@@ -173,7 +173,7 @@ genera.
   -p no:cacheprovider`: **278 pruebas aprobadas en 34.95 s**. Este tiempo es
   la duración de la suite en el entorno de revisión, no un tiempo de ruta
   ni un resultado del benchmark.
-- `c119aa6` incluye el JSON, la figura y el PDF del piloto. La fecha del
+- `f574216` incluye el JSON, la figura y el PDF del piloto. La fecha del
   commit no acredita horas de dedicación ni una presentación.
 - `latex/compilar.ps1` generó `latex/main.pdf` de **62 páginas**. Se revisaron
   visualmente las páginas finales; el log no registra referencias indefinidas
@@ -192,7 +192,8 @@ genera.
 - **Suite.** Al retirar las 11 pruebas de Streamlit, la suite pasa de 298 a
   **287 casos**. Con las pruebas de persistencia, clima, claves seguras de
   proveedor y tráfico puntual añadidas en la versión 1.2.1 (06/11/2026),
-  la suite vigente es de **296 casos**. Las pruebas cubren catálogo,
+  la suite era de **296 casos**; con la segunda entrega (07/11/2026) es de
+  **346 casos** Python y 42 web, verificados el 08/11/2026. Las pruebas cubren catálogo,
   validación de coberturas, credenciales seguras, geometría OSM, instancias
   personalizadas, escenarios uniformes y separación entre banco canónico
   y experimentos de sesión.
