@@ -1,7 +1,7 @@
 # Bitácora de aportes verificables en GitHub
 
-Generada: 2026-11-07T21:41:39.134569+00:00.
-Rama `ramaFRANKI`; base `b58d4d4a29508c5284e105d0321c79a34b205ee9`. Incluye solo commits alcanzables desde esa base.
+Generada: 2026-11-09T04:06:22.644702+00:00.
+Rama `ramaFRANKI`; base `0f163098f88621f17feb336d678591e2c1efe330`. Incluye solo commits alcanzables desde esa base.
 HEAD remoto consultado: `no consultado`.
 
 La autoría de un commit no prueba dedicación, aprendizaje individual ni asistencia a reuniones. Los cambios se agrupan por rama de trabajo correspondiente. Las fechas son las declaradas en Git, no actas ni fechas de recepción.
@@ -10,15 +10,34 @@ La autoría de un commit no prueba dedicación, aprendizaje individual ni asiste
 
 | Rama | Commits |
 | --- | ---: |
-| ramaFRANKI | 55 |
-| ramaAldo | 3 |
-| ramaYeni | 2 |
-| RamaRomario | 2 |
+| ramaFRANKI | 58 |
+| RamaRomario | 8 |
+| ramaAldo | 8 |
+| ramaYeni | 7 |
 
 ## Cronología
 
 | Fecha del autor | Rama | Cambio | Evidencia |
 | --- | --- | --- | --- |
+| 2026-11-08T23:05:56-05:00 | ramaFRANKI | Merge branch 'RamaRomario' into ramaFRANKI | [0f16309](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/0f163098f88621f17feb336d678591e2c1efe330) |
+| 2026-11-08T23:05:56-05:00 | ramaFRANKI | Merge branch 'ramaYeni' into ramaFRANKI | [7aaed09](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/7aaed097fac401b1a86b67de374c78e499129c1b) |
+| 2026-11-08T23:05:30-05:00 | RamaRomario | docs(latex): redactar capitulos 9 y 10 sobre metodologia experimental y analisis estadistico | [ad0b649](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/ad0b649f5d0e772c2afbec6d0f7fe5bdfc6018a1) |
+| 2026-11-08T23:05:30-05:00 | RamaRomario | feat(web): vistas CompareView y ExperimentsView con graficos interactivos de escalabilidad | [acf0e47](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/acf0e47a93811adb88e234c900994946ed2c8702) |
+| 2026-11-08T23:05:30-05:00 | RamaRomario | perf(benchmark): ejecucion del benchmark canonico de 1350 muestras con analisis IQR y medianas | [3e0c910](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/3e0c9105b0052347547f1c3913e420e4e7e393d1) |
+| 2026-11-08T23:05:30-05:00 | RamaRomario | feat(services): integracion de condiciones en vivo con APIs de TomTom y Open-Meteo | [3d2adae](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/3d2adae496ff12fccb536d41da6d69eef3f94bba) |
+| 2026-11-08T23:05:29-05:00 | RamaRomario | feat(model): calibracion de funcion de impedancia urbana con pendiente y factor de clima | [112ce1e](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/112ce1e2953d93e8aeeee1006959ff63b3e829da) |
+| 2026-11-08T23:05:29-05:00 | RamaRomario | feat(fibonacci): monticulo de Fibonacci con insercion y decrease-key O(1) amortizado | [9a2cdf4](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/9a2cdf41789134a49e3839917e351896d75c3eb4) |
+| 2026-11-08T23:05:00-05:00 | ramaYeni | docs(latex): redaccion de capitulos 3 y 4 sobre fundamentos de colas y evaluacion de stack | [608c0d1](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/608c0d17fa21ddedff88829295bf1d3617d4a8ff) |
+| 2026-11-08T23:04:59-05:00 | ramaYeni | feat(web): vista de cobertura y metricas de red vial para el centro historico de Cusco | [186374a](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/186374a8e71e88f50b6768ae9ece0cb909e5d9da) |
+| 2026-11-08T23:04:59-05:00 | ramaYeni | feat(web): componente ComplexityTable para analisis interactivo de cotas temporales y espaciales | [337d5aa](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/337d5aadc4f50b434569bb5dec0daef1b31e0cd0) |
+| 2026-11-08T23:04:59-05:00 | ramaYeni | perf(hardware): analisis de localidad espacial de memoria cache L1/L2/L3 en monticulo 4-ario | [fcbfd44](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/fcbfd44e821d2f551dc49fa097fcf1b98b7f75ff) |
+| 2026-11-08T23:04:59-05:00 | ramaYeni | feat(heap): implementacion de DAryHeap indexado con aridad d=4 y mapeo inverso | [bce168e](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/bce168ec88795377bdd71f534f0d31346b03164a) |
+| 2026-11-08T23:04:31-05:00 | ramaAldo | docs(latex): redactar capitulo 8 sobre estrategia de pruebas y validacion cruzada | [c71488b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/c71488bc6ca9ece240fb46299a1edc3da626d93a) |
+| 2026-11-08T23:04:31-05:00 | ramaAldo | feat(web): componente InstanceView para creacion y carga de grafos desde archivos | [8252768](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/8252768fb3c9864f93b5e4c1df18fdd8602ef5cb) |
+| 2026-11-08T23:04:30-05:00 | ramaAldo | feat(cli): interfaz interactiva por linea de comandos y exportador graphviz dot | [6cf9bf0](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/6cf9bf0b596a7c16a1eb1d3db3d2dad0d5adccbb) |
+| 2026-11-08T23:04:30-05:00 | ramaAldo | feat(verify): certificador formal de optimalidad dual de caminos minimos en O(V+E) | [235ad2b](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/235ad2baee592e14cb307d22d8af2616524ce144) |
+| 2026-11-08T23:04:30-05:00 | ramaAldo | test(qa): suite automatizada de pruebas bajo patron AAA con 346 casos aprobados | [915d0a3](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/915d0a37e589f156003ad608570ff531cf9f89d7) |
+| 2026-11-08T23:02:30-05:00 | ramaFRANKI | feat(web): sincronizar test de evidencias, compilar frontend y actualizar vistas | [efbf902](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/efbf9025aaae2b3fc3a3718c85a29d767e13548a) |
 | 2026-11-07T05:28:17-05:00 | ramaFRANKI | fix(web): guiar inicio de backend fastapi en pestana de experimentos y recompilar distribucion | [b58d4d4](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/b58d4d4a29508c5284e105d0321c79a34b205ee9) |
 | 2026-11-07T04:54:46-05:00 | ramaFRANKI | feat(entrega): integrar segunda entrega, evidencias ramaFRANKI y rediseñar panel de condiciones meteorologicas | [bf1ec47](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/bf1ec47b0f8113b0cc1d6424224b43fe34183494) |
 | 2026-11-06T20:53:31-05:00 | ramaFRANKI | feat: restaurar bloque de capas de grafo/mapa y control de bloqueo de selección | [3b8acae](https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC/commit/3b8acae015eea01bfe33eba2f701066f2e7f8723) |

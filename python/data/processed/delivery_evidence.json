@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-11-07T21:41:39.134569+00:00",
+  "generated_at_utc": "2026-11-09T04:06:22.644702+00:00",
   "git": {
-    "head": "b58d4d4a29508c5284e105d0321c79a34b205ee9",
+    "head": "0f163098f88621f17feb336d678591e2c1efe330",
     "branch": "ramaFRANKI",
-    "dirty": true,
+    "dirty": false,
     "github_head": null,
     "github_checked_at": null
   },
@@ -13,7 +13,7 @@
       "passed": 346,
       "failed": 0,
       "skipped": 0,
-      "seconds": 22.97,
+      "seconds": 43.183,
       "modules": [
         {
           "name": "python.tests.test_a_star",
@@ -138,7 +138,7 @@
     }
   },
   "pilot": {
-    "generated_at_utc": "2026-11-07T21:41:38.716926+00:00",
+    "generated_at_utc": "2026-11-09T04:06:22.306070+00:00",
     "protocol": {
       "clock": "time.perf_counter_ns",
       "gc": "desactivado durante cada muestra",
@@ -161,9 +161,9 @@
         "queue": "4ary_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 257.8,
-        "q1_us": 251.05,
-        "q3_us": 268.3,
+        "median_us": 281.7,
+        "q1_us": 260.1,
+        "q3_us": 295.975,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -175,9 +175,9 @@
         "queue": "binary_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 259.4,
-        "q1_us": 258.975,
-        "q3_us": 288.5,
+        "median_us": 282.85,
+        "q1_us": 265.15,
+        "q3_us": 296.35,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -189,9 +189,9 @@
         "queue": "fibonacci_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 398.45,
-        "q1_us": 389.075,
-        "q3_us": 424.175,
+        "median_us": 421.15,
+        "q1_us": 397.1,
+        "q3_us": 446.6,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -203,9 +203,9 @@
         "queue": "4ary_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 612.2,
-        "q1_us": 591.5,
-        "q3_us": 659.875,
+        "median_us": 599.45,
+        "q1_us": 596.725,
+        "q3_us": 618.2,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -217,9 +217,9 @@
         "queue": "binary_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 635.25,
-        "q1_us": 623.625,
-        "q3_us": 679.5,
+        "median_us": 615.7,
+        "q1_us": 593.9,
+        "q3_us": 641.325,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -231,9 +231,9 @@
         "queue": "fibonacci_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 962.7,
-        "q1_us": 952.725,
-        "q3_us": 969.55,
+        "median_us": 997.95,
+        "q1_us": 979.55,
+        "q3_us": 1002.625,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -245,9 +245,9 @@
         "queue": "4ary_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 272.3,
-        "q1_us": 267.85,
-        "q3_us": 282.95,
+        "median_us": 295.35,
+        "q1_us": 272.45,
+        "q3_us": 302.65,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -259,9 +259,9 @@
         "queue": "binary_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 288.4,
-        "q1_us": 272.075,
-        "q3_us": 310.25,
+        "median_us": 292.95,
+        "q1_us": 285.325,
+        "q3_us": 319.125,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -273,9 +273,9 @@
         "queue": "fibonacci_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 423.85,
-        "q1_us": 410.65,
-        "q3_us": 429.75,
+        "median_us": 437.0,
+        "q1_us": 424.025,
+        "q3_us": 476.375,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -287,9 +287,9 @@
         "queue": "4ary_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 974.0,
-        "q1_us": 964.0,
-        "q3_us": 988.6,
+        "median_us": 1015.5,
+        "q1_us": 1003.925,
+        "q3_us": 1031.575,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -301,9 +301,9 @@
         "queue": "binary_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 1023.3,
-        "q1_us": 1011.825,
-        "q3_us": 1050.05,
+        "median_us": 1025.65,
+        "q1_us": 1018.025,
+        "q3_us": 1108.75,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -315,9 +315,9 @@
         "queue": "fibonacci_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 1619.9,
-        "q1_us": 1602.3,
-        "q3_us": 1629.85,
+        "median_us": 1686.6,
+        "q1_us": 1620.1,
+        "q3_us": 1732.025,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -329,22 +329,136 @@
   "contributors": [
     {
       "name": "ramaFRANKI",
-      "count": 55
-    },
-    {
-      "name": "ramaAldo",
-      "count": 3
-    },
-    {
-      "name": "ramaYeni",
-      "count": 2
+      "count": 58
     },
     {
       "name": "RamaRomario",
-      "count": 2
+      "count": 8
+    },
+    {
+      "name": "ramaAldo",
+      "count": 8
+    },
+    {
+      "name": "ramaYeni",
+      "count": 7
     }
   ],
   "commits": [
+    {
+      "hash": "0f163098f88621f17feb336d678591e2c1efe330",
+      "date": "2026-11-08T23:05:56-05:00",
+      "author": "ramaFRANKI",
+      "subject": "Merge branch 'RamaRomario' into ramaFRANKI"
+    },
+    {
+      "hash": "7aaed097fac401b1a86b67de374c78e499129c1b",
+      "date": "2026-11-08T23:05:56-05:00",
+      "author": "ramaFRANKI",
+      "subject": "Merge branch 'ramaYeni' into ramaFRANKI"
+    },
+    {
+      "hash": "ad0b649f5d0e772c2afbec6d0f7fe5bdfc6018a1",
+      "date": "2026-11-08T23:05:30-05:00",
+      "author": "RamaRomario",
+      "subject": "docs(latex): redactar capitulos 9 y 10 sobre metodologia experimental y analisis estadistico"
+    },
+    {
+      "hash": "acf0e47a93811adb88e234c900994946ed2c8702",
+      "date": "2026-11-08T23:05:30-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(web): vistas CompareView y ExperimentsView con graficos interactivos de escalabilidad"
+    },
+    {
+      "hash": "3e0c9105b0052347547f1c3913e420e4e7e393d1",
+      "date": "2026-11-08T23:05:30-05:00",
+      "author": "RamaRomario",
+      "subject": "perf(benchmark): ejecucion del benchmark canonico de 1350 muestras con analisis IQR y medianas"
+    },
+    {
+      "hash": "3d2adae496ff12fccb536d41da6d69eef3f94bba",
+      "date": "2026-11-08T23:05:30-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(services): integracion de condiciones en vivo con APIs de TomTom y Open-Meteo"
+    },
+    {
+      "hash": "112ce1e2953d93e8aeeee1006959ff63b3e829da",
+      "date": "2026-11-08T23:05:29-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(model): calibracion de funcion de impedancia urbana con pendiente y factor de clima"
+    },
+    {
+      "hash": "9a2cdf41789134a49e3839917e351896d75c3eb4",
+      "date": "2026-11-08T23:05:29-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(fibonacci): monticulo de Fibonacci con insercion y decrease-key O(1) amortizado"
+    },
+    {
+      "hash": "608c0d17fa21ddedff88829295bf1d3617d4a8ff",
+      "date": "2026-11-08T23:05:00-05:00",
+      "author": "ramaYeni",
+      "subject": "docs(latex): redaccion de capitulos 3 y 4 sobre fundamentos de colas y evaluacion de stack"
+    },
+    {
+      "hash": "186374a8e71e88f50b6768ae9ece0cb909e5d9da",
+      "date": "2026-11-08T23:04:59-05:00",
+      "author": "ramaYeni",
+      "subject": "feat(web): vista de cobertura y metricas de red vial para el centro historico de Cusco"
+    },
+    {
+      "hash": "337d5aadc4f50b434569bb5dec0daef1b31e0cd0",
+      "date": "2026-11-08T23:04:59-05:00",
+      "author": "ramaYeni",
+      "subject": "feat(web): componente ComplexityTable para analisis interactivo de cotas temporales y espaciales"
+    },
+    {
+      "hash": "fcbfd44e821d2f551dc49fa097fcf1b98b7f75ff",
+      "date": "2026-11-08T23:04:59-05:00",
+      "author": "ramaYeni",
+      "subject": "perf(hardware): analisis de localidad espacial de memoria cache L1/L2/L3 en monticulo 4-ario"
+    },
+    {
+      "hash": "bce168ec88795377bdd71f534f0d31346b03164a",
+      "date": "2026-11-08T23:04:59-05:00",
+      "author": "ramaYeni",
+      "subject": "feat(heap): implementacion de DAryHeap indexado con aridad d=4 y mapeo inverso"
+    },
+    {
+      "hash": "c71488bc6ca9ece240fb46299a1edc3da626d93a",
+      "date": "2026-11-08T23:04:31-05:00",
+      "author": "ramaAldo",
+      "subject": "docs(latex): redactar capitulo 8 sobre estrategia de pruebas y validacion cruzada"
+    },
+    {
+      "hash": "8252768fb3c9864f93b5e4c1df18fdd8602ef5cb",
+      "date": "2026-11-08T23:04:31-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(web): componente InstanceView para creacion y carga de grafos desde archivos"
+    },
+    {
+      "hash": "6cf9bf0b596a7c16a1eb1d3db3d2dad0d5adccbb",
+      "date": "2026-11-08T23:04:30-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(cli): interfaz interactiva por linea de comandos y exportador graphviz dot"
+    },
+    {
+      "hash": "235ad2baee592e14cb307d22d8af2616524ce144",
+      "date": "2026-11-08T23:04:30-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(verify): certificador formal de optimalidad dual de caminos minimos en O(V+E)"
+    },
+    {
+      "hash": "915d0a37e589f156003ad608570ff531cf9f89d7",
+      "date": "2026-11-08T23:04:30-05:00",
+      "author": "ramaAldo",
+      "subject": "test(qa): suite automatizada de pruebas bajo patron AAA con 346 casos aprobados"
+    },
+    {
+      "hash": "efbf9025aaae2b3fc3a3718c85a29d767e13548a",
+      "date": "2026-11-08T23:02:30-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): sincronizar test de evidencias, compilar frontend y actualizar vistas"
+    },
     {
       "hash": "b58d4d4a29508c5284e105d0321c79a34b205ee9",
       "date": "2026-11-07T05:28:17-05:00",
@@ -722,13 +836,13 @@
     "python/src/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
     "python/src/algorithms/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
     "python/src/algorithms/a_star.py": "de9b0f78127dc7d22d03a22dd3b8c405b0abbf928f66fa7aa136c9b48c931f11",
-    "python/src/algorithms/dijkstra.py": "9920dd0ced25e41f74eb35af53b9c355d3f4cadf581609097e2a9ace028b0001",
+    "python/src/algorithms/dijkstra.py": "6cf9fdaf33250c5d611e9450b8b038912a52f55251fd5f5a3e019599417aa3b3",
     "python/src/algorithms/reference.py": "abd7e00b00872848b695ea752764fe37c7fbcc457288d8a3e04a42ab0802c0fa",
     "python/src/algorithms/registry.py": "aa0c3d3092e33002279878c147ec1a2e970b9a8901060eee96fc9673f1db39d3",
     "python/src/benchmarks/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "python/src/benchmarks/applied_analysis.py": "b1653a3366af9a63ea220d655ae24389c683f4c7137844659266d81a884f5cfa",
+    "python/src/benchmarks/applied_analysis.py": "8a924ace040dcd8baf1a4570d87e974da30ed4f9bb4a3c14c1968cb153139d71",
     "python/src/benchmarks/scalability_benchmark.py": "143796b09192608f0280536cf8be5f78cba6358047218fb0c7a6bed29bf84523",
-    "python/src/cli.py": "3f12fb5c9d97f5cad738590e2e53b1ee6df67afa99d8f3dff7af15f7462e7402",
+    "python/src/cli.py": "ad2c992f342f47b3953abd519b6e470d3134c2986b9f6497c5a12de7ad9d5a43",
     "python/src/datastructures/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
     "python/src/datastructures/base.py": "1d90c273fd9f95e0980916e481120630f588a5cb7cb758f10bed319555ccd5e4",
     "python/src/datastructures/d_ary_heap.py": "e75d7d101ff4ec78a4f32e186cf712b08800400dfd52df2a3c4e7b2ffc061f30",
@@ -736,13 +850,13 @@
     "python/src/datastructures/indexed_min_heap.py": "1cd82f04a7d17d68d67f977d139da36addd56f82347ad816010199b2123e4894",
     "python/src/datastructures/registry.py": "f6a2a4ae087f5892d81ad28f0c16f7e02c8350f494ad5bcd5cd72414beb3d221",
     "python/src/generators/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "python/src/generators/instance_generator.py": "979a0715acfbf0d95c7824e4b0778d82eed1af636cda2d898bcd73d72f5f3b4a",
+    "python/src/generators/instance_generator.py": "1ef5d7987c1f3d6fe46e68734bee1e9fe2e98623ef3a0fd61db1b713ec20ba50",
     "python/src/io/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "python/src/io/graph_io.py": "ddcdacb4f04a7ef84ba6caad234331c7c48693ecbfa8e6a9fd7625733cf35572",
     "python/src/io/osm_loader.py": "0914d47535f3419244bca625f0c68c9219aa1848c80dc558d6df54600b7c54ae",
     "python/src/main.py": "47070fc0dcef34dcdc4a1318860a3f6fb57cf98e5a860992b16962120dadfbf5",
     "python/src/models/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
-    "python/src/models/cusco_network.py": "21fdf061d0fe0b4f6ff4794330cbfe67dfab2ec4136c3c28b9dae739cb95ca34",
+    "python/src/models/cusco_network.py": "fae29feb81d952a84764f1ff2fd0fae9539c7790270577d866b93872144300f0",
     "python/src/services/__init__.py": "cc130ec97677a930c0fe5d5343b5a8fd9a40ea385e667245d69c35c7a2eadc57",
     "python/src/services/provider_keys.py": "4a60db8877b2052a97ab0b4eefdee83106f443507514e1089d8e0197f8b3b570",
     "python/src/services/traffic.py": "d447f404a19dd5816309e9e14bac6966f7600633960353f08c1ebc87d4dacf98",
@@ -750,7 +864,7 @@
     "python/src/utils/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
     "python/src/utils/cost_model.py": "61d0872aa6e0538617a93a4f7d7aead462e8220a3e86d1d222b74ca52494d772",
     "python/src/utils/latex_exporter.py": "dbfb7e615201eb8e172d71c61b771f6cc138dd60ba82c743c472ac75d08f059e",
-    "python/src/utils/measurement.py": "faee50711fea0bec2cdeaad292b60e11caad95a514ff53576ba576105aa0e3ed",
+    "python/src/utils/measurement.py": "e49ba8510a56ddf454f2135686e49978fbbd9d1bbdef12e8bcc64743df5da0d0",
     "python/src/utils/presentation.py": "d4c963290599f4a48d753c6e0f84f83a66205058cc389d60cc93aa791a98b717",
     "python/src/verification/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "python/src/verification/certificate.py": "542dc0f9e7138448035bed2f3b9b962d4f3aa20e9cbb749bbd574c179b731492",
@@ -758,16 +872,16 @@
     "python/src/visualization/generate_figures.py": "c1fc027559a84f65c93197289f430ee3a7758aa2d736ebf431810839a90c45d4",
     "python/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "python/tests/conftest.py": "c428f9ffdfeecad8079d74ed288fb75c3168f531c65a355228eac968d8fea7c4",
-    "python/tests/test_a_star.py": "64bda7a195c1934954b50898ae6a7dba242dc46634cb644957b5d4aca54151eb",
-    "python/tests/test_applied_analysis.py": "7e31d5598ee75fce1749fc623f4fb4edc86a5cb8f1bff6b6b9ade9bbc5cadee5",
-    "python/tests/test_benchmark_protocol.py": "016224e493f77ff71748a4d7e1ef93bcf2f7bba691fe8162fe6d3f2edb8abccb",
-    "python/tests/test_cli.py": "d784a96c130ca485d8cedd6e4a52e5722642d3ad31f19deb6345655ad817c800",
+    "python/tests/test_a_star.py": "7c1fa2ed4c8479d15eb6aef1b1fa39c7c3487ce0866c63dc3c8a465719b3e9a7",
+    "python/tests/test_applied_analysis.py": "aab051f9d90bc778ca13b80134c64e0bd1b2bead8766259dae532e26efb47c39",
+    "python/tests/test_benchmark_protocol.py": "61209319a1527041cfb5f02a9cdd4a2b462c046d4de5a4d448c9dbca6d89101d",
+    "python/tests/test_cli.py": "c319870d1ece011a8e111ea536c9252a84abd7d466287c11607b3cb41cb44c94",
     "python/tests/test_delivery_pipeline.py": "bf5e20b848a97c0efd2e32b5bba5b567b651abd6efca46623bef5c88ebe65a5c",
     "python/tests/test_delivery_report.py": "6e7636d3a5040cbd0a3f612fe770571b0520580d9b4224de2ccd9c808fb9f9d5",
     "python/tests/test_dijkstra.py": "68c91c8f9a056780d82588b6477ec3c86bffbf7bb3ad79b1877810629bd27af9",
     "python/tests/test_dijkstra_manual.py": "492f063400c8c4f136e9e1a04acb2940262bdac30469de4b49c5a3cde483bd82",
     "python/tests/test_equivalence.py": "a32f73c10570d98992a8098fd3f477b4d92d4c1bd3c13a051451009a2db82a59",
-    "python/tests/test_osm_loader.py": "5ca5e29ecad94a2eadd8560f807556fd8f74c97077240d647f36cd38e207e9a3",
+    "python/tests/test_osm_loader.py": "51dc7eca812466faf8fac1a2708bd420058d2c2a46d724e1ba8ce91af9830c1f",
     "python/tests/test_priority_queues.py": "71c2bc9b5dac6178b9c39e5093859310dac49da67b528baabec54d69f6faf7b9",
     "python/tests/test_provider_keys.py": "52b6b93f86833361dd1a0c9142be7236dc30a61d22125c644fdfcc1ecd7094c6",
     "python/tests/test_traffic.py": "d6c3932be17ff8b2ed0bb8be2fcebad6ef136987e031fe54c01987a0cbbd4aee",
@@ -789,7 +903,7 @@
     "web/src/vite-env.d.ts": "f1f4b49a6b306663b424a59c59f018fc5e7d0abdcd260940447ba10dacb86b88",
     "web/src/WeatherReading.tsx": "b0062b491ec568ed145c3dd0a4188fccfc0ba0d82b7980a544f8d3eeb347356f",
     "web/tests/components.test.tsx": "522909bb3c0cf8c61b465ccf2f947622908c739c48b5732e7052d58c89b2fd94",
-    "web/tests/evidence.test.tsx": "0924a5abc5f799f67668b9eb39f6cccaf0b7c724f399692d863bece3169cc623",
+    "web/tests/evidence.test.tsx": "72a4d3f2c51c685f41e52ee38253ee957c1c1fb50df0c5cf471942d7ca9765ae",
     "web/tests/experimentInput.test.ts": "3e26fdc7479829ccf359ece4247c18f5a0c31e35d078b69d069593affca5686a",
     "web/tests/fallback.test.ts": "4bf41936727f457b3c811a1ac106a98f2d3b571eb64f46eaf1deac10750bee61",
     "web/tests/setup.ts": "1b32a82cb1d6a83205ae927108abc190030707bbf31f4e4e0353c868562b70d3"
