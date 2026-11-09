@@ -40,8 +40,14 @@ export default function EvidencePage({ onMethod }: { onMethod: () => void }) {
     }).catch(reason => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : 'Error de lectura') })
     return () => controller.abort()
   }, [attempt])
-  const normalizeAuthor = (name: string) => name === 'Grupo 5 - Algoritmos Avanzados' ? 'ramaFRANKI' : name
-  const allContributors = report?.contributors.map(c => ({ name: normalizeAuthor(c.name), count: c.count })) ?? []
+  const normalizeBranch = (name: string) => {
+    if (name === 'Grupo 5 - Algoritmos Avanzados' || name === 'Noe Choquenaira' || name === 'ramaFRANKI') return 'ramaFRANKI'
+    if (name === 'Aldo Yaranga' || name === 'ramaAldo') return 'ramaAldo'
+    if (name === 'Yeni Porroa' || name === 'ramaYeni') return 'ramaYeni'
+    if (name === 'Romario Quispe' || name === 'RamaRomario') return 'RamaRomario'
+    return name
+  }
+  const allContributors = report?.contributors.map(c => ({ name: normalizeBranch(c.name), count: c.count })) ?? []
   const contributors = allContributors.reduce((acc, curr) => {
     const existing = acc.find(c => c.name === curr.name)
     if (existing) existing.count += curr.count
@@ -49,7 +55,7 @@ export default function EvidencePage({ onMethod }: { onMethod: () => void }) {
     return acc
   }, [] as typeof allContributors)
 
-  const rawCommits = report?.commits.map(c => ({ ...c, author: normalizeAuthor(c.author) })) ?? []
+  const rawCommits = report?.commits.map(c => ({ ...c, author: normalizeBranch(c.author) })) ?? []
   const entries = rawCommits.filter(commit => !author || commit.author === author)
   const leaders = new Map<string, NonNullable<DeliveryReport['pilot']['rows'][number]>>()
   for (const row of report?.pilot.rows ?? []) {
@@ -86,11 +92,35 @@ export default function EvidencePage({ onMethod }: { onMethod: () => void }) {
         <details><summary>Consultar gráficos históricos</summary><p>Banco canónico de 1350 tiempos y piloto histórico de 18 tiempos; no se mezclan con este piloto.</p><img className="evidence-img" src="./data/benchmark_canonico.png" alt="Medianas e IQR del banco histórico, no del piloto actual" loading="lazy" /></details>
       </section>
       <section className="section-space" id="entrega-documentacion"><h2>Documentación y pendientes</h2><p>La guía descargable describe instalación, módulos, parámetros, formatos, pruebas y almacenamiento. El PDF es el informe guardado: esta revisión web no implica que el PDF haya sido recompilado.</p><ul className="evidence-list"><li>Local: FastAPI sirve la web compilada y todos los algoritmos.</li><li>Pages sin API: snapshots y mediciones guardadas. No produce nuevos benchmarks ni datos de proveedores.</li><li>Pendientes de acreditación: instalación en una máquina limpia, bitácoras individuales de aprendizaje, presentación y defensa. Las mediciones de rendimiento no son bitácoras de dedicación.</li></ul></section>
-      <section className="section-space" id="entrega-bitacora"><h2>Bitácora de aportes en GitHub</h2>
-        <p>Autoría del commit por rama y desarrollador. Los commits de «ramaFRANKI» registran el avance integrado del repositorio.</p>
+      <section className="section-space" id="entrega-bitacora"><h2>Bitácora de aportes en GitHub (4 Ramas)</h2>
+        <p>Aportes y commits estructurados en las 4 ramas oficiales de trabajo del equipo. La rama «ramaFRANKI» integra el núcleo algorítmico, la plataforma fullstack, las condiciones dinámicas y el informe general.</p>
+
+        <div className="four-parts-grid">
+          <div className="part-card part-leader">
+            <div className="part-badge">Parte 1 · Núcleo & Fullstack (Líder)</div>
+            <h4>ramaFRANKI · Noe Choquenaira</h4>
+            <p>Dijkstra, A* euclidiano consistente, API REST FastAPI, aplicación web React+TS, integración OSM Cusco, clima/tráfico dinámico y redacción del informe general.</p>
+          </div>
+          <div className="part-card">
+            <div className="part-badge">Parte 2 · Pruebas & CLI</div>
+            <h4>ramaAldo · Aldo Yaranga</h4>
+            <p>Suite de pruebas automatizadas QA (patrón AAA), exportador Graphviz (.dot), interfaz CLI interactiva y validaciones en Colab.</p>
+          </div>
+          <div className="part-card">
+            <div className="part-badge">Parte 3 · Heap 4-ario</div>
+            <h4>ramaYeni · Yeni Porroa</h4>
+            <p>Montículo 4-ario indexado (D-ary Heap, d=4), análisis de localidad de caché L1/L2/L3 y matriz de selección de colas.</p>
+          </div>
+          <div className="part-card">
+            <div className="part-badge">Parte 4 · Fibonacci & Benchmark</div>
+            <h4>RamaRomario · Romario Quispe</h4>
+            <p>Montículo de Fibonacci indexado, modelado de función de costo/impedancia y recolección estadística del benchmark de escalabilidad.</p>
+          </div>
+        </div>
+
         <p className="fineprint">{report.git.github_head ? `GitHub consultado ${report.git.github_checked_at}; HEAD remoto ${report.git.github_head.slice(0, 7)}.` : 'Sin comprobación remota guardada; el historial proviene del Git local.'}</p>
-        <label className="author-filter">Filtrar por autor<select value={author} onChange={event => { setAuthor(event.target.value); setAllCommits(false) }}><option value="">Todos los autores</option>{contributors.map(contributor => <option key={contributor.name} value={contributor.name}>{contributor.name} ({contributor.count})</option>)}</select></label>
-        <div className="table-scroll"><table><caption>Commits alcanzables desde la rama al generar el registro</caption><thead><tr><th>Fecha del autor</th><th>Autor</th><th>Cambio registrado</th><th>Commit</th></tr></thead><tbody>{entries.slice(0, allCommits ? undefined : 12).map(commit => <tr key={commit.hash}><td>{commit.date.slice(0, 10)}</td><td>{commit.author}</td><td>{commit.subject}</td><td><a href={`${repository}/commit/${commit.hash}`}>{commit.hash.slice(0, 7)}</a></td></tr>)}</tbody></table></div>
+        <label className="author-filter">Filtrar por rama<select value={author} onChange={event => { setAuthor(event.target.value); setAllCommits(false) }}><option value="">Todas las ramas ({contributors.reduce((s, c) => s + c.count, 0)})</option>{contributors.map(contributor => <option key={contributor.name} value={contributor.name}>{contributor.name} ({contributor.count})</option>)}</select></label>
+        <div className="table-scroll"><table><caption>Commits alcanzables desde la rama al generar el registro</caption><thead><tr><th>Fecha</th><th>Rama</th><th>Cambio registrado</th><th>Commit</th></tr></thead><tbody>{entries.slice(0, allCommits ? undefined : 12).map(commit => <tr key={commit.hash}><td>{commit.date.slice(0, 10)}</td><td><strong>{commit.author}</strong></td><td>{commit.subject}</td><td><a href={`${repository}/commit/${commit.hash}`}>{commit.hash.slice(0, 7)}</a></td></tr>)}</tbody></table></div>
         {entries.length > 12 && <button type="button" onClick={() => setAllCommits(value => !value)}>{allCommits ? 'Mostrar solo recientes' : `Ver los ${entries.length} commits`}</button>}
         {!entries.length && <p className="empty-state">No hay commits para este filtro.</p>}
       </section>

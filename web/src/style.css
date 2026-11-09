@@ -226,3 +226,14 @@ button.primary:hover:not(:disabled){background:#541628}
 @media(max-width:810px){.about-facts{grid-template-columns:1fr}.team-member{grid-template-columns:1fr;gap:.35rem}.about-columns{grid-template-columns:1fr}.version-list li{grid-template-columns:1fr;gap:.2rem}}
 @media(max-width:590px){.arch-flow{grid-template-columns:1fr}}
 @media(max-width:590px){.wordmark-sub{font-size:.69rem;letter-spacing:0;white-space:normal;line-height:1.25}}
+
+/* Cuatro partes del proyecto en Evidencias y Acerca de */
+.four-parts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem;margin:1.1rem 0}
+.part-card{background:#fff;border:1px solid #d5c8bb;border-radius:6px;padding:.85rem 1rem;display:grid;gap:.35rem;transition:transform .15s ease,box-shadow .15s ease}
+.part-card:hover{transform:translateY(-2px);box-shadow:0 3px 10px rgba(0,0,0,0.06)}
+.part-card.part-leader{border:2px solid var(--wine);background:#fcf8f6}
+.part-badge{display:inline-block;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--wine);background:#faecef;padding:2px 7px;border-radius:3px;align-self:start}
+.part-card.part-leader .part-badge{background:var(--wine);color:#fff}
+.part-card h4{margin:0;font-size:.98rem;color:#341e25}
+.part-card p{margin:0;font-size:.84rem;color:#53484b;line-height:1.45}
+@media(max-width:720px){.four-parts-grid{grid-template-columns:1fr}}

@@ -4,14 +4,29 @@ const keysName = 'cusco-provider-keys-v1'
 const readingName = 'cusco-weather-reading-v1'
 
 export type ProviderKeys = { openweathermap: string; tomtom: string }
-export const emptyKeys: ProviderKeys = { openweathermap: '', tomtom: '' }
+export const DEFAULT_KEYS: ProviderKeys = {
+  openweathermap: 'e0cd9ce83348676c0ef4a46aa041e194',
+  tomtom: 'jFzYvp3UJmio3PeiTkKQCBqebIFhKHMO'
+}
+export const emptyKeys: ProviderKeys = { ...DEFAULT_KEYS }
 
 export function readKeys(): ProviderKeys {
   try {
-    const value = JSON.parse(localStorage.getItem(keysName) ?? '{}') as Partial<ProviderKeys>
-    return { openweathermap: typeof value.openweathermap === 'string' ? value.openweathermap.slice(0, 200) : '',
-      tomtom: typeof value.tomtom === 'string' ? value.tomtom.slice(0, 200) : '' }
-  } catch { return { ...emptyKeys } }
+    const raw = localStorage.getItem(keysName)
+    if (!raw) {
+      saveKeys(DEFAULT_KEYS)
+      return { ...DEFAULT_KEYS }
+    }
+    const value = JSON.parse(raw) as Partial<ProviderKeys>
+    return {
+      openweathermap: typeof value.openweathermap === 'string' && value.openweathermap.trim()
+        ? value.openweathermap.slice(0, 200)
+        : DEFAULT_KEYS.openweathermap,
+      tomtom: typeof value.tomtom === 'string' && value.tomtom.trim()
+        ? value.tomtom.slice(0, 200)
+        : DEFAULT_KEYS.tomtom
+    }
+  } catch { return { ...DEFAULT_KEYS } }
 }
 
 export function saveKeys(keys: ProviderKeys): boolean {

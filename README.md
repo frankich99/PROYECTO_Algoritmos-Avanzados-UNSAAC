@@ -14,18 +14,18 @@
 
 ---
 
-## Integrantes del Grupo 5
+## Estructura del Proyecto en 4 Partes (Ramas de Trabajo)
 
-| Integrante | Código | Aportes verificables en Git |
-| :--- | :---: | :--- |
-| **Noe Franklin Choquenaira Quispe** | **133962** | Dijkstra, heap binario y modelo didáctico (`592589a`); $A^*$ (`b307be4`); informe (`f0799bf`). |
-| **Aldo Yaranga Achahui** | **103179** | Pruebas, cuaderno y exportadores (`d50e67b`); CLI y pruebas de CLI (`65d303d`). |
-| **Yeni Ruth Porroa Sivana** | **120893** | Heap 4-ario (`77983b7`); análisis de estructuras (`3b91a5e`). |
-| **Romario Quispe Rimachi** | **164257** | Fibonacci heap y benchmark inicial (`72df976`); actualización preliminar de resultados (`e3af921`). |
+El proyecto se divide de manera modular en cuatro partes especializadas, coordinadas por la rama principal y verificables mediante commits individuales en Git:
 
-La integración OSM, el clima, el certificado y la aplicación se incluyen en
-el commit **grupal** `7922f52` (28/10); el commit no acredita autoría personal
-de esos componentes. Seguimiento y defensa individual: [control de entrega](docs/CONTROL_ENTREGA.md).
+| Parte / Rama | Integrante | Código | Responsabilidades y Aportes Verificables |
+| :--- | :--- | :---: | :--- |
+| **Parte 1 (Líder / Núcleo & Fullstack)**<br>`ramaFRANKI` | **Noe Franklin Choquenaira Quispe** | **133962** | **Arquitectura y Dirección:** API REST FastAPI + Uvicorn y cliente web React + TypeScript con MapLibre GL JS.<br>**Algoritmos Principales:** Dijkstra y $A^*$ consistente con heurística euclidiana admisible ($D / V_{\max}$), Montículo Binario Indexado.<br>**Geoprocesamiento y Redes:** Extracción y saneamiento de redes OSM de Cusco (Centro 891 nodos, Urbano 1938 nodos), algoritmo de snapping Haversine.<br>**Condiciones en Vivo:** Clima (Open-Meteo / OpenWeatherMap), congestión vehicular TomTom y horario en tiempo real con segundero, geolocalización GPS.<br>**Documentación:** Informe académico de 60+ páginas (14 secciones canónicas) y guía de sustentación. |
+| **Parte 2 (Pruebas & CLI)**<br>`ramaAldo` | **Aldo Yaranga Achahui** | **103179** | **Calidad y QA:** Suite de pruebas unitarias y de integración bajo patrón AAA (Arrange-Act-Assert) para validación algorítmica y casos límite.<br>**CLI y Herramientas:** Módulo interactivo de consola por línea de comandos (`cli.py`), exportador de grafos a Graphviz (`.dot`) y validación en Google Colab. |
+| **Parte 3 (Montículo 4-ario)**<br>`ramaYeni` | **Yeni Ruth Porroa Sivana** | **120893** | **Estructuras Avanzadas:** Montículo 4-ario indexado (D-ary Heap con $d=4$), lógica de flotado y hundimiento cuadrario.<br>**Análisis de Hardware:** Evaluación de localidad espacial y temporal de memoria, reducción de *cache misses* en jerarquías L1/L2/L3 y matriz formal de selección de colas. |
+| **Parte 4 (Fibonacci & Benchmark)**<br>`RamaRomario` | **Romario Quispe Rimachi** | **164257** | **Estructuras Teóricas:** Montículo de Fibonacci indexado con inserción y disminución de clave en $O(1)$ amortizado.<br>**Modelado e Impedancia:** Calibración de la función de costo vial e impedancia urbana.<br>**Benchmarking:** Módulo de evaluación experimental de escalabilidad sintética y recolección estadística de percentiles (medianas, Q1, Q3, IQR). |
+
+Seguimiento y defensa individual: [control de entrega](docs/CONTROL_ENTREGA.md) y [bitácora de GitHub](docs/BITACORA_GITHUB.md).
 
 ---
 

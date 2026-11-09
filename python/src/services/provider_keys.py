@@ -7,6 +7,10 @@ from typing import Literal
 
 Provider = Literal["openweathermap", "tomtom"]
 _NAMES = {"openweathermap": "OPENWEATHERMAP_API_KEY", "tomtom": "TOMTOM_API_KEY"}
+_DEFAULTS = {
+    "openweathermap": "e0cd9ce83348676c0ef4a46aa041e194",
+    "tomtom": "jFzYvp3UJmio3PeiTkKQCBqebIFhKHMO",
+}
 _ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 
 
@@ -22,4 +26,4 @@ def provider_key(provider: Provider) -> str:
                     return value.strip().strip('"\'')
     except (OSError, UnicodeError):
         pass
-    return ""
+    return _DEFAULTS.get(provider, "")

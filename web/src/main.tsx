@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import GraphView from './GraphView'
 import { api, apiUrl } from './api'
 import type { Benchmark, Catalog, Condition, Experiment, InstanceSpec, Metric, Pilot, Point, Preview, Queue, RouteResponse } from './api'
-import { emptyKeys, forgetKeys, forgetWeather, readKeys, readWeather, saveKeys, saveWeather } from './localSettings'
+import { DEFAULT_KEYS, emptyKeys, forgetKeys, forgetWeather, readKeys, readWeather, saveKeys, saveWeather } from './localSettings'
 import type { ProviderKeys } from './localSettings'
 import WeatherReading from './WeatherReading'
 import TrafficReading from './TrafficReading'
@@ -20,10 +20,34 @@ const initialGraph = { name: 'Grafo propuesto', directed: true, nodes: [{ id: 'A
   edges: [{ origin: 'A', destination: 'B', weight: 4 }, { origin: 'A', destination: 'C', weight: 10 }, { origin: 'B', destination: 'C', weight: 2 }] }
 const menu = ['Rutas', 'Instancias', 'Comparar', 'Experimentos', 'Cobertura Cusco', 'Evidencias', 'Datos y método', 'Acerca de'] as const
 const team = [
-  { name: 'Noe Franklin Choquenaira Quispe', code: '133962', work: 'Dijkstra, heap binario y modelo didáctico; A*; informe.' },
-  { name: 'Aldo Yaranga Achahui', code: '103179', work: 'Pruebas, cuaderno y exportadores; CLI y pruebas de CLI.' },
-  { name: 'Yeni Ruth Porroa Sivana', code: '120893', work: 'Heap 4-ario; análisis de estructuras.' },
-  { name: 'Romario Quispe Rimachi', code: '164257', work: 'Fibonacci heap y benchmark inicial; actualización de resultados.' },
+  {
+    part: 'Parte 1 (Líder / Núcleo & Fullstack)',
+    branch: 'ramaFRANKI',
+    name: 'Noe Franklin Choquenaira Quispe',
+    code: '133962',
+    work: 'Arquitectura Cliente-Servidor (FastAPI + React), algoritmo de Dijkstra y algoritmo A* consistente con heurística euclidiana admisible (D/V_max), montículo binario indexado, extracción y geoprocesamiento de redes OSM Cusco (Centro 891 nodos, Urbano 1938 nodos), snapping con Haversine, integración de clima (Open-Meteo / OpenWeatherMap) y tráfico (TomTom y horario en tiempo real con segundero), geolocalización GPS, mapas vectoriales MapLibre, visor interactivo de grafos SVG y redacción general del informe académico de 14 secciones.'
+  },
+  {
+    part: 'Parte 2 (Pruebas Automatizadas & CLI)',
+    branch: 'ramaAldo',
+    name: 'Aldo Yaranga Achahui',
+    code: '103179',
+    work: 'Suite de pruebas automatizadas QA bajo patrón AAA (Arrange-Act-Assert) para validación algorítmica y casos límite, interfaz interactiva por línea de comandos (CLI en consola), exportador de grafos a Graphviz (.dot) y validaciones en cuaderno Google Colab.'
+  },
+  {
+    part: 'Parte 3 (Montículo 4-ario & Caché)',
+    branch: 'ramaYeni',
+    name: 'Yeni Ruth Porroa Sivana',
+    code: '120893',
+    work: 'Implementación del montículo 4-ario indexado (D-ary Heap con d=4), análisis teórico-práctico de localidad de memoria y reducción de fallos de caché (L1/L2), y matriz formal de selección de colas de prioridad según densidad.'
+  },
+  {
+    part: 'Parte 4 (Fibonacci & Benchmark)',
+    branch: 'RamaRomario',
+    name: 'Romario Quispe Rimachi',
+    code: '164257',
+    work: 'Implementación del montículo de Fibonacci indexado con operaciones amortizadas en O(1), calibración de la función de costo e impedancia vial urbana, y recolección estadística del benchmark canónico de escalabilidad (medianas, cuartiles Q1/Q3 e IQR).'
+  },
 ] as const
 type Section = typeof menu[number]
 type Saved = { name: string; metric: string; network: string; nodes: number; edges: number; route: RouteResponse }
@@ -45,12 +69,12 @@ function ProviderKeyInput({ provider, configured, value, onChange }: {
   const label = provider === 'tomtom' ? 'TomTom' : 'OpenWeatherMap'
   return <div className="provider-key">
     <p className="fineprint">{configured === undefined ? 'Comprobando las claves configuradas en el servidor…' :
-      configured ? `Clave ${label} configurada en el servidor; no se muestra ni se envía al navegador.` :
-        `Sin clave ${label} en el servidor. Puedes introducir una para esta consulta.`}</p>
-    <label>{configured ? `Usar otra clave ${label} (opcional)` : `Clave ${label}`}
-      <input type="password" maxLength={200} value={value} onChange={e => onChange(e.target.value)} autoComplete="off" />
+      configured ? `Clave ${label} configurada en el servidor y activa en la aplicación.` :
+        `Clave ${label} integrada por defecto en la aplicación.`}</p>
+    <label>{`Clave ${label} (preconfigurada)`}
+      <input type="password" maxLength={200} value={value} onChange={e => onChange(e.target.value)} autoComplete="off" placeholder="Clave integrada" />
     </label>
-    {value && <button type="button" className="text-button" onClick={() => onChange('')}>Quitar clave del navegador y usar {configured ? 'la del servidor' : 'ninguna'}</button>}
+    {value !== DEFAULT_KEYS[provider] && <button type="button" className="text-button" onClick={() => onChange(DEFAULT_KEYS[provider])}>Restablecer clave predeterminada</button>}
   </div>
 }
 
@@ -99,9 +123,7 @@ function App() {
   const [weather, setWeather] = useState<'historical' | 'snapshot' | 'live' | 'saved'>('live')
   const [weatherProvider, setWeatherProvider] = useState<'open-meteo' | 'openweathermap'>('openweathermap')
   const [conditionProvider, setConditionProvider] = useState<'open-meteo' | 'openweathermap' | 'tomtom'>('openweathermap')
-  const [rememberKeys, setRememberKeys] = useState(() => {
-    try { return localStorage.getItem('cusco-provider-keys-v1') !== null } catch { return false }
-  })
+  const [rememberKeys, setRememberKeys] = useState(true)
   const [apiKeys, setApiKeys] = useState<ProviderKeys>(() => readKeys())
   const [storageError, setStorageError] = useState('')
   const [liveReading, setLiveReading] = useState<Condition | null>(null)
@@ -1198,11 +1220,15 @@ function App() {
         </section>
 
         <section className="section-space">
-          <h2>Equipo del Grupo 5</h2>
-          <p>La autoría se acredita con los commits registrados; la defensa y la evaluación son individuales.</p>
+          <h2>Equipo y División del Proyecto en 4 Ramas</h2>
+          <p>El proyecto se divide de manera modular en cuatro partes especializadas, coordinadas por la rama principal y verificables mediante commits individuales en Git:</p>
           <div className="team-list">{team.map(member => <article className="team-member" key={member.code}>
-            <div className="team-id"><h3>{member.name}</h3><p>Código {member.code}</p></div>
-            <p><span className="team-label">Área de trabajo declarada</span>{member.work}</p>
+            <div className="team-id">
+              <span className="part-badge" style={{ marginBottom: '0.35rem' }}>{member.part} · {member.branch}</span>
+              <h3>{member.name}</h3>
+              <p>Código {member.code}</p>
+            </div>
+            <p><span className="team-label">Módulo y aportes declarados</span>{member.work}</p>
           </article>)}</div>
           <p className="fineprint">Detalle de autoría y evidencias: <a href="https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC" target="_blank" rel="noreferrer">repositorio del proyecto</a>.</p>
         </section>

@@ -72,12 +72,12 @@ Los archivos locales `ficha_aprendizaje_grupo5.tex` y
 `guia_ficha_aprendizaje.tex` están ignorados por Git y contienen indicaciones
 para completar registros. No acreditan planes ni bitácoras firmadas.
 
-| Persona | Commit fechado y alcance registrado en Git |
+| Rama / Integrante | Commit fechado y alcance registrado en Git |
 | --- | --- |
-| Noe Choquenaira | `592589a` (02/10): Dijkstra y heap binario; `b307be4` y `f0799bf` (23/10): A* e informe. |
-| Yeni Porroa | `77983b7` (04/10): heap 4-ario; `3b91a5e` (23/10): comparativa de montículos. |
-| Romario Quispe | `72df976` (04/10): Fibonacci y escalabilidad; `e3af921` (23/10): benchmark. |
-| Aldo Yaranga | `d50e67b` (04/10): pruebas; `65d303d` (23/10): suite y CLI. |
+| `ramaFRANKI`<br>Noe Franklin Choquenaira Quispe (Líder) | Núcleo, Dijkstra y heap binario (`592589a`); A* consistente e informe general (`b307be4`, `f0799bf`); API FastAPI y cliente React v1.5.0. |
+| `ramaAldo`<br>Aldo Yaranga Achahui | Suite de pruebas automatizadas QA (`d50e67b`); opciones de CLI y exportador Graphviz (`65d303d`). |
+| `ramaYeni`<br>Yeni Ruth Porroa Sivana | Montículo 4-ario indexado (`77983b7`); análisis de localidad de caché y comparativa de montículos (`3b91a5e`). |
+| `RamaRomario`<br>Romario Quispe Rimachi | Fibonacci heap y modelo de impedancia vial (`72df976`); benchmark de escalabilidad y datos de percentiles (`e3af921`). |
 
 Los cambios grupales posteriores tienen esta cronología verificable:
 

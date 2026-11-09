@@ -64,10 +64,20 @@ def main():
                 rows.append({"profile": profile, "queue": queue, **{key: row[key] for key in
                     ("nodes", "edges", "median_us", "q1_us", "q3_us", "sample_count", "instance_seeds")}})
     commits = []
+    branch_map = {
+        "Grupo 5 - Algoritmos Avanzados": "ramaFRANKI",
+        "Noe Choquenaira": "ramaFRANKI",
+        "ramaFRANKI": "ramaFRANKI",
+        "Aldo Yaranga": "ramaAldo",
+        "ramaAldo": "ramaAldo",
+        "Yeni Porroa": "ramaYeni",
+        "ramaYeni": "ramaYeni",
+        "Romario Quispe": "RamaRomario",
+        "RamaRomario": "RamaRomario",
+    }
     for line in git("log", "--format=%H%x1f%aI%x1f%an%x1f%s", "HEAD").splitlines():
         sha, date, author, subject = line.split("\x1f", 3)
-        if author == "Grupo 5 - Algoritmos Avanzados":
-            author = "ramaFRANKI"
+        author = branch_map.get(author, author)
         commits.append({"hash": sha, "date": date, "author": author, "subject": subject})
     branch = git("branch", "--show-current")
     remote_head = remote_date = None
@@ -94,10 +104,10 @@ def main():
     bitacora = ["# Bitácora de aportes verificables en GitHub", "", f"Generada: {report['generated_at_utc']}.",
                 f"Rama `{branch}`; base `{report['git']['head']}`. Incluye solo commits alcanzables desde esa base.",
                 f"HEAD remoto consultado: `{remote_head or 'no consultado'}`.", "",
-                "La autoría de un commit no prueba dedicación, aprendizaje individual ni asistencia a reuniones. Los cambios de Grupo 5 no se asignan a una persona sin respaldo. Las fechas son las declaradas por el autor en Git, no actas ni fechas de recepción.", "",
-                "## Autores registrados", "", "| Autor | Commits |", "| --- | ---: |"]
+                "La autoría de un commit no prueba dedicación, aprendizaje individual ni asistencia a reuniones. Los cambios se agrupan por rama de trabajo correspondiente. Las fechas son las declaradas en Git, no actas ni fechas de recepción.", "",
+                "## Ramas registradas", "", "| Rama | Commits |", "| --- | ---: |"]
     bitacora += [f"| {row['name']} | {row['count']} |" for row in report["contributors"]]
-    bitacora += ["", "## Cronología", "", "| Fecha del autor | Autor | Cambio | Evidencia |", "| --- | --- | --- | --- |"]
+    bitacora += ["", "## Cronología", "", "| Fecha del autor | Rama | Cambio | Evidencia |", "| --- | --- | --- | --- |"]
     bitacora += [f"| {c['date']} | {c['author']} | {c['subject'].replace('|', '/')} | [{c['hash'][:7]}]({REPO}/commit/{c['hash']}) |" for c in commits]
     bitacora += ["", "## Correcciones de esta revisión (aún sin commit)", "", "- Se retiran afirmaciones de cobertura al 100 %, superioridad universal y reducción fija de A*.",
                  "- Se rechazan valores no finitos en el modelo; la calibración de A* deja de almacenar O(E) cocientes.",
