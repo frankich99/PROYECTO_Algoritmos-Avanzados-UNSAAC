@@ -112,7 +112,7 @@ La Tabla~\ref{tab:criterios_fuentes} sistematiza la bibliografía fundamental es
 En el código y las pruebas se distinguen cinco temas de estudio. La documentación disponible no permite fechar cuándo los identificó cada integrante ni sustituye su registro personal de aprendizaje:
 
 \subsubsection{Metodología de Pruebas Unitarias AAA y Oráculos de Verificación}
-La suite reúne 287 casos unitarios y de integración con \texttt{pytest}. Sus aserciones comprueban distancias frente a Bellman-Ford y NetworkX, así como propiedades del certificado de optimalidad. No todas las pruebas utilizan ambos oráculos.
+La suite reúne 346 casos unitarios y de integración con \texttt{pytest}. Sus aserciones comprueban distancias frente a Bellman-Ford y NetworkX, así como propiedades del certificado de optimalidad. No todas las pruebas utilizan ambos oráculos.
 
 \subsubsection{Manipulación Dinámica de Estructuras Arbóreas con Múltiples Punteros}
 El Fibonacci Heap utiliza enlaces circulares y referencias \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}. Su contrato se comprueba en las pruebas de estructuras; no se midieron fugas de memoria.
@@ -131,19 +131,19 @@ El cargador OSMnx \parencite{boeing2025osmnx} guarda nodos con coordenadas WGS84
 El historial Git permite ordenar cuatro componentes del desarrollo. Describe cambios de código y documentos, no reuniones ni una planificación original:
 
 \subsubsection{Hito 1: Investigación y Prototipado del Min-Heap Binario Indexado}
-El commit \texttt{592589a} (02/10/2026) incluye Dijkstra y el montículo binario indexado; las referencias de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci} sustentan el análisis. No se dispone de una bitácora que feche las lecturas personales.
+El commit \texttt{24e526f} (02/10/2026) incluye Dijkstra y el montículo binario indexado; las referencias de \textcite{cormen2022introduction} y \textcite{fredman1987fibonacci} sustentan el análisis. No se dispone de una bitácora que feche las lecturas personales.
 
 \subsubsection{Hito 2: Extensión 4-aria}
-El commit \texttt{77983b7} (04/10/2026) contiene el heap 4-ario. El banco posterior registra sus operaciones y tiempos frente al binario; no registra fallos de caché.
+El commit \texttt{442ea56} (04/10/2026) contiene el heap 4-ario. El banco posterior registra sus operaciones y tiempos frente al binario; no registra fallos de caché.
 
 \subsubsection{Hito 3: Fibonacci Heap y consolidación}
-El commit \texttt{72df976} (04/10/2026) incluye el montículo Fibonacci. El código actual amplía el arreglo de consolidación cuando lo necesita y reserva grados según una cota basada en la razón áurea. Sin un registro fechado del fallo original, no se atribuye a una sesión concreta ni a una resolución individual:
+El commit \texttt{221bf21} (04/10/2026) incluye el montículo Fibonacci. El código actual amplía el arreglo de consolidación cuando lo necesita y reserva grados según una cota basada en la razón áurea. Sin un registro fechado del fallo original, no se atribuye a una sesión concreta ni a una resolución individual:
 \begin{equation}
     D(n) = \lfloor \log_\phi(n) \rfloor + 2, \quad \text{donde } \phi = \frac{1 + \sqrt{5}}{2} \approx 1.618034
 \end{equation}
 
 \subsubsection{Hito 4: Verificación Integral mediante Suite AAA y Certificado de Bellman}
-La suite actual contiene 287 casos que cubren contratos de colas, validación de entradas y comprobación de distancias, entre otros módulos. El certificado opera en $O(|V|+|E|)$ para distancias y predecesores, más el costo de recorrer los caminos explícitos cuando se proporcionan. Los resultados sintéticos y OSM se guardaron en el commit \texttt{7922f52} del 28/10/2026.
+La suite actual contiene 346 casos que cubren contratos de colas, validación de entradas y comprobación de distancias, entre otros módulos. El certificado opera en $O(|V|+|E|)$ para distancias y predecesores, más el costo de recorrer los caminos explícitos cuando se proporcionan. Los resultados sintéticos y OSM se guardaron en el commit \texttt{80e2593} del 28/10/2026.
 
 \subsubsection{Evidencias Verificables de Logro del Atributo AG\_C06}
 El repositorio permite verificar componentes técnicos, pero no todas las actividades individuales exigidas por el atributo:

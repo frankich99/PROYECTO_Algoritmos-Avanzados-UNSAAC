@@ -2,7 +2,7 @@
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Versión](https://img.shields.io/badge/versi%C3%B3n-v1.5.0-blue.svg)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-296%20passed-brightgreen.svg)](python/tests/)
+[![Tests](https://img.shields.io/badge/tests-346%20passed-brightgreen.svg)](python/tests/)
 [![Documento](https://img.shields.io/badge/informe-LaTeX-orange.svg)](latex/main.pdf)
 [![Red OSM](https://img.shields.io/badge/OSM-891%20nodos%20%7C%202139%20aristas-informational.svg)](python/data/processed/cusco_osm_drive.json)
 
