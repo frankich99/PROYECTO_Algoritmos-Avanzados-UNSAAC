@@ -1,0 +1,24 @@
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+\label{sec:resumen}
+
+Se comparó Dijkstra con tres colas de prioridad implementadas en Python: heap binario indexado, heap 4-ario y Fibonacci Heap. El banco sintético conserva 1,350 mediciones de tiempo en diez escalas dispersas y densas. El caso aplicado utiliza un \textit{snapshot} vial de OpenStreetMap de Cusco con 891 vértices y 2,139 aristas dirigidas; sus pesos representan tiempos nominales, sin pendientes ni congestión medidas por tramo. Antes de medir cada instancia sintética se compararon las distancias entre colas y frente a NetworkX, y se verificó una solución con el certificado de optimalidad. La suite prueba Bellman-Ford por separado.
+
+El 4-ario registró la menor mediana en siete de las diez escalas sintéticas; el binario, en las otras tres y en la consulta OSM (15.65 ms frente a 19.87 ms del 4-ario). Los IQR de ambos se solapan en todos esos escenarios. Fibonacci tuvo la mayor mediana en las diez escalas, pese a su mejor cota amortizada para \texttt{Decrease-Key}. En la consulta OSM, $A^*$ expandió 7.2\% menos vértices que Dijkstra y conservó el costo de viaje. Estas mediciones describen las instancias y el entorno estudiados; no se midieron fallos de caché ni se obtuvo un ganador aplicable a cualquier red.
+
+\vspace{0.4cm}
+\noindent\textbf{Palabras clave:} Algoritmo de Dijkstra, colas de prioridad, heap binario, heap 4-ario, Fibonacci heap, rutas mínimas, OpenStreetMap, Cusco, $A^*$, análisis de algoritmos.
+
+\newpage
+
+\vspace*{0.5cm}
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+\label{sec:abstract}
+
+We compared three Python priority queues for Dijkstra: an indexed binary heap, a 4-ary heap, and a Fibonacci heap. The synthetic benchmark stores 1,350 timing samples across ten sparse and dense graph scales. The applied case uses an OpenStreetMap snapshot of Cusco with 891 vertices and 2,139 directed edges; its nominal travel times do not include measured slopes or traffic per road segment. Before timing each synthetic graph, the three solutions were compared with each other and with NetworkX, and one solution was checked with an optimality certificate. Bellman-Ford is tested separately in the automated suite.
+
+The 4-ary heap had the lowest median in seven of the ten synthetic scales. The binary heap led in the other three and in the OSM query (15.65 ms versus 19.87 ms for the 4-ary heap). Their interquartile ranges overlap in all these cases. Fibonacci had the highest median at every synthetic scale despite its better amortized bound for \texttt{Decrease-Key}. For the OSM query, $A^*$ expanded 7.2\% fewer vertices than Dijkstra at the same travel cost. These observations apply to the tested graphs and machine; cache misses were not measured.
+
+\vspace{0.4cm}
+\noindent\textbf{Keywords:} Dijkstra's algorithm, priority queues, binary heap, 4-ary heap, Fibonacci heap, shortest paths, OpenStreetMap, Cusco, $A^*$, experimental analysis.

@@ -1,0 +1,212 @@
+\section{Formulación del Problema}
+\label{sec:formulacion}
+
+\subsection{Definición Formal del Grafo Vial Urbano}
+El problema de cálculo de rutas mínimas en la red vial urbana del Cusco se modela formalmente como la determinación de caminos de costo acumulado mínimo sobre un grafo dirigido y ponderado:
+\begin{equation}
+    G = (V, E, w)
+\end{equation}
+donde:
+\begin{itemize}
+    \item $V$ es el conjunto finito de intersecciones viales, nodos semaforizados o cambios de geometría del trazado urbano.
+    \item $E \subseteq V \times V$ es el conjunto de tramos viales dirigidos orientados según el sentido reglamentario de circulación vehicular. Cada par ordenado $(u, v) \in E$ indica que está permitido transitar desde la intersección $u$ hacia la intersección $v$.
+    \item $w: E \to \mathbb{R}_{\ge 0}$ es la función de costo aplicado o impedancia generalizada de viaje asignada a cada arista, cumpliendo estrictamente con la restricción de no negatividad:
+    \begin{equation}
+        w(u, v) \ge 0, \quad \forall (u, v) \in E
+    \end{equation}
+\end{itemize}
+
+\subsection{Parámetros de Entrada, Variables de Decisión y Salidas del Sistema}
+Para un origen designado $s \in V$ y un destino $t \in V$, el problema de camino mínimo consiste en hallar
+\begin{equation}
+    \delta(s, t) = \min_{P \in \mathcal{P}(s, t)} \sum_{e \in P} w(e),
+    \label{eq:objetivo}
+\end{equation}
+donde $\mathcal{P}(s, t)$ es el conjunto de todos los caminos dirigidos simples que conectan $s$ con $t$.
+
+\subsubsection{Variables de Decisión Binarias}
+Bajo el enfoque de optimización en redes, se define para cada arista dirigida $(u, v) \in E$ una variable de flujo binaria:
+\begin{equation}
+    x_{uv} = \begin{cases}
+        1, & \text{si el tramo vial } (u, v) \text{ forma parte del camino mínimo óptimo;} \\
+        0, & \text{en caso contrario.}
+    \end{cases}
+    \label{eq:variables}
+\end{equation}
+
+\subsubsection{Salidas del Sistema}
+El sistema calcula dos estructuras fundamentales:
+\begin{enumerate}
+    \item El vector de distancias mínimas definitivas $d: V \to \mathbb{R}_{\ge 0} \cup \{\infty\}$, donde $d[v] = \delta(s, v)$ representa el costo óptimo desde $s$ hasta $v$.
+    \item El vector de predecesores $\pi: V \to V \cup \{\text{NIL}\}$, que permite reconstruir el camino encontrado por el algoritmo; pueden existir otros caminos con el mismo costo:
+    \begin{equation}
+        P(s, t) = \langle s = v_0, v_1, v_2, \dots, v_k = t \rangle
+    \end{equation}
+\end{enumerate}
+
+\subsection{Restricciones de Conservación de Flujo y No Negatividad}
+El flujo unitario inyectado en el origen $s$ y absorbido en el destino $t$ debe satisfacer el principio de balance de conservación de flujo en cada vértice $u \in V$:
+\begin{equation}
+    \sum_{v: (u, v) \in E} x_{uv} - \sum_{v: (v, u) \in E} x_{vu} = \begin{cases}
+        1, & u = s \text{ (fuente)},\\
+        -1, & u = t \text{ (sumidero)},\\
+        0, & u \in V \setminus \{s, t\} \text{ (nodos de tránsito intermedio)},
+    \end{cases}
+    \label{eq:flujo}
+\end{equation}
+sujeto a las restricciones de integridad y no negatividad de costos:
+\begin{equation}
+    x_{uv} \in \{0, 1\}, \quad w(u, v) \ge 0, \quad \forall (u, v) \in E
+\end{equation}
+La no negatividad de $w$ permite aplicar Dijkstra. Con costos cero puede haber varios caminos óptimos; basta escoger un camino simple.
+
+\subsection{Función Objetivo y Modelo de Costo con Impedancia Andina}
+La función objetivo minimiza el costo total acumulado del recorrido:
+\begin{equation}
+    \min Z = \sum_{(u, v) \in E} w(u, v) \, x_{uv}
+    \label{eq:z}
+\end{equation}
+
+\subsubsection{Formulación de la Impedancia Vial Andina}
+Se usan tres instancias distintas: la red didáctica de seis nodos, con longitudes y pendientes supuestas; el banco sintético, con pesos generados sin unidad física; y el recorte OSM, con longitudes y tiempos nominales guardados. La siguiente fórmula se aplica a los tiempos del ejemplo didáctico. No se aplica a los pesos sintéticos ni a la consulta OSM, que no incorpora pendientes por arista:
+\begin{equation}
+    w(u, v) = \frac{L(u, v)}{v_{\text{nom}}(\tau(u, v))} \cdot \Bigl(1 + \alpha \max\bigl(0, \theta(u, v)\bigr)\Bigr) \cdot m_{\text{clima}} \cdot c_{\text{tráfico}}(\tau(u, v)),
+    \label{eq:costo}
+\end{equation}
+donde:
+\begin{itemize}
+    \item $L(u, v)$ es la longitud física del segmento vial en metros.
+    \item $\tau(u, v)$ representa la tipología de la vía (avenida, calle centro, calle residencial, peatonal restringida).
+    \item $v_{\text{nom}}(\tau)$ es la velocidad supuesta por tipo de vía para el ejemplo didáctico (Tabla~\ref{tab:velocidades}); no equivale a un límite legal ni a velocidad observada.
+    \item $\theta(u, v)$ es la pendiente longitudinal expresada como fracción decimal (por ejemplo, $0.03$ para una gradiente del $3\%$).
+    \item $\alpha = 2.5$ es un coeficiente supuesto para el ejemplo; $\max(0, \theta)$ deja sin penalización las pendientes no positivas.
+    \item $m_{\text{clima}} \ge 1$ es el factor de sensibilidad meteorológica.
+    \item $c_{\text{tráfico}}(\tau) \ge 1$ es el coeficiente de congestión vehicular.
+\end{itemize}
+
+\begin{table}[H]
+    \centering
+    \fontsize{9.5}{11.5}\selectfont
+    \caption{Velocidades supuestas para la instancia didáctica; no usadas en la consulta OSM}
+    \label{tab:velocidades}
+    \begin{tabular}{@{}lrr@{}}
+        \toprule
+        \textbf{Tipo de vía} & \textbf{Velocidad (km/h)} & \textbf{Velocidad (m/s)} \\
+        \midrule
+        Avenida & 35 & 9.72 \\
+        Calle residencial & 25 & 6.94 \\
+        Calle de centro histórico & 15 & 4.17 \\
+        Peatonal restringida & 8 & 2.22 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Variables Meteorológicas}
+El multiplicador $m_{\text{clima}}$ procesa variables atmosféricas mediante el modelo de Open-Meteo consultado para las coordenadas del Cusco ($-13.5165, -71.9788$):
+\begin{equation}
+    m_{\text{clima}} = 1 + c_p \min\left(\frac{P}{P_{\text{ref}}}, 1\right) + c_h \max\left(0, \frac{H - H_0}{100 - H_0}\right) + c_v \left(1 - \min\left(\frac{V}{V_{\text{ref}}}, 1\right)\right) + c_w \min\left(\frac{W}{W_{\text{ref}}}, 1\right),
+    \label{eq:clima_integral}
+\end{equation}
+donde $P$ es la precipitación en mm por intervalo ($P_{\text{ref}}=10$ mm, $c_p=0.20$), $H$ es la humedad relativa en \% ($H_0=65\%$, $c_h=0.08$), $V$ es la visibilidad en metros ($V_{\text{ref}}=10\,000$ m, $c_v=0.15$) y $W$ es la ráfaga en km/h ($W_{\text{ref}}=80$ km/h, $c_w=0.10$). Los coeficientes son supuestos de sensibilidad, no calibración vial. La respuesta de modelo guardada en \texttt{applied\_results.json} indica 28/10/2026 a las 12:30 (hora de Lima), $P=0.1$ mm, $V=8920$ m y $W=40.7$ km/h. No contiene humedad medida: el cargador usa 50\% por defecto, sin efecto sobre el factor resultante $m_{\text{clima}}=1.0691$. El valor proviene de un punto de grilla de Open-Meteo, no de una estación en la ciudad.
+
+\subsubsection{Modelo de Congestión Horaria Hipotético}
+El servicio \texttt{traffic.py} formula multiplicadores por franja y tipo de vía según supuestos analíticos:
+\begin{equation}
+    c_{\text{tráfico}}(\tau) = 1 + \bigl(c_{\text{base}}(t) - 1\bigr) \cdot s(\tau) \cdot \gamma_{\text{sinergia}},
+    \label{eq:trafico}
+\end{equation}
+donde $c_{\text{base}}(t) \in \{1.00, 1.25, 1.65, 2.20\}$ representa niveles horarios supuestos; $s(\tau)$ vale 1.35 para calle céntrica, 1.15 para avenida y 0.95 para residencial; y $\gamma_{\text{sinergia}}=1+0.20\max(0,m_{\text{clima}}-1)$. La consulta OSM guardada usa solo \texttt{travel\_time\_sec} y sensibilidad climática uniforme: no incluye un resultado experimental de congestión.
+
+\subsubsection{Supuestos del Modelo}
+Las semillas y los archivos locales fijan los pesos de cada instancia, pero no sus tiempos de cómputo. Las velocidades de la tabla y el coeficiente de pendiente son supuestos didácticos. En OSM, los tiempos base proceden del \textit{snapshot}; el factor climático uniforme cambia el costo calculado sin cambiar el orden de los caminos. No se evaluó tráfico por tramo en esa consulta.
+
+\subsection{Ejemplo Ilustrativo Resuelto Analíticamente (Red Nuclear de 6 Nodos)}
+Para validar analíticamente el comportamiento del algoritmo, se diseñó la instancia representativa del Centro Histórico del Cusco mostrada en la Figura~\ref{fig:grafo_tikz} y formalizada en la Tabla~\ref{tab:aristas_cusco}, con $|V|=6$ intersecciones y $|E|=9$ tramos viales dirigidos.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2.8cm and 3.5cm,
+        vertex/.style={circle, draw=blue!80, fill=blue!10, very thick, minimum size=1.1cm, font=\bfseries\large},
+        edge_label/.style={font=\small\bfseries, fill=white, inner sep=2pt, rounded corners=2pt},
+        every edge/.style={draw=black!75, -{Latex[length=3mm, width=2mm]}, very thick}
+    ]
+        \node[vertex, fill=green!20, draw=green!70!black] (A) at (0, 3) {A};
+        \node[vertex] (B) at (4, 3) {B};
+        \node[vertex] (C) at (0, 0) {C};
+        \node[vertex] (D) at (8, 3) {D};
+        \node[vertex] (E) at (8, 0) {E};
+        \node[vertex, fill=red!20, draw=red!70!black] (F) at (3.5, -1.8) {F};
+
+        \node[above=0.15cm of A, font=\scriptsize\itshape] {Plaza Mayor};
+        \node[above=0.15cm of B, font=\scriptsize\itshape] {Plaza Regocijo};
+        \node[left=0.15cm of C, font=\scriptsize\itshape] {Qorikancha};
+        \node[above=0.15cm of D, font=\scriptsize\itshape] {San Francisco};
+        \node[right=0.15cm of E, font=\scriptsize\itshape] {Mercado San Pedro};
+        \node[below=0.15cm of F, font=\scriptsize\itshape] {Limacpampa};
+
+        \path (A) edge node[edge_label, above] {180 m} (B);
+        \path (A) edge node[edge_label, left] {450 m} (C);
+        \path (B) edge node[edge_label, above] {220 m} (D);
+        \path (B) edge node[edge_label, right, pos=0.4] {400 m} (C);
+        \path (C) edge node[edge_label, below] {350 m} (F);
+        \path (C) edge node[edge_label, above] {600 m} (E);
+        \path (D) edge node[edge_label, right] {250 m} (E);
+        \path (D) edge node[edge_label, above, sloped] {500 m} (C);
+        \path (E) edge node[edge_label, below, sloped] {700 m} (F);
+    \end{tikzpicture}
+    \caption{Instancia didáctica del Centro Histórico de Cusco ($|V|=6$, $|E|=9$). Longitudes esquemáticas en metros.}
+    \label{fig:grafo_tikz}
+\end{figure}
+
+La Tabla~\ref{tab:aristas_cusco} y la Figura~\ref{fig:grafo_tikz} corresponden a una instancia didáctica. Usamos nombres de calles y lugares reales para facilitar la interpretación, pero no afirmamos que sus longitudes, pendientes o tiempos sean mediciones cartográficas. La red vial real empleada para los resultados aplicados se obtiene por separado desde OpenStreetMap mediante OSMnx.
+
+\input{tablas/tabla_aristas_cusco.tex}
+
+\subsection{Traza Manual Paso a Paso del Algoritmo de Dijkstra ($k=0$ a $k=6$)}
+A continuación, se desarrolla analíticamente la traza paso a paso desde el origen $s = \text{A}$ (Plaza Mayor) bajo la métrica de distancia física para verificación determinista:
+\begin{itemize}
+    \item \textbf{Inicialización ($k=0$):} $d[\text{A}]=0$, $d[v]=\infty$ para todo $v \ne \text{A}$, $\pi[v]=\text{NIL}$, $S=\emptyset$. La cola contiene todos los vértices: $Q = \{(\text{A}, 0), (\text{B}, \infty), (\text{C}, \infty), (\text{D}, \infty), (\text{E}, \infty), (\text{F}, \infty)\}$.
+    \item \textbf{Paso 1 ($k=1$):} Se extrae $u = \text{A}$ ($d[\text{A}]=0$). Vértice permanente: $S = \{\text{A}\}$. Relajación de aristas salientes:
+    \begin{itemize}
+        \item $(A, B)$: $d[\text{A}] + 180 = 180 < d[\text{B}] (\infty) \implies d[\text{B}] \leftarrow 180$, $\pi[\text{B}] \leftarrow \text{A}$, \texttt{Decrease-Key}$(Q, \text{B}, 180)$.
+        \item $(A, C)$: $d[\text{A}] + 450 = 450 < d[\text{C}] (\infty) \implies d[\text{C}] \leftarrow 450$, $\pi[\text{C}] \leftarrow \text{A}$, \texttt{Decrease-Key}$(Q, \text{C}, 450)$.
+    \end{itemize}
+    \item \textbf{Paso 2 ($k=2$):} Se extrae $u = \text{B}$ ($d[\text{B}]=180$). $S = \{\text{A}, \text{B}\}$. Relajaciones:
+    \begin{itemize}
+        \item $(B, D)$: $180 + 220 = 400 < d[\text{D}] (\infty) \implies d[\text{D}] \leftarrow 400$, $\pi[\text{D}] \leftarrow \text{B}$, \texttt{Decrease-Key}$(Q, \text{D}, 400)$.
+        \item $(B, C)$: $180 + 400 = 580 \not< d[\text{C}] (450)$. Se descarta sin cambio.
+    \end{itemize}
+    \item \textbf{Paso 3 ($k=3$):} El mínimo en $Q$ es $u = \text{D}$ ($d[\text{D}]=400$). $S = \{\text{A}, \text{B}, \text{D}\}$. Relajaciones:
+    \begin{itemize}
+        \item $(D, E)$: $400 + 250 = 650 < d[\text{E}] (\infty) \implies d[\text{E}] \leftarrow 650$, $\pi[\text{E}] \leftarrow \text{D}$, \texttt{Decrease-Key}$(Q, \text{E}, 650)$.
+        \item $(D, C)$: $400 + 500 = 900 \not< d[\text{C}] (450)$. Se descarta.
+    \end{itemize}
+    \item \textbf{Paso 4 ($k=4$):} Se extrae $u = \text{C}$ ($d[\text{C}]=450$). $S = \{\text{A}, \text{B}, \text{D}, \text{C}\}$. Relajaciones:
+    \begin{itemize}
+        \item $(C, F)$: $450 + 350 = 800 < d[\text{F}] (\infty) \implies d[\text{F}] \leftarrow 800$, $\pi[\text{F}] \leftarrow \text{C}$, \texttt{Decrease-Key}$(Q, \text{F}, 800)$.
+        \item $(C, E)$: $450 + 600 = 1050 \not< d[\text{E}] (650)$. Se descarta.
+    \end{itemize}
+    \item \textbf{Paso 5 ($k=5$):} Se extrae $u = \text{E}$ ($d[\text{E}]=650$). $S = \{\text{A}, \text{B}, \text{D}, \text{C}, \text{E}\}$. Relajaciones:
+    \begin{itemize}
+        \item $(E, F)$: $650 + 700 = 1350 \not< d[\text{F}] (800)$. Se descarta.
+    \end{itemize}
+    \item \textbf{Paso 6 ($k=6$):} Se extrae el último vértice $u = \text{F}$ ($d[\text{F}]=800$). $S = V$. La cola $Q$ queda vacía. Finaliza la ejecución.
+\end{itemize}
+
+\input{tablas/tabla_traza_detallada.tex}
+
+Con el vector de predecesores $\pi = \{\text{A}: \text{NIL}, \text{B}: \text{A}, \text{C}: \text{A}, \text{D}: \text{B}, \text{E}: \text{D}, \text{F}: \text{C}\}$ se reconstruyen estas rutas mínimas desde A:
+\begin{align}
+    \text{Ruta hacia Mercado San Pedro (E):} & \quad \text{A} \to \text{B} \to \text{D} \to \text{E} \quad (180 + 220 + 250 = 650.0\text{ m}), \\
+    \text{Ruta hacia Plazoleta Limacpampa (F):} & \quad \text{A} \to \text{C} \to \text{F} \quad (450 + 350 = 800.0\text{ m}).
+\end{align}
+Bajo la métrica de tiempo efectivo con impedancia topográfica (Tabla~\ref{tab:aristas_cusco}), los costos son $165.33$ s y $144.45$ s, respectivamente, coincidiendo exactamente con la salida del software (Tabla~\ref{tab:resultados_distancias}).
+
+\input{tablas/tabla_resultados_distancias.tex}
+
+\subsection{Instancia de verificación canónica de CLRS}
+Para comprobar la adhesión a la literatura clásica, el sistema incluye la instancia de caminos mínimos presentada por Cormen et al. (2022, figura 24.6, p. 659). El orden de extracción obtenido por el software es $\langle s, y, z, t, x \rangle$, con distancias definitivas $\langle 0, 5, 7, 8, 9 \rangle$, idénticas a la solución teórica.
+
+\subsection{Red Vial Urbana Real de Cusco (OpenStreetMap)}
+El recorte OSM de conducción se descargó con OSMnx 2.1.1 alrededor de $(-13.5165,-71.9788)$, en un radio de 1,500 m. El \textit{snapshot} \texttt{cusco\_osm\_drive.json} guarda 891 nodos y 2,139 aristas dirigidas (2.40 aristas por vértice). El origen de la consulta es el nodo más próximo al centro indicado, no el centroide del grafo; el destino es el nodo alcanzable de mayor costo base desde ese origen. La ruta calculada contiene 17 vértices, suma 2,810.6 m y tiene un costo estimado de viaje de 387.197 s. Este costo no es el tiempo de cómputo de Dijkstra.

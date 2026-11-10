@@ -1,0 +1,62 @@
+\section{Introducción}
+\label{sec:introduccion}
+
+\subsection{Contexto y Motivación}
+Para estudiar rutas mínimas en una red vial no basta con conocer la distancia entre dos puntos: también importan el sentido de las calles y el costo asignado a cada tramo. En este trabajo comparamos el tiempo de cómputo de tres colas de prioridad dentro de Dijkstra. La red de Cusco sirve como caso de estudio, no como prueba de tiempos de respuesta de servicios de emergencia.
+
+Cusco aporta un ejemplo concreto de calles dirigidas. Se trabajó con una instancia didáctica de seis nodos, cuyas longitudes y pendientes son supuestos, y con un recorte OSM para conducción, que incluye sentidos y longitudes pero no pendientes ni tráfico medidos por arista. Esta separación evita atribuir al caso OSM condiciones que el archivo no registra.
+
+\subsection{Planteamiento del Problema}
+En este trabajo usamos el algoritmo de Dijkstra \parencite{dijkstra1959note} para resolver el problema de caminos mínimos desde un origen único (\textit{Single-Source Shortest Path}, SSSP) en grafos dirigidos con pesos no negativos ($w(e) \ge 0$). La complejidad asintótica depende de la estructura de datos que usamos para administrar los vértices tentativos:
+\begin{equation}
+    T(|V|, |E|) = O(|V| \cdot T_{\text{Extract-Min}} + |E| \cdot T_{\text{Decrease-Key}} + |V| \cdot T_{\text{Insert}})
+\end{equation}
+
+La cota amortizada de $O(|E| + |V| \log |V|)$ para Fibonacci Heap se basa en \textcite{fredman1987fibonacci}. La contrastamos con tiempos de ejecución y conteos de operaciones en Python. No instrumentamos asignaciones ni accesos a caché; las mediciones y el equipo se describen en la Sección~\ref{sec:metodologia}.
+
+El problema de investigación es cómo cambia el tiempo de Dijkstra al sustituir la cola, manteniendo la misma instancia y el mismo algoritmo. Se comparan grafos sintéticos y una consulta vial OSM con tiempo nominal de viaje.
+
+\subsection{Objetivos del Proyecto}
+
+\subsubsection{Objetivo General}
+Implementar y comparar Dijkstra con heap binario indexado, heap 4-ario y Fibonacci Heap en grafos sintéticos y en una consulta OSM de Cusco. Se miden tiempos y operaciones y se comprueban las distancias; no se reporta consumo de memoria medido.
+
+\subsubsection{Objetivos Específicos}
+Siguiendo la metodología de ingeniería de software y análisis de algoritmos, los objetivos específicos se ordenan en cuatro fases secuenciales e integradas:
+\begin{enumerate}
+    \item \textbf{OE1 (Modelar):} Diferenciar el grafo didáctico con pendientes supuestas del \textit{snapshot} OSM con tiempos de viaje nominales y sentidos viales.
+    \item \textbf{OE2 (Implementar):} Construir Dijkstra con tres colas intercambiables y una extensión $A^*$ para consultas punto a punto.
+    \item \textbf{OE3 (Verificar):} Validar analíticamente la correctitud del algoritmo mediante traza manual paso a paso, certificado formal de optimalidad independiente en $O(|V|+|E|)$ y una suite automatizada de pruebas unitarias bajo el patrón Arrange-Act-Assert (AAA), contrastando los resultados contra oráculos canónicos de referencia (NetworkX y Bellman-Ford).
+    \item \textbf{OE4 (Evaluar):} Registrar tiempos de pared y operaciones en redes sintéticas y en una consulta OSM; comparar los resultados con las cotas teóricas, sin atribuir diferencias a caché no medida.
+\end{enumerate}
+
+\subsection{Alcance y Delimitación}
+El proyecto se delimita formalmente en las siguientes dimensiones:
+\begin{itemize}
+    \item \textbf{Delimitación Espacial:} Analizamos dos escalas complementarias: (1) la malla vial nuclear del Centro Histórico del Cusco, empleada para la traza manual y la verificación paso a paso; y (2) la red vial del área central de Cusco, que extrajimos de OpenStreetMap mediante OSMnx \parencite{boeing2025osmnx}, con un radio de 1,500 m, 891 vértices y 2,139 aristas dirigidas. La web permite explorar además un snapshot radial de 3 km, independiente y no usado en el banco canónico.
+    \item \textbf{Delimitación Algorítmica:} Se evalúa el algoritmo de Dijkstra en grafos dirigidos estáticos con costos deterministas no negativos ($w(e) \ge 0$). Como extensión de ruteo punto a punto se integra $A^*$ con heurística consistente. Bellman-Ford y NetworkX operan exclusivamente como oráculos independientes de verificación cruzada.
+    \item \textbf{Alcance del Sistema:} Implementamos la formulación matemática, la solución analítica manual, el núcleo ejecutable en Python 3.12 con interfaz de línea de comandos (CLI), la aplicación web React/TypeScript con API FastAPI, el cuaderno didáctico en Google Colab y la suite automatizada de 287 pruebas con pytest. No reportamos métricas de consumo de memoria porque no las medimos.
+\end{itemize}
+
+\subsection{Control de Versiones y Repositorio Oficial en GitHub}
+Conforme a las directrices de reproducibilidad y trabajo colaborativo del curso, el desarrollo íntegro del proyecto se gestiona bajo el sistema de control de versiones Git y se aloja en el repositorio público oficial:
+\begin{center}
+    \url{https://github.com/frankich99/PROYECTO_Algoritmos-Avanzados-UNSAAC}
+\end{center}
+La organización de ramas adopta un esquema estructurado: la rama \texttt{main} almacena las versiones estables consolidadas, complementada por ramas de desarrollo temáticas por integrante (\texttt{ramaFRANKI}, \texttt{ramaAldo}, \texttt{ramaYeni}, \texttt{RamaRomario}). Los datos experimentales se versionan en \texttt{python/data/processed/} para garantizar reproducibilidad total sin requerir descargas en vivo de APIs externas.
+
+\subsection{Organización del Documento}
+El presente informe técnico se organiza conforme a los requerimientos temáticos del apartado 9 del sílabo:
+La Sección~\ref{sec:introduccion} presenta la introducción, contexto y objetivos.
+La Sección~\ref{sec:fundamentos} detalla los fundamentos teóricos de grafos viales, colas de prioridad con clave disminuible, búsqueda heurística $A^*$, la formalización del patrón de pruebas unitarias Arrange-Act-Assert (AAA), oráculos de verificación y el proceso de aprendizaje autónomo.
+La Sección~\ref{sec:stack} evalúa y justifica el stack tecnológico mediante una matriz multicriterio.
+La Sección~\ref{sec:formulacion} expone la formulación matemática del problema y el modelo de costo cusqueño.
+La Sección~\ref{sec:diseno_algoritmico} formaliza el diseño algorítmico, pseudocódigos, invariantes y complejidades.
+La Sección~\ref{sec:implementacion} detalla la arquitectura modular del software y los componentes implementados.
+La Sección~\ref{sec:pruebas} especifica la estrategia de pruebas unitarias (AAA), oráculos y certificado de optimalidad.
+La Sección~\ref{sec:metodologia} formula las hipótesis, variables y el protocolo de experimentación reproducible.
+La Sección~\ref{sec:resultados} documenta los resultados computacionales del benchmark canónico y la red real OSM.
+La Sección~\ref{sec:discusion} contrasta cotas y mediciones, incluidas las limitaciones para explicar las causas de hardware.
+La Sección~\ref{sec:conclusiones} sintetiza las conclusiones en respuesta a los objetivos planteados y propone trabajo futuro.
+La Sección~\ref{sec:referencias} lista las fuentes académicas bajo norma APA 7ma edición.
+Finalmente, la Sección~\ref{sec:anexos} reúne instrucciones, cronología de Git y matriz de contribuciones; no contiene bitácoras individuales.
