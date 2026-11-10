@@ -1,0 +1,133 @@
+\documentclass[11pt,a4paper]{article}
+
+% Inclusión de configuración y paquetes
+\input{config/packages.tex}
+
+\begin{document}
+
+% =========================================================================
+% PORTADA INSTITUCIONAL - UNSAAC (GRUPO 5)
+% =========================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{-0.5cm}
+    
+    {\fontsize{13}{16}\selectfont \textbf{UNIVERSIDAD NACIONAL DE SAN ANTONIO ABAD DEL CUSCO}}\\[0.25cm]
+    {\fontsize{11}{14}\selectfont \textbf{FACULTAD DE INGENIERÍA ELÉCTRICA,}}\\
+    {\fontsize{11}{14}\selectfont \textbf{ELECTRÓNICA, INFORMÁTICA Y MECÁNICA}}\\[0.25cm]
+    {\fontsize{11}{14}\selectfont \textbf{ESCUELA PROFESIONAL DE INGENIERÍA INFORMÁTICA}}\\
+    {\fontsize{11}{14}\selectfont \textbf{Y DE SISTEMAS}}\\[0.6cm]
+    
+    \includegraphics[width=3.8cm]{figuras/escudo.png}\\[0.5cm]
+    
+    {\fontsize{13}{16}\selectfont \textbf{INFORME TÉCNICO DE INVESTIGACIÓN FORMATIVA}}\\[0.3cm]
+    \rule{\textwidth}{1.2pt}\\[0.35cm]
+    {\fontsize{13}{16.5}\selectfont \textbf{“RUTAS MÍNIMAS CON DISTINTAS COLAS DE PRIORIDAD EN REDES VIALES URBANAS DE LA CIUDAD DEL CUSCO”}}\\[0.25cm]
+    \rule{\textwidth}{1.2pt}\\[0.6cm]
+    
+    \begin{minipage}{0.88\textwidth}
+        \setstretch{1.2}
+        \textbf{Asignatura:} ALGORITMOS AVANZADOS (Semestre 2026-2)\\[0.25cm]
+        \textbf{Docente Responsable:} Ing. Héctor Eduardo Ugarte Rojas\\[0.25cm]
+        \textbf{Identificador:} GRUPO 5\\[0.25cm]
+        \textbf{Integrantes:}\\[0.2cm]
+        \begin{tabularx}{\linewidth}{@{}Xr@{}}
+          \textbullet\quad Choquenaira Quispe, Noe Franklin & 133962\\[0.15cm]
+          \textbullet\quad Porroa Sivana, Yeni Ruth & 120893\\[0.15cm]
+          \textbullet\quad Quispe Rimachi, Romario & 164257\\[0.15cm]
+          \textbullet\quad Yaranga Achahui, Aldo & 103179
+        \end{tabularx}
+    \end{minipage}\\[0.4cm]
+    
+    \vfill
+    {\textbf{Cusco – Perú – 2026}}\\[0.2cm]
+\end{titlepage}
+
+% =========================================================================
+% SECCIONES PRELIMINARES: RESUMEN Y ABSTRACT (NÚMEROS ROMANOS)
+% =========================================================================
+\pagenumbering{roman}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% Resumen y Abstract (aparecen en el índice como secciones preliminares)
+\input{capitulos/01_resumen.tex}
+\newpage
+
+\begingroup
+\setstretch{1.10}
+\setlength{\parskip}{1pt}
+\tableofcontents
+\newpage
+
+\listoffigures
+\vspace{0.6cm}
+\listoftables
+\endgroup
+\newpage
+
+% =========================================================================
+% CUERPO PRINCIPAL DEL INFORME (INICIA EN 1 CON INTRODUCCIÓN)
+% =========================================================================
+\pagenumbering{arabic}
+\setcounter{section}{0}
+
+% Sección 1: Introducción
+\input{capitulos/02_introduccion.tex}
+\newpage
+
+% Sección 2: Fundamentos y aprendizaje autónomo
+\input{capitulos/03_fundamentos_aprendizaje.tex}
+\newpage
+
+% Sección 3: Evaluación y selección del stack tecnológico
+\input{capitulos/04_evaluacion_stack.tex}
+\newpage
+
+% Sección 4: Formulación del problema
+\input{capitulos/05_formulacion_problema.tex}
+\newpage
+
+% Sección 5: Diseño algorítmico
+\input{capitulos/06_diseno_algoritmico.tex}
+\newpage
+
+% Sección 6: Diseño e implementación del sistema
+\input{capitulos/07_diseno_implementacion.tex}
+\newpage
+
+% Sección 7: Estrategia de pruebas
+\input{capitulos/08_estrategia_pruebas.tex}
+\newpage
+
+% Sección 8: Metodología experimental
+\input{capitulos/09_metodologia_experimental.tex}
+\newpage
+
+% Sección 9: Resultados
+\input{capitulos/10_resultados_prototipo.tex}
+\newpage
+
+% Sección 10: Discusión crítica
+\input{capitulos/11_discusion_critica.tex}
+\newpage
+
+% Sección 11: Conclusiones y recomendaciones (sin ramificación en el índice)
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\input{capitulos/12_conclusiones_recomendaciones.tex}
+\newpage
+
+% =========================================================================
+% SECCIÓN 12: REFERENCIAS (APA 7ma Edición)
+% =========================================================================
+\section{Referencias}
+\label{sec:referencias}
+\printbibliography[heading=none]
+\newpage
+
+% =========================================================================
+% SECCIÓN 13: ANEXOS (sin ramificación en el índice)
+% =========================================================================
+\input{capitulos/14_anexos.tex}
+
+\end{document}

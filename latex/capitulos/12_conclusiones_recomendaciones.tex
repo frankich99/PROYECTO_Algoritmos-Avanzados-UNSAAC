@@ -1,0 +1,47 @@
+\section{Conclusiones y Recomendaciones}
+\label{sec:conclusiones}
+
+\subsection*{Balance de Objetivos Específicos (OE1--OE4)}
+El trabajo permite resumir los cuatro objetivos así:
+\begin{enumerate}
+    \item \textbf{OE1 (Modelar):} Se implementaron dos ámbitos distintos: una instancia didáctica con pendientes supuestas y un \textit{snapshot} OSM sin pendientes medidas ni congestión por arista. El escenario climático escala de manera uniforme los tiempos base.
+    \item \textbf{OE2 (Implementar):} Dijkstra utiliza tres colas intercambiables en Python; $A^*$ se evalúa aparte para la consulta punto a punto.
+    \item \textbf{OE3 (Verificar):} La suite documentada reúne 287 pruebas. El banco compara las tres colas y NetworkX antes de medir, y certifica una solución por instancia; Bellman-Ford se usa en las pruebas independientes. La ejecución de la suite debe comprobarse en el entorno en que se presente el sistema.
+    \item \textbf{OE4 (Evaluar):} El banco conservado tiene 1,350 muestras temporales y diez escalas sintéticas. La consulta OSM añade 30 mediciones por cola para un par origen--destino. Los resultados no permiten extrapolar el orden de rendimiento a otras máquinas o redes.
+\end{enumerate}
+
+\subsection*{Respuesta a las Preguntas de Investigación}
+\noindent\textbf{PI1. ¿Qué cola minimiza el tiempo de pared y cómo evoluciona con la escala?}\\[0.15cm]
+El 4-ario registró la menor mediana en 7 de 10 escalas sintéticas; el binario, en 3 de 10 y en la consulta OSM (15.65 ms). Los IQR de ambos se solapan en todas las escalas y en OSM. Ni el tamaño por sí solo ni la cota asintótica permiten fijar un ganador general. No se midieron fallos de caché.
+
+\noindent\textbf{PI2. ¿Se traduce la ventaja asintótica del Fibonacci Heap en tiempo de pared?}\\[0.15cm]
+No en las escalas evaluadas con esta implementación Python. La mediana del Fibonacci Heap fue entre 1.05 y 1.59 veces la del binario. Con 5,000 vértices dispersos contó 19.5\% menos comparaciones de claves, pero eso no bastó para reducir el tiempo de cómputo. El origen exacto de la diferencia requiere perfilado adicional.
+
+\noindent\textbf{PI3. ¿Qué aportan la extensión $A^*$ y el análisis de sensibilidad climática?}\\[0.15cm]
+En el par OSM evaluado, $A^*$ expandió 7.2\% menos vértices y conservó el costo de ruta de Dijkstra. El factor climático uniforme aumentó el tiempo de viaje calculado un 6.91\% sin cambiar la ruta; no representa congestión observada por tramo.
+
+\subsection*{Conclusión Principal y Síntesis de Contribuciones}
+Los tiempos observados dependen de la implementación, la instancia y el equipo de medición. Para volver a contrastarlos se conservan:
+\begin{itemize}
+    \item Un núcleo algorítmico desacoplado, modular y reproducible en Python 3.12 con tres colas intercambiables y extensión $A^*$.
+    \item Un certificado de optimalidad que comprueba aristas y predecesores; su costo es $O(|V|+|E|+L)$ si también se verifican caminos explícitos de longitud total $L$.
+    \item Una suite de 287 pruebas unitarias y de integración documentadas en \texttt{python/tests/}.
+    \item Una aplicación interactiva web React/TypeScript con API FastAPI y MapLibre que combina cálculos de ruteo, exploración cartográfica y telemetría de rendimiento.
+\end{itemize}
+
+\subsection*{Recomendaciones para la Práctica de Ingeniería}
+\begin{enumerate}
+    \item \textbf{Colas:} Empezar por el binario y medir también el 4-ario sobre las instancias concretas de uso. No descartar otras implementaciones de Fibonacci sin evaluarlas.
+    \item \textbf{Navegación punto a punto:} Comprobar la consistencia de la heurística antes de usar $A^*$ y medir su tiempo si se quiere comparar rendimiento.
+    \item \textbf{Medición:} Conservar muestras, semillas y entorno; usar mediana e IQR sin tratarlos como pruebas de significación estadística.
+\end{enumerate}
+
+\subsection*{Líneas de Trabajo Futuro y Posibles Extensiones}
+\begin{enumerate}
+    \item Repetir el banco con implementaciones en otros lenguajes y equipos para comprobar si se mantiene el orden de tiempos observado en Python.
+    \item Perfilar asignaciones y accesos a memoria, y medir fallos de caché con herramientas apropiadas antes de atribuirles una diferencia de rendimiento.
+    \item Calibrar coeficientes de impedancia meteorológica y congestión diferenciados por segmento vial a partir de aforos de tránsito en tiempo real en la ciudad del Cusco.
+\end{enumerate}
+
+\subsection*{Lecciones Aprendidas}
+El análisis separa corrección, tiempo de cómputo y costo estimado de viaje. Los contadores de operaciones ayudan a interpretar los resultados, pero no reemplazan mediciones de memoria o caché. El aprendizaje de cada integrante requiere registros propios.
