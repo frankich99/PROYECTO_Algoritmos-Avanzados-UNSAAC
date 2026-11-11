@@ -1,5 +1,6 @@
 """
 Montículo de Fibonacci (Fredman & Tarjan, 1987). Alternativa del Avance 5.
+Responsable de implementación: Romario Quispe Rimachi (164257) - RamaRomario.
 
 Insert O(1), Decrease-Key O(1) amortizado, Extract-Min O(log V) amortizado.
 
