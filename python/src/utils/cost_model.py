@@ -1,8 +1,11 @@
-"""
-Modelo de costo para ruteo urbano en Cusco. Calcula impedancia considerando
-longitud, pendiente topográfica (alpha=2.5) y tipo de vía.
+"""Modelo transparente de distancia y tiempo para tramos viales.
+
+La penalización de pendiente es un supuesto de escenario, no una calibración
+de tránsito. Los experimentos de colas usan los mismos pesos para todas las
+alternativas; por tanto, el modelo de costo no favorece a ninguna estructura.
 """
 from dataclasses import dataclass
+import math
 from typing import Dict, Tuple
 
 @dataclass
@@ -17,10 +20,10 @@ class RoadSegment:
 
 class CuscoCostModel:
     """
-    C(u,v) = T_base * (1 + alpha * max(0, pendiente/100))
+    C(u,v) = T_base * (1 + alpha * max(0, pendiente/100)) * weather_multiplier * traffic_multiplier
     T_base = longitud / velocidad_nominal
     """
-    # Velocidades promedio efectivas según tipo de vía en km/h
+    # Velocidades nominales supuestas según tipo de vía en km/h.
     NOMINAL_SPEED_KMH = {
         'avenida': 35.0,            # Av. El Sol, Av. Tullumayo, Av. de la Cultura
         'calle_residencial': 25.0,  # Calles fuera del casco monumental
@@ -28,15 +31,32 @@ class CuscoCostModel:
         'peatonal': 8.0             # Tramos como Portal de Panes o Loreto con paso restringido
     }
 
-    ALPHA_SLOPE = 2.5  # Sensibilidad a la pendiente (fuerte penalización para vehículos de emergencia en subidas)
+    ALPHA_SLOPE = 2.5
 
     @classmethod
-    def calculate_cost(cls, segment: RoadSegment, metric: str = 'time') -> float:
+    def calculate_cost(
+        cls,
+        segment: RoadSegment,
+        metric: str = 'time',
+        weather_multiplier: float = 1.0,
+        traffic_multiplier: float = 1.0,
+    ) -> float:
         """
         Calcula el costo del tramo según la métrica elegida:
         - 'distance': Retorna la distancia física pura en metros.
-        - 'time': Retorna el tiempo de viaje estimado en segundos (impedancia de emergencia).
+        - 'time': Retorna el tiempo de viaje estimado en segundos (con pendiente, clima y tráfico).
         """
+        values = (segment.length_m, segment.gradient_pct, weather_multiplier, traffic_multiplier)
+        if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) for value in values):
+            raise ValueError("Longitud, pendiente y multiplicadores deben ser números finitos.")
+        if segment.length_m < 0:
+            raise ValueError("La longitud del tramo no puede ser negativa.")
+        if metric not in ("distance", "time"):
+            raise ValueError(f"Métrica no soportada: {metric!r}.")
+        if weather_multiplier < 1.0:
+            raise ValueError("El multiplicador meteorológico debe ser >= 1.0.")
+        if traffic_multiplier < 1.0:
+            raise ValueError("El multiplicador de congestión debe ser >= 1.0.")
         if metric == 'distance':
             return segment.length_m
 
@@ -48,5 +68,5 @@ class CuscoCostModel:
         # Penalización por pendiente positiva (cuesta arriba en la topografía cusqueña)
         slope_penalty = 1.0 + cls.ALPHA_SLOPE * max(0.0, segment.gradient_pct / 100.0)
 
-        total_time_sec = t_base_sec * slope_penalty
+        total_time_sec = t_base_sec * slope_penalty * weather_multiplier * traffic_multiplier
         return round(total_time_sec, 2)
