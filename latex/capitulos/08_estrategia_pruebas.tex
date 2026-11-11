@@ -1,0 +1,105 @@
+\section{Estrategia de Pruebas}
+\label{sec:pruebas}
+
+\subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
+La suite con \texttt{pytest} contiene 346 casos (verificación del 08/11/2026). El patrón \textbf{Arrange--Act--Assert (AAA)} ayuda a distinguir preparación, ejecución y comprobación en los casos; no se verificó que cada uno de los 346 esté escrito con esa misma estructura. La Sección~\ref{sec:fundamentos_aaa} explica el patrón:
+\begin{itemize}
+    \item \textbf{Arrange (Organizar):} Configuración del entorno determinista, definición de semillas pseudoaleatorias fijas, instanciación del grafo de prueba o cola concreta y declaración explícita de los valores esperados.
+    \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{dijkstra\_solver}, \texttt{a\_star\_solver}, operaciones primitivas de cola o comandos de la CLI).
+    \item \textbf{Assert (Comprobar):} Comparación de distancias con tolerancia numérica, invariantes de colas, excepciones esperadas y códigos de salida según el caso.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption={Comando de ejecución de la suite automatizada completa}]
+python -m pytest python/tests -q
+\end{lstlisting}
+
+\subsection{Tipología y Cobertura de la Suite Automatizada (346 Pruebas)}
+La suite reúne 346 pruebas automatizadas en las categorías de las Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}. Esta clasificación no equivale a un porcentaje de cobertura de código, que no se midió.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Cobertura de las pruebas automatizadas por categoría funcional}
+    \label{tab:categorias_prueba}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{4.0cm} X@{}}
+        \toprule
+        \textbf{Categoría} & \textbf{Módulos de Prueba} & \textbf{Casos y Propiedades Evaluadas} \\
+        \midrule
+        Pruebas unitarias & \texttt{test\_priority\_queues.py}, \texttt{test\_dijkstra.py} & Invariantes de montículo, \texttt{sift-up}, \texttt{sift-down}, cortes en cascada, consolidación dinámica y contratos abstractos. \\
+        Pruebas de integración & \texttt{test\_cli.py}, \texttt{test\_osm\_loader.py}, \texttt{test\_weather.py}, \texttt{test\_web\_api.py} & Pipeline CLI, ingesta OSMnx, respaldo offline de clima, contratos de la API FastAPI y validación de coberturas OSM. \\
+        Validación cruzada & \texttt{test\_equivalence.py}, \texttt{test\_validation\_io.py} & Comparación contra Bellman-Ford, Dijkstra ingenuo, NetworkX y certificado de optimalidad. \\
+        Casos límite & \texttt{test\_dijkstra\_manual.py}, \texttt{test\_dijkstra.py} & Grafo unitario, componentes disjuntas, lazos, aristas paralelas, costos cero y pesos extremos. \\
+        Casos adversos & \texttt{test\_validation\_io.py}, \texttt{test\_priority\_queues.py}, \texttt{test\_a\_star.py} & Pesos negativos, ciclos negativos, archivos corruptos, claves no numéricas y heurísticas inadmisibles. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \caption{Distribución modular de la suite de 346 pruebas}
+    \label{tab:suite_pruebas}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.3cm} r >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Archivo de Prueba} & \textbf{Cantidad} & \textbf{Propósito y Aserciones} \\
+        \midrule
+        \texttt{test\_priority\_queues.py} & 61 & Contrato polimórfico común, orden estricto de extracción, \texttt{decrease\_key} y estrés con \texttt{heapq}. \\
+        \texttt{test\_equivalence.py} & 48 & Equivalencia matemática de distancias con Bellman-Ford, NetworkX y Dijkstra en 40 grafos. \\
+        \texttt{test\_validation\_io.py} & 45 & Detección de JSON corruptos, entradas adversas y validación del certificado formal. \\
+        \texttt{test\_dijkstra\_manual.py} & 36 & Traza analítica de Cusco, instancia de CLRS (fig. 24.6), nodos aislados y lazos. \\
+        \texttt{test\_cli.py} & 25 & Comandos de consola, códigos de salida (0, 1, 2) y ciclo generación--exportación. \\
+        \texttt{test\_dijkstra.py} & 11 & Casos base de SSSP, límites y equivalencia a escala. \\
+        \texttt{test\_a\_star.py} & 8 & Poda de búsqueda, admisibilidad, consistencia y fallback cuando no hay coordenadas. \\
+        \texttt{test\_weather.py} & 12 & Servicio climático, respuestas simuladas, manejo de 401 y modo desconectado. \\
+        \texttt{test\_web\_api.py} & 27 & Contratos de la API FastAPI, validación de coberturas, geometría OSM y escenarios uniformes. \\
+        \texttt{test\_traffic.py} & 11 & Escenarios horarios y factores de congestión vial. \\
+        \texttt{test\_osm\_loader.py} & 4 & Carga determinista de OpenStreetMap y serialización JSON. \\
+        \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas (mediana e IQR) y estructura del benchmark. \\
+        \texttt{test\_applied\_analysis.py} & 3 & Consulta sobre la red real de Cusco y sensibilidad ambiental. \\
+        \texttt{test\_delivery\_pipeline.py} & 48 & Referencia exhaustiva en grafos pequeños con semillas, flujo HTTP generar--validar--resolver--verificar y rechazo de entradas no finitas en el modelo de costo. \\
+        \texttt{test\_delivery\_report.py} & 2 & Resumen JUnit que separa éxitos, fallos y omisiones; un informe vacío no se presenta como éxito. \\
+        \texttt{test\_provider\_keys.py} & 1 & Lectura de claves desde \texttt{.env} local y sobrescritura por variable de proceso, sin publicarlas. \\
+        \midrule
+        \textbf{Total} & \textbf{346} & Casos recolectados por \texttt{pytest} el 08/11/2026; comprobar la ejecución en el entorno de evaluación. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Metodología de Verificación y Oráculos Independientes}
+La suite emplea varias referencias en casos distintos; el banco sintético contrasta además con NetworkX antes de cronometrar. No se ejecutan todos los oráculos por cada muestra de tiempo:
+\begin{enumerate}
+    \item \textbf{Algoritmo de Bellman-Ford:} Implementación pura de $O(|V||E|)$ tolerante a costos negativos y capaz de diagnosticar ciclos negativos. Se utiliza en 40 grafos aleatorios con topologías y densidades diversas.
+    \item \textbf{Dijkstra sobre Arreglo no Ordenado:} Algoritmo determinista $O(|V|^2+|E|)$ que no emplea estructuras de árbol ni montículos, confirmando que la lógica de prioridades no perturba las distancias.
+    \item \textbf{NetworkX:} Referencia externa para distancias en pruebas y en las 30 instancias sintéticas del banco, antes de medirlas.
+    \item \textbf{Instancias resueltas analíticamente a mano:} Contraste contra la traza de seis nodos de Cusco (Sección~\ref{sec:formulacion}) y la instancia presentada por Cormen et al. (2022, figura 24.6, p. 659).
+\end{enumerate}
+
+\subsection{Certificado de Optimalidad de Bellman}
+Para comprobar la salida sin repetir Dijkstra, el certificador examina distancias, aristas y predecesores; si se suministran caminos explícitos, también los recorre:
+\begin{enumerate}
+    \item \textbf{Distancia al origen:} $d[s] = 0.0$.
+    \item \textbf{Ausencia de relajaciones pendientes:} Para toda arista dirigida $(u, v) \in E$ con $d[u] < \infty$, se comprueba, dentro de la tolerancia numérica:
+    \begin{equation}
+        d[v] \le d[u] + w(u, v)
+    \end{equation}
+    de modo que no quede una arista que reduzca el costo registrado.
+    \item \textbf{Predecesores:} Para cada vértice alcanzable $v\ne s$, la cadena de aristas ajustadas ($d[v]\approx d[\pi[v]]+w(\pi[v],v)$) debe terminar en $s$ y no formar ciclos.
+    \item \textbf{Trayectorias, si se incluyen:} Se comprueban extremos, aristas existentes y costo, con tolerancia numérica frente a $d[v]$.
+\end{enumerate}
+La comprobación sin caminos explícitos cuesta $O(|V|+|E|)$. Si se entregan caminos para todos los destinos, cuesta además $O(L)$, donde $L$ es la suma de sus longitudes.
+
+\subsection{Casos Límite, Condiciones Adversas y Pruebas de Regresión}
+La suite de pruebas incluye escenarios extremos diseñados para someter al sistema a condiciones no nominales:
+\begin{itemize}
+    \item \textbf{Casos límite:} Grafos unitarios ($|V|=1, |E|=0$), orígenes aislados sin aristas salientes, componentes disjuntas inalcanzables ($d[v]=\infty$), lazos dirigidos ($(u, u)$), aristas paralelas múltiples con distintos costos, aristas de costo cero y aristas con pesos extremos ($10^{12}$ y $10^{-9}$).
+    \item \textbf{Casos adversos:} Entradas con pesos negativos, grafos con ciclos negativos (detectados por Bellman-Ford y rechazados por Dijkstra), JSONs con sintaxis rota, claves NaN, cadenas de texto o nulas, e intentos de incremento de clave en \texttt{decrease\_key}.
+    \item \textbf{Pruebas de $A^*$:} Se rechazan heurísticas personalizadas negativas, no finitas o inconsistentes; si faltan coordenadas para la heurística automática, se usa $h=0$.
+\end{itemize}
+
+\subsection{Pruebas de Integración y Funcionamiento Desconectado}
+La suite incluye pruebas de carga del \textit{snapshot} OSM, clientes meteorológicos simulados y una prueba de humo de la aplicación mediante \texttt{AppTest}. Estas comprobaciones no sustituyen una instalación limpia ni una prueba de APIs externas en vivo.
+
+\subsection{Criterios de Aceptación y Calidad del Software}
+El control técnico requiere ejecutar \texttt{python -m pytest python/tests -q}, comprobar los certificados y la equivalencia de distancias, y probar CLI y aplicación sin red. En el banco, la verificación de la instancia precede al cronometraje; no se certifica de nuevo cada muestra temporal. La bitácora y la presentación requieren evidencias distintas de una salida de pruebas.
