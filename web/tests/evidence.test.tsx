@@ -24,7 +24,7 @@ it('mapea los siete productos y enlaza la complejidad', async () => {
   expect(screen.getByRole('link', { name: 'Pruebas automatizadas' })).toHaveAttribute('href', '#entrega-pruebas')
   await userEvent.click(screen.getByRole('button', { name: 'Ver análisis de complejidad y modelo' }))
   expect(method).toHaveBeenCalledOnce()
-  await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Filtrar por rama' }), 'Autor de fixture')
+  await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Filtrar por autor' }), 'Autor de fixture')
   expect(screen.getByText('Cambio de prueba')).toBeInTheDocument()
   expect(screen.getByText(/no un porcentaje de cobertura/)).toBeInTheDocument()
 })
