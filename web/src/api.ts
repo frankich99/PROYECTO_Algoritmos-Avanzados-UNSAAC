@@ -92,7 +92,9 @@ export async function api<T>(path: string, body?: unknown, signal?: AbortSignal)
     const detail = payload && typeof payload === 'object' && 'detail' in payload ? payload.detail : null
     const message = typeof detail === 'string' ? detail : Array.isArray(detail) ?
       detail.map(item => item && typeof item === 'object' && 'msg' in item ? String(item.msg) : 'Entrada no válida').join('; ') :
-      `La API devolvió el estado ${response.status}.`
+      response.status >= 500 ?
+        `No se pudo conectar con el servidor backend (HTTP ${response.status}). Si estás en local, comprueba que FastAPI esté iniciado; si estás en línea, reintenta en unos segundos.` :
+        `La API devolvió el estado ${response.status}.`
     throw new Error(message)
   }
   return (await response.json()) as T

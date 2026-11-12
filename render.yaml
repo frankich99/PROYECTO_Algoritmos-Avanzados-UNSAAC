@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: rutas-cusco-unsaac
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: RUTAS_CORS_ORIGINS
+        value: https://frankich99.github.io
+    buildFilter:
+      paths:
+        - Dockerfile
+        - .dockerignore
+        - render.yaml
+        - VERSION
+        - python/requirements-runtime.txt
+        - python/web_api.py
+        - python/src/**
+        - python/data/processed/**
+        - python/data/instances/**
+        - web/package.json
+        - web/package-lock.json
+        - web/index.html
+        - web/tsconfig.json
+        - web/vite.config.ts
+        - web/src/**
+        - web/public/**
+      ignoredPaths:
+        - python/tests/**
+        - web/tests/**
+        - docs/**
+        - latex/**

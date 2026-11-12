@@ -79,18 +79,26 @@ docker run --rm -p 8000:8000 -e PORT=8000 rutas-cusco:1.5.0
 
 Abrir <http://127.0.0.1:8000/>.
 
-## 4. Render o Railway
+## 4. Render, Railway o Docker directo desde la raíz
 
-1. Suba el contenido de `dist_publicable/rutas-cusco-v1.5.0/` a un repositorio
-   (o conecte el repositorio del proyecto y use el `Dockerfile`).
-2. Comando de arranque:
-   `uvicorn web_api:app --app-dir python --host 0.0.0.0 --port $PORT`.
-3. Variables de entorno:
-   - `PORT`: la asigna el proveedor.
-    - `RUTAS_CORS_ORIGINS`: solo si la web se sirve desde otro dominio.
-    - `RUTAS_WEB_DIST`: solo si el build está en otra ruta.
-    - `OPENWEATHERMAP_API_KEY` y `TOMTOM_API_KEY`: solo en el servidor, si se usarán esos proveedores.
-4. Verifique `/api/v1/health` y `/api/v1/version` después del despliegue.
+El repositorio incluye en la raíz `Dockerfile`, `.dockerignore`, `render.yaml` y
+`python/requirements-runtime.txt` para construir la interfaz (`web/dist`) y
+arrancar FastAPI en un solo servicio HTTPS sin dependencias de laboratorio:
+
+1. **En Render (Blueprint, recomendado):**
+   - **New + → Blueprint** → seleccione el repositorio → **Apply** (plan `free`).
+   - Render compila el `Dockerfile` automáticamente en cada `push` a `main` que
+     modifique `web/`, `python/src/`, `python/web_api.py` o `Dockerfile`.
+   - Expone la web completa y la API en el mismo origen (`https://...onrender.com`),
+     con verificación de salud en `/api/v1/health`.
+2. **Con el paquete publicable o servicio manual:**
+   - Alternativamente, suba el contenido de `dist_publicable/rutas-cusco-v1.5.0/`
+     o configure el comando de arranque:
+     `uvicorn web_api:app --app-dir python --host 0.0.0.0 --port $PORT`.
+   - Variables de entorno opcionales en el servicio:
+     - `RUTAS_CORS_ORIGINS`: por defecto en `render.yaml` permite `https://frankich99.github.io` si desea enlazar también GitHub Pages.
+     - `OPENWEATHERMAP_API_KEY` y `TOMTOM_API_KEY`: solo en el servidor, si se usarán esos proveedores.
+3. Verifique `/api/v1/health` y `/api/v1/version` después del despliegue.
 
 El `Procfile` incluido contiene el comando de arranque para proveedores que lo
 reconocen. En Railway también puede configurarse manualmente.
