@@ -41,8 +41,8 @@ export default function EvidencePage({ onMethod }: { onMethod: () => void }) {
     return () => controller.abort()
   }, [attempt])
   const normalizeBranch = (name: string) => {
-    if (name === 'Grupo 5 - Algoritmos Avanzados' || name === 'Noe Choquenaira' || name === 'ramaFRANKI') return 'ramaFRANKI'
-    if (name === 'Aldo Yaranga' || name === 'ramaAldo') return 'ramaAldo'
+    if (name === 'Grupo 5 - Algoritmos Avanzados' || name === 'Noe Choquenaira' || name === 'Noe Franklin Choquenaira Quispe' || name === 'ramaFRANKI' || name === 'frankich99') return 'ramaFRANKI'
+    if (name === 'Aldo Yaranga' || name === 'aldobaz01' || name === 'ramaAldo') return 'ramaAldo'
     if (name === 'Yeni Porroa' || name === 'ramaYeni') return 'ramaYeni'
     if (name === 'Romario Quispe' || name === 'RamaRomario') return 'RamaRomario'
     return name

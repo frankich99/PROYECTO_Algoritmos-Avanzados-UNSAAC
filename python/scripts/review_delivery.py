@@ -67,8 +67,11 @@ def main():
     branch_map = {
         "Grupo 5 - Algoritmos Avanzados": "ramaFRANKI",
         "Noe Choquenaira": "ramaFRANKI",
+        "Noe Franklin Choquenaira Quispe": "ramaFRANKI",
         "ramaFRANKI": "ramaFRANKI",
+        "frankich99": "ramaFRANKI",
         "Aldo Yaranga": "ramaAldo",
+        "aldobaz01": "ramaAldo",
         "ramaAldo": "ramaAldo",
         "Yeni Porroa": "ramaYeni",
         "ramaYeni": "ramaYeni",
@@ -116,11 +119,11 @@ def main():
                  "- Pendientes: actas y reflexiones individuales auténticas, instalación limpia, PDF recompilado y defensa."]
     bitacora_text = "\n".join(bitacora) + "\n"
     (ROOT / "docs/BITACORA_GITHUB.md").write_text(bitacora_text, encoding="utf-8")
-    for folder in (ROOT / "python/data/processed", ROOT / "web/public/data", ROOT / "data"):
+    for folder in (ROOT / "python/data/processed", ROOT / "web/public/data", ROOT / "data", ROOT / "web/dist/data"):
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "delivery_evidence.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
         (folder / "delivery_pilot.json").write_text(json.dumps(pilot, ensure_ascii=False, indent=2), encoding="utf-8")
-    for folder in (ROOT / "web/public/data", ROOT / "data"):
+    for folder in (ROOT / "web/public/data", ROOT / "data", ROOT / "web/dist/data"):
         (folder / "bitacora_github.md").write_text(bitacora_text, encoding="utf-8")
         (folder / "segunda_entrega.md").write_text((ROOT / "docs/SEGUNDA_ENTREGA.md").read_text(encoding="utf-8"), encoding="utf-8")
     print(f"Evidencia guardada: {python_tests['passed']} Python, {web_tests['passed']} web; {sum(row['sample_count'] for row in rows)} tiempos piloto; {len(commits)} commits.")

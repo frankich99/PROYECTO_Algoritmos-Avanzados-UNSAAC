@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-11-09T04:06:22.644702+00:00",
+  "generated_at_utc": "2026-11-12T14:16:06.264902+00:00",
   "git": {
-    "head": "0f163098f88621f17feb336d678591e2c1efe330",
-    "branch": "ramaFRANKI",
-    "dirty": false,
+    "head": "adbaa59c9dc17c7255c35e8e13d9c516f734fb3c",
+    "branch": "main",
+    "dirty": true,
     "github_head": null,
     "github_checked_at": null
   },
   "tests": {
     "python": {
-      "passed": 346,
+      "passed": 347,
       "failed": 0,
       "skipped": 0,
-      "seconds": 43.183,
+      "seconds": 46.17,
       "modules": [
         {
           "name": "python.tests.test_a_star",
@@ -106,6 +106,12 @@
           "skipped": 0
         },
         {
+          "name": "python.tests.test_runtime_deploy",
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        {
           "name": "python.tests.test_traffic",
           "passed": 11,
           "failed": 0,
@@ -138,7 +144,7 @@
     }
   },
   "pilot": {
-    "generated_at_utc": "2026-11-09T04:06:22.306070+00:00",
+    "generated_at_utc": "2026-11-12T14:16:05.929185+00:00",
     "protocol": {
       "clock": "time.perf_counter_ns",
       "gc": "desactivado durante cada muestra",
@@ -161,9 +167,9 @@
         "queue": "4ary_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 281.7,
-        "q1_us": 260.1,
-        "q3_us": 295.975,
+        "median_us": 250.75,
+        "q1_us": 247.875,
+        "q3_us": 255.7,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -175,9 +181,9 @@
         "queue": "binary_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 282.85,
-        "q1_us": 265.15,
-        "q3_us": 296.35,
+        "median_us": 252.25,
+        "q1_us": 234.3,
+        "q3_us": 253.775,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -189,9 +195,9 @@
         "queue": "fibonacci_heap",
         "nodes": 30,
         "edges": 70,
-        "median_us": 421.15,
-        "q1_us": 397.1,
-        "q3_us": 446.6,
+        "median_us": 386.5,
+        "q1_us": 378.1,
+        "q3_us": 388.7,
         "sample_count": 10,
         "instance_seeds": [
           23275,
@@ -203,9 +209,9 @@
         "queue": "4ary_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 599.45,
-        "q1_us": 596.725,
-        "q3_us": 618.2,
+        "median_us": 585.55,
+        "q1_us": 575.225,
+        "q3_us": 601.825,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -217,9 +223,9 @@
         "queue": "binary_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 615.7,
-        "q1_us": 593.9,
-        "q3_us": 641.325,
+        "median_us": 605.7,
+        "q1_us": 592.875,
+        "q3_us": 625.925,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -231,9 +237,9 @@
         "queue": "fibonacci_heap",
         "nodes": 60,
         "edges": 283,
-        "median_us": 997.95,
-        "q1_us": 979.55,
-        "q3_us": 1002.625,
+        "median_us": 973.2,
+        "q1_us": 960.275,
+        "q3_us": 988.325,
         "sample_count": 10,
         "instance_seeds": [
           24205,
@@ -245,9 +251,9 @@
         "queue": "4ary_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 295.35,
-        "q1_us": 272.45,
-        "q3_us": 302.65,
+        "median_us": 258.25,
+        "q1_us": 254.35,
+        "q3_us": 261.8,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -259,9 +265,9 @@
         "queue": "binary_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 292.95,
-        "q1_us": 285.325,
-        "q3_us": 319.125,
+        "median_us": 266.85,
+        "q1_us": 262.05,
+        "q3_us": 271.8,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -273,9 +279,9 @@
         "queue": "fibonacci_heap",
         "nodes": 30,
         "edges": 120,
-        "median_us": 437.0,
-        "q1_us": 424.025,
-        "q3_us": 476.375,
+        "median_us": 397.1,
+        "q1_us": 389.225,
+        "q3_us": 399.9,
         "sample_count": 10,
         "instance_seeds": [
           13275,
@@ -287,9 +293,9 @@
         "queue": "4ary_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 1015.5,
-        "q1_us": 1003.925,
-        "q3_us": 1031.575,
+        "median_us": 973.5,
+        "q1_us": 961.475,
+        "q3_us": 1046.45,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -301,9 +307,9 @@
         "queue": "binary_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 1025.65,
-        "q1_us": 1018.025,
-        "q3_us": 1108.75,
+        "median_us": 994.2,
+        "q1_us": 991.275,
+        "q3_us": 1000.6,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -315,9 +321,9 @@
         "queue": "fibonacci_heap",
         "nodes": 100,
         "edges": 400,
-        "median_us": 1686.6,
-        "q1_us": 1620.1,
-        "q3_us": 1732.025,
+        "median_us": 1616.95,
+        "q1_us": 1591.15,
+        "q3_us": 1653.625,
         "sample_count": 10,
         "instance_seeds": [
           15445,
@@ -329,22 +335,262 @@
   "contributors": [
     {
       "name": "ramaFRANKI",
-      "count": 58
-    },
-    {
-      "name": "RamaRomario",
-      "count": 8
+      "count": 70
     },
     {
       "name": "ramaAldo",
-      "count": 8
+      "count": 22
+    },
+    {
+      "name": "RamaRomario",
+      "count": 19
     },
     {
       "name": "ramaYeni",
-      "count": 7
+      "count": 10
     }
   ],
   "commits": [
+    {
+      "hash": "adbaa59c9dc17c7255c35e8e13d9c516f734fb3c",
+      "date": "2026-11-12T09:15:57-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(mobile): incorporar cliente movil Flutter, contrato unificado de API y pruebas multiplataforma"
+    },
+    {
+      "hash": "3280038256c701bff368b5f8bc03de5e55785732",
+      "date": "2026-11-12T06:31:14-05:00",
+      "author": "ramaFRANKI",
+      "subject": "build(deploy): configurar despliegue unificado con Dockerfile y render.yaml"
+    },
+    {
+      "hash": "0b7e9d955fdb5580da439f6846214363a7b0b766",
+      "date": "2026-11-11T09:15:11-05:00",
+      "author": "ramaFRANKI",
+      "subject": "fix(tests): corregir selector de filtro en evidence.test para pase de Vitest"
+    },
+    {
+      "hash": "bea0ebd4b5fb28f824461fbbf9c0abf854c37f27",
+      "date": "2026-11-11T00:17:55-05:00",
+      "author": "RamaRomario",
+      "subject": "Merge branch 'RamaRomario'"
+    },
+    {
+      "hash": "86067fdff631a7ca5f45c2301351626da962f0bd",
+      "date": "2026-11-11T00:01:32-05:00",
+      "author": "ramaYeni",
+      "subject": "Merge branch 'ramaYeni'"
+    },
+    {
+      "hash": "53c4a3b3692ca4f6076e116bf5eab1ce75ac9ce6",
+      "date": "2026-11-11T00:01:32-05:00",
+      "author": "ramaYeni",
+      "subject": "fix(sync): resolver conflictos de archivos generales"
+    },
+    {
+      "hash": "7826748a41422a25da0a78f565347f009d7b7dd5",
+      "date": "2026-11-10T23:32:10-05:00",
+      "author": "RamaRomario",
+      "subject": "docs(latex): redacto capitulos 9 y 10 de metodologia experimental, resultados del prototipo y tabla canonica"
+    },
+    {
+      "hash": "8e7d2cc5468340ec99de43b67fa718fcba73fd16",
+      "date": "2026-11-10T23:26:30-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(web): desarrollo paneles de condiciones en vivo para trafico y clima con configuracion y persistencia local"
+    },
+    {
+      "hash": "1fdf1024b20cdaf97bb8776697c66441ebcd4590",
+      "date": "2026-11-10T23:26:06-05:00",
+      "author": "ramaYeni",
+      "subject": "fix(sync): sincronizar archivos generales del equipo"
+    },
+    {
+      "hash": "dfecf1b20d93a82d6cd9706db6d0126ca8873463",
+      "date": "2026-11-10T23:21:05-05:00",
+      "author": "RamaRomario",
+      "subject": "test(services): desarrollo pruebas unitarias completas para servicios en vivo de trafico, clima y gestor de claves"
+    },
+    {
+      "hash": "2805964a0682be07dde343a5af12f9960a4fcfba",
+      "date": "2026-11-10T23:15:40-05:00",
+      "author": "RamaRomario",
+      "subject": "test(benchmarks): agrego suite de pruebas unitarias para protocolo canonico y analisis aplicado"
+    },
+    {
+      "hash": "62e7b7efedb52c76eca4a44ad725320d098d6164",
+      "date": "2026-11-10T23:09:15-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(benchmarks): implemento modulo de evaluacion experimental aplicada sobre red vial real OSM de Cusco"
+    },
+    {
+      "hash": "4fe54831f8a8941554c970b8d575095a51977514",
+      "date": "2026-11-10T23:03:20-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(benchmarks): diseno protocolo del benchmark canonico de 1350 muestras y utilidades de cronometraje con perf_counter_ns"
+    },
+    {
+      "hash": "2a6c6b2a6ba94b695c375f8aeffa2dae82eb7bcc",
+      "date": "2026-11-10T22:57:45-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(services): desarrollo integracion con Open-Meteo y OpenWeatherMap para condiciones meteorologicas"
+    },
+    {
+      "hash": "672c20d540ea79e5be458a38ef1b90d241bcb810",
+      "date": "2026-11-10T22:52:10-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(services): implemento servicio de trafico vehicular TomTom en vivo con horario local de Cusco y gestor de claves"
+    },
+    {
+      "hash": "c4c0b40cae3abe8691e60154092055ad6ecdf3fe",
+      "date": "2026-11-10T22:47:30-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(cost-model): implemento modelo de impedancia vial urbana con penalizacion por pendiente theta"
+    },
+    {
+      "hash": "28a152ff0d6c407b508340be3b5c96eb7690f719",
+      "date": "2026-11-10T22:42:15-05:00",
+      "author": "RamaRomario",
+      "subject": "feat(datastructures): optimizo y documento monticulo de Fibonacci indexado con insercion y decrease-key O(1) amortizado"
+    },
+    {
+      "hash": "dc0e7e3dded2a55198abd5e9b9fddd5158e7f47f",
+      "date": "2026-11-10T22:28:51-05:00",
+      "author": "ramaAldo",
+      "subject": "docs(latex): redacto capitulo 8 de estrategia de pruebas y aseguramiento de calidad con 346 casos"
+    },
+    {
+      "hash": "4a5c895cba2feace699fccdb2e398ff038d103a3",
+      "date": "2026-11-10T22:28:51-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(colab): incorporo cuaderno interactivo de Google Colab para reproducir el proyecto"
+    },
+    {
+      "hash": "ecb9283848a1557b23d2c9317d20c78a15f47809",
+      "date": "2026-11-10T22:28:51-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(data): agrego instancias de prueba en formatos TXT, CSV y JSON"
+    },
+    {
+      "hash": "bd9ba7065eb6eedfd068202b3c4284f576844b0a",
+      "date": "2026-11-10T22:28:51-05:00",
+      "author": "ramaAldo",
+      "subject": "test(web): implemento suite Vitest para componentes y pestana de evidencias"
+    },
+    {
+      "hash": "02af6fcf03df8863d6c8bb3ef12a672a5e766f52",
+      "date": "2026-11-10T22:28:51-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(web): desarrollo el generador visual de instancias sinteticas en React"
+    },
+    {
+      "hash": "bf9f540c2892bdb87f28155958d8c1951f6a6f68",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "test(cli): actualizo la prueba del comando astar para la comparacion punto a punto"
+    },
+    {
+      "hash": "3ecc38b3ff9283316e4fe16ba03be79dd3076d74",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "test(a-star): implemento pruebas pytest de A* contra Dijkstra y consistencia de la heuristica escalada"
+    },
+    {
+      "hash": "2bc9d03d9b448bcc165d0e34e3e43522f35b54fd",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "fix(export): actualizo la nota de tiempos en el exportador de tablas LaTeX"
+    },
+    {
+      "hash": "1adc6716cbc565363b5bbf6cffcd70acdf5a054a",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(cli): integro comparacion punto a punto de A* contra Dijkstra en el comando astar de la CLI"
+    },
+    {
+      "hash": "07fd16601bb33a219ed5d68c8b7ffa5880ccf769",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(io): agrego coordenadas y metadatos a GraphInstance para la heuristica de A* y la exportacion JSON"
+    },
+    {
+      "hash": "37c1ce19163dcbe71d8744f3001b074f01cc9237",
+      "date": "2026-11-10T22:28:50-05:00",
+      "author": "ramaAldo",
+      "subject": "feat(verification): implemento certificado formal de optimalidad O(V+E) con cadenas de predecesores ancladas en el origen"
+    },
+    {
+      "hash": "ce0ee9a6174ad628986a4d7224b3473abf41c457",
+      "date": "2026-11-10T12:16:27-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): documento diseno algoritmico, arquitectura del sistema, discusion critica y conclusiones"
+    },
+    {
+      "hash": "15c86b36d0a551609accdf613b481326547e2dd4",
+      "date": "2026-11-10T12:16:27-05:00",
+      "author": "ramaFRANKI",
+      "subject": "docs(latex): redacto resumen, introduccion y formulacion matematica formal del problema vial"
+    },
+    {
+      "hash": "570f6022d131e4ec8237f20d338fa3987a7c5376",
+      "date": "2026-11-10T12:16:27-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): integro visor geoespacial interactivo con MapLibre GL JS y renderizado en React"
+    },
+    {
+      "hash": "130f70f44ad961457e8759c72f234bb0a89f1f3b",
+      "date": "2026-11-10T12:16:26-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(web): configuro cliente API tipado en TypeScript y estilos de alto contraste"
+    },
+    {
+      "hash": "afd523a7889dd15a2ad21c2757a99a0d9520b8c9",
+      "date": "2026-11-10T12:16:26-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(api): desarrollo servidor REST con FastAPI y validacion Pydantic para ruteo en vivo"
+    },
+    {
+      "hash": "fe6a950750baf35a4f7e1eebfa1b3abcbb80c5d6",
+      "date": "2026-11-10T12:16:26-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(osm): implemento cargador de red vial de Cusco y geoprocesamiento con snapping Haversine"
+    },
+    {
+      "hash": "c0c51d744e51f2b2b6d30edeb8c23fbde2477c1c",
+      "date": "2026-11-10T12:16:25-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(algorithms): implemento algoritmo A* con factor de escala euclidiano admisible lambda"
+    },
+    {
+      "hash": "bab30dfb6ba0239cc7d03f67df0571ad094f621a",
+      "date": "2026-11-10T12:16:25-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(algorithms): implemento solver de Dijkstra desacoplado con inyeccion polimorfica de colas"
+    },
+    {
+      "hash": "58800ede08a3b42871e25e5d0b6363d303dc7dca",
+      "date": "2026-11-09T00:13:32-05:00",
+      "author": "ramaAldo",
+      "subject": "Merge pull request #1 from frankich99/ramaAldo"
+    },
+    {
+      "hash": "afd31234a42f2db1eb1404eec5226c6d06f8f44c",
+      "date": "2026-11-08T23:20:07-05:00",
+      "author": "ramaAldo",
+      "subject": "docs(latex): actualizar anexos C y E con commits reales, suite de 346 pruebas y recompilar PDF (Aldo)"
+    },
+    {
+      "hash": "5c44a86e8ee8e7641d46889b1b26e626cefdb936",
+      "date": "2026-11-08T23:20:07-05:00",
+      "author": "ramaAldo",
+      "subject": "docs: corregir hashes de commits inexistentes y actualizar conteo a 346 pruebas (Aldo)"
+    },
+    {
+      "hash": "327b4d6cbfb4b5708fc4ffbac013e00f62140d48",
+      "date": "2026-11-08T23:08:31-05:00",
+      "author": "ramaFRANKI",
+      "subject": "feat(entrega): sincronizar bitacora oficial y evidencias con las 4 ramas de trabajo"
+    },
     {
       "hash": "0f163098f88621f17feb336d678591e2c1efe330",
       "date": "2026-11-08T23:05:56-05:00",
@@ -846,7 +1092,7 @@
     "python/src/datastructures/__init__.py": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6",
     "python/src/datastructures/base.py": "1d90c273fd9f95e0980916e481120630f588a5cb7cb758f10bed319555ccd5e4",
     "python/src/datastructures/d_ary_heap.py": "e75d7d101ff4ec78a4f32e186cf712b08800400dfd52df2a3c4e7b2ffc061f30",
-    "python/src/datastructures/fibonacci_heap.py": "246383552270dfdf37a3eeabfa60fb9f83b46e4b6cfa44e8da099ef694bdbcc8",
+    "python/src/datastructures/fibonacci_heap.py": "9728eb50572f45691ff6ea27aed17d79d7ea03ca2c901a711241d63f1b1adcd0",
     "python/src/datastructures/indexed_min_heap.py": "1cd82f04a7d17d68d67f977d139da36addd56f82347ad816010199b2123e4894",
     "python/src/datastructures/registry.py": "f6a2a4ae087f5892d81ad28f0c16f7e02c8350f494ad5bcd5cd72414beb3d221",
     "python/src/generators/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -867,7 +1113,7 @@
     "python/src/utils/measurement.py": "e49ba8510a56ddf454f2135686e49978fbbd9d1bbdef12e8bcc64743df5da0d0",
     "python/src/utils/presentation.py": "d4c963290599f4a48d753c6e0f84f83a66205058cc389d60cc93aa791a98b717",
     "python/src/verification/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "python/src/verification/certificate.py": "542dc0f9e7138448035bed2f3b9b962d4f3aa20e9cbb749bbd574c179b731492",
+    "python/src/verification/certificate.py": "154b4f60a041973d132d68963da0ee0359181ed617e1eeacae9e742476cf8369",
     "python/src/visualization/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "python/src/visualization/generate_figures.py": "c1fc027559a84f65c93197289f430ee3a7758aa2d736ebf431810839a90c45d4",
     "python/tests/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -884,27 +1130,28 @@
     "python/tests/test_osm_loader.py": "51dc7eca812466faf8fac1a2708bd420058d2c2a46d724e1ba8ce91af9830c1f",
     "python/tests/test_priority_queues.py": "71c2bc9b5dac6178b9c39e5093859310dac49da67b528baabec54d69f6faf7b9",
     "python/tests/test_provider_keys.py": "52b6b93f86833361dd1a0c9142be7236dc30a61d22125c644fdfcc1ecd7094c6",
+    "python/tests/test_runtime_deploy.py": "36a4e66988312e939ef22635ba5cd1ba7a19babf0f1e21c7d40c0336e632aba6",
     "python/tests/test_traffic.py": "d6c3932be17ff8b2ed0bb8be2fcebad6ef136987e031fe54c01987a0cbbd4aee",
     "python/tests/test_validation_io.py": "82a8a3309b65abd464827a6fad49305fee31c5524d7b74159dd25b7e1f426558",
     "python/tests/test_weather.py": "6b09bce81b078975c5e7b778109abc6276618498ac4a0a6b79d9644f72de0d41",
-    "python/tests/test_web_api.py": "4c2c3efa10bb10c9aca0b60feb16be318269e20a982f68c658720cae76bed9f8",
-    "web/src/api.ts": "93ca7f212869c81eddc1fd0f9363e70ca99037712285fce2636c878de4dbda07",
+    "python/tests/test_web_api.py": "62953fa0daa5c7bebfca60296b009dc53ad073c0dfea77f68814e1aa8a1fb873",
+    "web/src/api.ts": "b5cef32947f420d3df03cbb2127db262ac3515f78c1cd6adc06fe8a468418814",
     "web/src/clientFallback.ts": "697661ba84eca67e1e553c2b05c7f4794ba24a5b7e3febaccbf6ef9258d61faa",
     "web/src/ComplexityTable.tsx": "812cde1a9b3051b72fe4041d977675d9d0f58ef040d7df8fc7a9b37be3b5fdc5",
-    "web/src/EvidencePage.tsx": "5de692125a15b57bbdf326840efb4de36d37d29c577e9a39201ba46bfdf0c5c6",
-    "web/src/experimentInput.ts": "90e5aa9b86b99ec886ca18716b50a57aa7dd51aefeecc19e5f1d69bd413aea6d",
+    "web/src/EvidencePage.tsx": "65587e5dc1292bbadbdc3dd6852f5be59c70bb58926586806369e13652f05f4f",
+    "web/src/experimentInput.ts": "1647b32c9c22a5e81cbf03da33bb427cfe071a9b50c9f6ab6092b7b27a90a00f",
     "web/src/format.ts": "93b1f857984bb050f54d3a47095554f1588550eac1d101a68a6755f4ae323f0b",
     "web/src/GraphView.tsx": "abfc33a1d5734ac9d4e5f24b3d61ccf590ee100ccda28c2ad62b097a5c57537e",
     "web/src/InstanceGenerator.tsx": "67677444c61591ade519f7d4b6868b03a65b21dd0432058869d080237a6c59d4",
     "web/src/localSettings.ts": "d26451d6336200c73f090809375f8e4e9d1934bad311456c59f7502509dae4d6",
-    "web/src/main.tsx": "b02c5c763921caa159deae727112ab8bbeaea026ffe25027f7988df3015917e6",
+    "web/src/main.tsx": "cd29e8f7559281207095e6d7df39328f0a966760a3aa85367171feee928309ed",
     "web/src/style.css": "9d6b1bfd0f6cd03fbb5beef7966ba82f1fd72ea5dcfdef166725896dd292e675",
     "web/src/TrafficReading.tsx": "1dcaadf1182995767a66708208c553642fd1dac744b56ab03a6366ed9e82467f",
     "web/src/vite-env.d.ts": "f1f4b49a6b306663b424a59c59f018fc5e7d0abdcd260940447ba10dacb86b88",
     "web/src/WeatherReading.tsx": "b0062b491ec568ed145c3dd0a4188fccfc0ba0d82b7980a544f8d3eeb347356f",
     "web/tests/components.test.tsx": "522909bb3c0cf8c61b465ccf2f947622908c739c48b5732e7052d58c89b2fd94",
-    "web/tests/evidence.test.tsx": "72a4d3f2c51c685f41e52ee38253ee957c1c1fb50df0c5cf471942d7ca9765ae",
-    "web/tests/experimentInput.test.ts": "3e26fdc7479829ccf359ece4247c18f5a0c31e35d078b69d069593affca5686a",
+    "web/tests/evidence.test.tsx": "7cf8339e4a270db48620ac055c17b4e05a889506444f0aa11b6e79123f8378cd",
+    "web/tests/experimentInput.test.ts": "5d84e02a3eeab6906b49412d077f9fcb6beebfd54f844888d06e458e630afa12",
     "web/tests/fallback.test.ts": "4bf41936727f457b3c811a1ac106a98f2d3b571eb64f46eaf1deac10750bee61",
     "web/tests/setup.ts": "1b32a82cb1d6a83205ae927108abc190030707bbf31f4e4e0353c868562b70d3"
   }
