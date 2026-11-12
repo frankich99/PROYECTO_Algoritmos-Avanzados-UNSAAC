@@ -15,7 +15,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.algorithms.a_star import a_star_solver
 from src.algorithms.dijkstra import dijkstra_solver
@@ -23,7 +23,7 @@ from src.benchmarks.applied_analysis import nearest_node
 from src.generators.instance_generator import benchmark_network, grid_network, random_road_network
 from src.io.graph_io import GraphInstance, InvalidInstanceError, parse_edge_list, parse_instance_json, validate_graph
 from src.io.osm_loader import load_snapshot as load_osm_snapshot
-from src.models.cusco_network import load_cusco_instance
+from src.models.cusco_network import COORDS_CUSCO, NODES_CUSCO, load_cusco_instance
 from src.services.traffic import TomTomTrafficClient, calculate_traffic_multiplier, get_traffic_by_schedule
 from src.services.provider_keys import provider_key
 from src.services.weather import (OpenMeteoClient, OpenWeatherMapClient, WeatherObservation,
@@ -37,8 +37,20 @@ BENCHMARK = DATA / "benchmark_results.json"
 PILOT = DATA / "pilot_benchmark_results.json"
 WEATHER = DATA / "weather_cusco.json"
 MAX_NODES, MAX_EDGES = 5000, 30000
+MAX_PAYLOAD_BYTES = 2_000_000
+DISPLAY_MAX_EDGES = 3000
+DISPLAY_MAX_NODES = 1200
+GENERATOR_NODES_MIN, GENERATOR_NODES_MAX = 2, 500
+GENERATOR_GRID_MIN, GENERATOR_GRID_MAX = 1, 30
+EXPERIMENT_SIZES_MAX_COUNT = 4
+EXPERIMENT_SIZE_MIN, EXPERIMENT_SIZE_MAX = 5, 200
+EXPERIMENT_RUNS_MIN, EXPERIMENT_RUNS_MAX = 2, 10
+SEED_MIN, SEED_MAX = 0, 2_147_483_647
 QUEUES = ("binary_heap", "4ary_heap", "fibonacci_heap")
 API_VERSION = "1.5.0"
+DATA_VERSION = "2026-10-28"
+DOCS_VERSION = "2026-11-06"
+GENERATOR_VERSION = "1.0.0"
 WEB_DIST = Path(os.environ.get(
     "RUTAS_WEB_DIST", Path(__file__).resolve().parent.parent / "web" / "dist"
 )).resolve()
@@ -69,10 +81,10 @@ class InstanceSpec(BaseModel):
     data: dict[str, Any] | None = None
     text: str | None = None
     generator: Literal["random", "grid", "sparse", "dense"] = "random"
-    nodes: int = Field(default=30, ge=2, le=500)
-    seed: int = 42
-    rows: int = Field(default=5, ge=1, le=30)
-    cols: int = Field(default=5, ge=1, le=30)
+    nodes: int = Field(default=30, ge=GENERATOR_NODES_MIN, le=GENERATOR_NODES_MAX)
+    seed: int = Field(default=42, ge=SEED_MIN, le=SEED_MAX)
+    rows: int = Field(default=5, ge=GENERATOR_GRID_MIN, le=GENERATOR_GRID_MAX)
+    cols: int = Field(default=5, ge=GENERATOR_GRID_MIN, le=GENERATOR_GRID_MAX)
 
 
 class Point(BaseModel):
@@ -122,15 +134,281 @@ class RouteRequest(BaseModel):
 
 class ExperimentRequest(BaseModel):
     profile: Literal["sparse", "dense"] = "sparse"
-    sizes: list[int] = Field(default_factory=lambda: [30, 60, 100], min_length=1, max_length=4)
-    seed: int = 42
-    runs: int = Field(default=5, ge=2, le=10)
+    sizes: list[int] = Field(default_factory=lambda: [30, 60, 100], min_length=1, max_length=EXPERIMENT_SIZES_MAX_COUNT)
+    seed: int = Field(default=42, ge=SEED_MIN, le=SEED_MAX)
+    runs: int = Field(default=5, ge=EXPERIMENT_RUNS_MIN, le=EXPERIMENT_RUNS_MAX)
+
+    @field_validator("sizes")
+    @classmethod
+    def _validate_sizes(cls, values: list[int]) -> list[int]:
+        if len(set(values)) != len(values) or any(n < EXPERIMENT_SIZE_MIN or n > EXPERIMENT_SIZE_MAX for n in values):
+            raise ValueError(f"Use hasta {EXPERIMENT_SIZES_MAX_COUNT} tamaños distintos entre {EXPERIMENT_SIZE_MIN} y {EXPERIMENT_SIZE_MAX}.")
+        return values
 
 
 class ConditionRequest(BaseModel):
     point: Point = Field(default_factory=lambda: Point(lat=-13.5165, lon=-71.9788))
     provider: Literal["open-meteo", "openweathermap", "tomtom"] = "open-meteo"
     key: str | None = Field(default=None, max_length=200)
+
+
+class HealthResponse(BaseModel):
+    ok: bool
+
+
+class VersionResponse(BaseModel):
+    name: str
+    version: str
+    api_version: str
+    data_version: str
+    docs_version: str
+    generator_version: str
+    web_build: bool
+
+
+class CatalogNetworkItem(BaseModel):
+    kind: Literal["center", "urban"]
+    label: str
+    available: bool
+
+
+class ProviderKeysAvailability(BaseModel):
+    openweathermap: bool
+    tomtom: bool
+
+
+class ApiLimits(BaseModel):
+    max_nodes: int
+    max_edges: int
+    max_payload_bytes: int
+    display_max_nodes: int
+    display_max_edges: int
+    generator_nodes_min: int
+    generator_nodes_max: int
+    generator_grid_min: int
+    generator_grid_max: int
+    experiment_sizes_max_count: int
+    experiment_size_min: int
+    experiment_size_max: int
+    experiment_runs_min: int
+    experiment_runs_max: int
+    seed_min: int
+    seed_max: int
+
+
+class CatalogResponse(BaseModel):
+    networks: list[CatalogNetworkItem]
+    queues: list[Literal["binary_heap", "4ary_heap", "fibonacci_heap"]]
+    example: str
+    provider_keys: ProviderKeysAvailability
+    limits: ApiLimits
+
+
+class InstanceValidateResponse(BaseModel):
+    valid: bool
+    name: str
+    nodes: int
+    edges: int
+    ids: list[str | int]
+    coords: dict[str, tuple[float, float]]
+    metric: str
+    geographic: bool
+    display_edges: list[tuple[str | int, str | int, float | int]]
+    display_limited: bool
+
+
+class InstanceExportResponse(BaseModel):
+    format: Literal["rutas-cusco-instance-v1"] = "rutas-cusco-instance-v1"
+    api_version: str
+    generator_version: str
+    nodes: int
+    edges: int
+    metric: str
+    instance: dict[str, Any]
+
+
+class RouteSnap(BaseModel):
+    requested: Point
+    node: str | int
+    snapped: Point
+    offset_m_approx: float
+
+
+class RouteEdgeDetail(BaseModel):
+    from_node: str | int = Field(alias="from")
+    to: str | int
+    cost: float
+    length_m: float | None = None
+    time_sec: float | None = None
+    street: str | None = None
+
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+
+class RouteRowModel(BaseModel):
+    algorithm: Literal["dijkstra", "astar"]
+    queue: Literal["binary_heap", "4ary_heap", "fibonacci_heap"]
+    cost: float | None = None
+    path: list[str | int]
+    edges: list[RouteEdgeDetail]
+    length_m: float | None = None
+    time_sec: float | None = None
+    path_geometry: list[list[float]]
+    expanded: int
+    relaxations: int
+    decrease_key: int
+    elapsed_ms_single_run: float
+
+
+class RouteCounts(BaseModel):
+    nodes: int
+    edges: int
+
+
+class RouteScenarioModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    kind: str
+    factor: float
+
+
+class RouteSolveResponse(BaseModel):
+    network: str
+    coverage: Literal["example", "center", "urban", "custom", "text", "generated"]
+    counts: RouteCounts
+    metric: Literal["time", "distance"]
+    unit: Literal["peso", "s", "m"]
+    source: str | int
+    target: str | int
+    source_snap: RouteSnap | None = None
+    target_snap: RouteSnap | None = None
+    result: RouteRowModel
+    comparisons: list[RouteRowModel]
+    path_coords: list[tuple[float, float]]
+    scenario: RouteScenarioModel
+    geometry_quality: Literal["road_polyline", "node_chords_only", "abstract"]
+    warning: str | None = None
+
+
+class BenchmarkRowModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    nodes: int
+    edges: int
+    median_us: float
+    q1_us: float
+    q3_us: float
+    sample_count: int | None = None
+    instance_seeds: list[int] | None = None
+
+
+class BenchmarkSeries(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    scales: list[int]
+    data: dict[Literal["binary_heap", "4ary_heap", "fibonacci_heap"], list[BenchmarkRowModel]]
+
+
+class BenchmarkResponse(BaseModel):
+    generated_at_utc: str | None = None
+    protocol: dict[str, Any]
+    environment: dict[str, Any] | None = None
+    profile: Literal["sparse", "dense"]
+    results: BenchmarkSeries
+
+
+class PilotResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    schema_version: int | None = None
+    generated_at_utc: str
+    protocol: dict[str, Any]
+    environment: dict[str, Any] | None = None
+    profiles: dict[Literal["sparse", "dense"], BenchmarkSeries]
+
+
+class ExperimentRowModel(BaseModel):
+    nodes: int
+    edges: int
+    queue: Literal["binary_heap", "4ary_heap", "fibonacci_heap"]
+    median_us: float
+    q1_us: float
+    q3_us: float
+    samples_us: list[float]
+    instance_seeds: list[int]
+
+
+class ExperimentProtocol(BaseModel):
+    runs_per_instance: int
+    instances_per_size: int
+    warmup: int
+    clock: str
+    gc: str
+    timing_scope: str
+
+
+class ExperimentResponse(BaseModel):
+    kind: Literal["session_experiment_not_canonical"]
+    profile: Literal["sparse", "dense"]
+    generated_at_utc: str
+    protocol: ExperimentProtocol
+    rows: list[ExperimentRowModel]
+
+
+class WeatherObservationModel(BaseModel):
+    temperature_c: float
+    relative_humidity_pct: float
+    precipitation_mm: float
+    visibility_m: float
+    wind_gusts_kmh: float
+    observed_at: str
+    timezone: str
+    grid_point: Point
+    source: str
+    weather_code: int
+    weather_description: str
+    surface_pressure_hpa: float | None = None
+
+
+class TrafficFlowModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    current_speed_kmh: float
+    free_flow_speed_kmh: float
+    multiplier: float
+    confidence: float | None = None
+    road_closure: bool | None = None
+
+
+class ConditionsResponse(BaseModel):
+    kind: Literal["point_traffic_not_network", "model_weather_not_station"]
+    requested: Point
+    fetched_at_utc: str
+    multiplier: float | None = None
+    contributions: dict[str, float] | None = None
+    observation: WeatherObservationModel | None = None
+    flow: TrafficFlowModel | None = None
+
+
+def _api_limits() -> ApiLimits:
+    return ApiLimits(
+        max_nodes=MAX_NODES,
+        max_edges=MAX_EDGES,
+        max_payload_bytes=MAX_PAYLOAD_BYTES,
+        display_max_nodes=DISPLAY_MAX_NODES,
+        display_max_edges=DISPLAY_MAX_EDGES,
+        generator_nodes_min=GENERATOR_NODES_MIN,
+        generator_nodes_max=GENERATOR_NODES_MAX,
+        generator_grid_min=GENERATOR_GRID_MIN,
+        generator_grid_max=GENERATOR_GRID_MAX,
+        experiment_sizes_max_count=EXPERIMENT_SIZES_MAX_COUNT,
+        experiment_size_min=EXPERIMENT_SIZE_MIN,
+        experiment_size_max=EXPERIMENT_SIZE_MAX,
+        experiment_runs_min=EXPERIMENT_RUNS_MIN,
+        experiment_runs_max=EXPERIMENT_RUNS_MAX,
+        seed_min=SEED_MIN,
+        seed_max=SEED_MAX,
+    )
 
 
 def _problem(exc: Exception) -> HTTPException:
@@ -146,7 +424,7 @@ def _instance(spec: InstanceSpec, metric: str) -> GraphInstance:
             raise InvalidInstanceError("La red solicitada no está disponible o sus límites aún no fueron revisados. Use la cobertura del centro.")
         instance = load_osm_snapshot(path, metric=metric)
     elif spec.kind == "custom":
-        if spec.data is None or len(json.dumps(spec.data, ensure_ascii=False)) > 2_000_000:
+        if spec.data is None or len(json.dumps(spec.data, ensure_ascii=False).encode("utf-8")) > MAX_PAYLOAD_BYTES:
             raise InvalidInstanceError("Envíe una instancia JSON de hasta 2 MB.")
         raw_nodes, raw_edges = spec.data.get("nodes"), spec.data.get("edges")
         if isinstance(raw_nodes, list) and len(raw_nodes) > MAX_NODES:
@@ -157,7 +435,7 @@ def _instance(spec: InstanceSpec, metric: str) -> GraphInstance:
         if not raw_edges or not all(isinstance(edge, dict) and "length_m" in edge for edge in raw_edges):
             instance.metric = "weight"
     elif spec.kind == "text":
-        if not spec.text or len(spec.text) > 2_000_000:
+        if not spec.text or len(spec.text.encode("utf-8")) > MAX_PAYLOAD_BYTES:
             raise InvalidInstanceError("Envíe una lista de aristas de hasta 2 MB.")
         if spec.text.count("\n") > MAX_EDGES + MAX_NODES:
             raise InvalidInstanceError("La lista supera el límite de líneas de la interfaz.")
@@ -413,32 +691,110 @@ def _scenario(value: Scenario, metric: str, source_point: Point | None) -> tuple
     return round(factor, 4), detail
 
 
-@app.get("/api/v1/health")
+def _export_instance_payload(spec: InstanceSpec, metric: str, inst: GraphInstance) -> dict[str, Any]:
+    if spec.kind == "example":
+        raw = json.loads((Path(__file__).resolve().parent / "data" / "instances" / "cusco_centro.json").read_text(encoding="utf-8"))
+        return {
+            "name": inst.name,
+            "directed": True,
+            "metric": metric,
+            "source": inst.default_source or "A",
+            "nodes": [
+                {
+                    "id": node,
+                    "name": NODES_CUSCO.get(str(node), str(node)),
+                    "x": COORDS_CUSCO[str(node)][0],
+                    "y": COORDS_CUSCO[str(node)][1],
+                }
+                if str(node) in COORDS_CUSCO else inst._node_to_dict(node)
+                for node in inst.nodes
+            ],
+            "edges": raw["edges"],
+            "metadata": {**inst.metadata, "schema": "cusco_road_v1"},
+        }
+    if spec.kind in ("center", "urban"):
+        path = OSM if spec.kind == "center" else URBAN
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        edges = [
+            {k: e[k] for k in ("origin", "destination", "length_m", "travel_time_sec", "street_name", "highway", "maxspeed") if k in e}
+            for e in raw.get("edges", [])
+        ]
+        return {
+            "name": inst.name,
+            "directed": True,
+            "metric": metric,
+            "nodes": [
+                {"id": n["id"], "lon": n["lon"], "lat": n["lat"], **({"name": n["name"]} if "name" in n else {})}
+                for n in raw.get("nodes", [])
+            ],
+            "edges": edges,
+            "metadata": {**inst.metadata, "exported_from": spec.kind},
+        }
+    if spec.kind == "custom" and spec.data is not None:
+        raw_edges = spec.data.get("edges")
+        if isinstance(raw_edges, list) and raw_edges and all(isinstance(edge, dict) and "length_m" in edge for edge in raw_edges):
+            payload: dict[str, Any] = {
+                "name": inst.name,
+                "directed": bool(spec.data.get("directed", True)),
+                "metric": inst.metric,
+                "nodes": [inst._node_to_dict(n) for n in inst.nodes],
+                "edges": raw_edges,
+            }
+            if inst.default_source is not None:
+                payload["source"] = inst.default_source
+            if inst.metadata:
+                payload["metadata"] = inst.metadata
+            return payload
+    payload = inst.to_dict()
+    if spec.kind == "generated":
+        meta = dict(payload.get("metadata") or {})
+        meta.update({
+            "generator": spec.generator,
+            "generator_version": GENERATOR_VERSION,
+            "seed": spec.seed,
+            **({"rows": spec.rows, "cols": spec.cols} if spec.generator == "grid" else {"nodes": spec.nodes}),
+        })
+        payload["metadata"] = meta
+    return payload
+
+
+@app.get("/api/v1/health", response_model=HealthResponse)
 def health():
     return {"ok": True}
 
 
-@app.get("/api/v1/version")
+@app.get("/api/v1/version", response_model=VersionResponse)
 def version():
-    return {"name": "Rutas mínimas en Cusco", "version": API_VERSION,
-            "web_build": (WEB_DIST / "index.html").is_file()}
+    return {
+        "name": "Rutas mínimas en Cusco",
+        "version": API_VERSION,
+        "api_version": API_VERSION,
+        "data_version": DATA_VERSION,
+        "docs_version": DOCS_VERSION,
+        "generator_version": GENERATOR_VERSION,
+        "web_build": (WEB_DIST / "index.html").is_file(),
+    }
 
 
-@app.get("/api/v1/catalog")
+@app.get("/api/v1/catalog", response_model=CatalogResponse)
 def catalog():
-    return {"networks": [{"kind": "center", "label": "Centro, snapshot OSM (radio 1,5 km)",
-                           "available": OSM.exists()},
-                          {"kind": "urban", "label": "Centro ampliado, snapshot OSM (radio 3 km)",
-                           "available": _urban_available()}],
-            "queues": list(QUEUES), "example": "Seis nodos ilustrativos, no vías medidas",
-            "provider_keys": {name: bool(provider_key(name)) for name in ("openweathermap", "tomtom")}}
+    return {
+        "networks": [
+            {"kind": "center", "label": "Centro, snapshot OSM (radio 1,5 km)", "available": OSM.exists()},
+            {"kind": "urban", "label": "Centro ampliado, snapshot OSM (radio 3 km)", "available": _urban_available()},
+        ],
+        "queues": list(QUEUES),
+        "example": "Seis nodos ilustrativos, no vías medidas",
+        "provider_keys": {name: bool(provider_key(name)) for name in ("openweathermap", "tomtom")},
+        "limits": _api_limits(),
+    }
 
 
-@app.post("/api/v1/instances/validate")
+@app.post("/api/v1/instances/validate", response_model=InstanceValidateResponse)
 def instance_validate(spec: InstanceSpec, metric: Literal["time", "distance"] = "time"):
     try:
         inst = _instance(spec, metric)
-        stride = max(1, math.ceil(inst.num_edges / 3000))
+        stride = max(1, math.ceil(inst.num_edges / DISPLAY_MAX_EDGES))
         display_edges = [
             [u, v, int(w) if isinstance(w, (int, float)) and float(w).is_integer() else round(float(w), 2)]
             for index, (u, v, w) in enumerate(
@@ -446,16 +802,41 @@ def instance_validate(spec: InstanceSpec, metric: Literal["time", "distance"] = 
             )
             if index % stride == 0
         ]
-        return {"valid": True, "name": inst.name, "nodes": inst.num_nodes, "edges": inst.num_edges,
-                 "ids": inst.nodes, "coords": inst.coords, "metric": inst.metric,
-                 "geographic": spec.kind in ("center", "urban") and inst.metadata.get("coordinate_kind") == "lon_lat_wgs84",
-                 "display_edges": display_edges[:3000],
-                "display_limited": inst.num_nodes > 1200 or inst.num_edges > 3000}
+        return {
+            "valid": True,
+            "name": inst.name,
+            "nodes": inst.num_nodes,
+            "edges": inst.num_edges,
+            "ids": inst.nodes,
+            "coords": {str(k): v for k, v in inst.coords.items()},
+            "metric": inst.metric,
+            "geographic": spec.kind in ("center", "urban") and inst.metadata.get("coordinate_kind") == "lon_lat_wgs84",
+            "display_edges": display_edges[:DISPLAY_MAX_EDGES],
+            "display_limited": inst.num_nodes > DISPLAY_MAX_NODES or inst.num_edges > DISPLAY_MAX_EDGES,
+        }
     except (InvalidInstanceError, ValueError, KeyError, OSError) as exc:
         raise _problem(exc) from exc
 
 
-@app.post("/api/v1/routes/solve")
+@app.post("/api/v1/instances/export", response_model=InstanceExportResponse)
+def instance_export(spec: InstanceSpec, metric: Literal["time", "distance"] = "time"):
+    try:
+        inst = _instance(spec, metric)
+        payload = _export_instance_payload(spec, metric, inst)
+        return {
+            "format": "rutas-cusco-instance-v1",
+            "api_version": API_VERSION,
+            "generator_version": GENERATOR_VERSION,
+            "nodes": inst.num_nodes,
+            "edges": inst.num_edges,
+            "metric": inst.metric,
+            "instance": payload,
+        }
+    except (InvalidInstanceError, ValueError, KeyError, OSError) as exc:
+        raise _problem(exc) from exc
+
+
+@app.post("/api/v1/routes/solve", response_model=RouteSolveResponse)
 def route_solve(request: RouteRequest):
     try:
         inst = _instance(request.instance, request.metric)
@@ -538,7 +919,7 @@ def route_solve(request: RouteRequest):
         raise _problem(exc) from exc
 
 
-@app.get("/api/v1/benchmarks/{profile}")
+@app.get("/api/v1/benchmarks/{profile}", response_model=BenchmarkResponse)
 def benchmark(profile: Literal["sparse", "dense"]):
     if not BENCHMARK.exists():
         raise HTTPException(404, "No existe el benchmark canónico.")
@@ -547,17 +928,17 @@ def benchmark(profile: Literal["sparse", "dense"]):
             "environment": data.get("environment"), "profile": profile, "results": data["profiles"][profile]}
 
 
-@app.get("/api/v1/benchmarks/pilot/summary")
+@app.get("/api/v1/benchmarks/pilot/summary", response_model=PilotResponse)
 def pilot():
     if not PILOT.exists():
         raise HTTPException(404, "No existe el piloto.")
     return json.loads(PILOT.read_text(encoding="utf-8"))
 
 
-@app.post("/api/v1/experiments")
+@app.post("/api/v1/experiments", response_model=ExperimentResponse)
 def experiment(request: ExperimentRequest):
-    if len(set(request.sizes)) != len(request.sizes) or any(n < 5 or n > 200 for n in request.sizes):
-        raise HTTPException(422, "Use hasta cuatro tamaños distintos entre 5 y 200.")
+    if len(set(request.sizes)) != len(request.sizes) or any(n < EXPERIMENT_SIZE_MIN or n > EXPERIMENT_SIZE_MAX for n in request.sizes):
+        raise HTTPException(422, f"Use hasta {EXPERIMENT_SIZES_MAX_COUNT} tamaños distintos entre {EXPERIMENT_SIZE_MIN} y {EXPERIMENT_SIZE_MAX}.")
     rows = []
     for size in sorted(request.sizes):
         samples = {queue: [] for queue in QUEUES}
@@ -593,7 +974,7 @@ def experiment(request: ExperimentRequest):
                          "timing_scope": "solo solver, sin validación ni reconstrucción de caminos"}, "rows": rows}
 
 
-@app.post("/api/v1/conditions")
+@app.post("/api/v1/conditions", response_model=ConditionsResponse)
 def conditions(request: ConditionRequest):
     lat, lon, provider = request.point.lat, request.point.lon, request.provider
     key = (request.key or "").strip() or (provider_key(provider) if provider != "open-meteo" else None)

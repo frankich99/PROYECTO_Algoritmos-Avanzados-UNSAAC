@@ -936,7 +936,7 @@ function App() {
           finally { setExperimentLoading(false) }
         }}>
           <label>Perfil<select value={profile} onChange={e => setProfile(e.target.value as typeof profile)}><option value="sparse">Disperso</option><option value="dense">Denso</option></select></label>
-          <label>Tamaños, separados por comas<input value={sizes} onChange={e => setSizes(e.target.value)} /></label>
+          <label>Tamaños (5 a 200, hasta 4 separados por comas)<input value={sizes} onChange={e => setSizes(e.target.value)} /></label>
           <label>Semilla<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="42" value={seed} onChange={e => handleSeedChange(e.target.value)} /></label>
           <label>Repeticiones por red (2 a 10)<input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="5" value={runs} onChange={e => handleRunsChange(e.target.value)} /></label>
           <button className="primary" type="submit" disabled={experimentLoading}>{experimentLoading ? 'Midiendo…' : 'Ejecutar experimento'}</button>

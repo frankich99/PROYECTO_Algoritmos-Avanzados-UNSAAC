@@ -55,9 +55,11 @@ python -m src.cli verify --file instancias_pruebas/json/03_complejo_cusco_urbano
 
 ---
 
-## 🏔️ Justificación de las Variables de Cusco (Topografía y Relieve)
+## 🏔️ Alcance de las Variables de Cusco (Topografía y Relieve)
 
-* **Pendiente positiva (subida):** En las calles coloniales de Cusco (ej. Cuesta de San Blas al +8.5%, Calle Espaderos al +1.5%), el tiempo de viaje penaliza las subidas mediante la fórmula:
+> **Nota de procedencia:** Los archivos de `instancias_pruebas/` son instancias **didácticas e ilustrativas** para pruebas manuales y de interfaz. Sus longitudes, pendientes y coordenadas aproximadas permiten demostrar la fórmula del modelo de costos (`CuscoCostModel`), pero **no sustituyen** un levantamiento geoespacial ni velocidades medidas de tráfico. Para la red real extraída de OpenStreetMap, utilice los snapshots revisados en `python/data/processed/`.
+
+* **Pendiente positiva (subida):** En el modelo de costo vial ilustrativo (`CuscoCostModel`), las subidas penalizan el tiempo de viaje mediante la fórmula:
   $$\text{Penalización} = 1 + 2.5 \times \max\left(0, \frac{\text{pendiente \%}}{100}\right)$$
-* **Pendiente negativa (bajada):** No incrementa el tiempo de viaje, reflejando el esfuerzo motriz real en la geografía andina.
-* **Jerarquía de vías:** Avenidas principales (El Sol, Tullumayo: 35 km/h) vs calles coloniales estrechas (15 km/h) vs pasajes peatonales (8 km/h).
+* **Pendiente negativa (bajada):** No incrementa ni reduce adicionalmente el tiempo base de viaje en la fórmula aplicada.
+* **Jerarquía de vías del modelo ilustrativo:** Avenidas principales (`avenida`, 35 km/h), calles del centro (`calle_centro`, 15 km/h) y pasajes peatonales (`peatonal`, 8 km/h). En los snapshots OSM reales (`cusco_osm_drive.json`), los tiempos base provienen de `travel_time` de OSMnx o `length_m / maxspeed` según la etiqueta `highway`.

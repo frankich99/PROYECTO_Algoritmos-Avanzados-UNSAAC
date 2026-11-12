@@ -121,7 +121,7 @@ siguiente; no se mantiene una segunda web ni una traza manual separada.
 
 ## Interfaz React y API nueva (05/11/2026)
 
-La aplicación nueva de `web/` tiene seis vistas y consume `python/web_api.py`.
+La aplicación de `web/` organiza el flujo en ocho vistas (`Rutas`, `Instancias`, `Comparar`, `Experimentos`, `Cobertura Cusco`, `Evidencias`, `Datos y método` y `Acerca de`) y consume `python/web_api.py`, mismo contrato previsto para la aplicación móvil en `mobile/`.
 Reutiliza los solvers y snapshots; no modifica los JSON canónicos. Distingue
 costos físicos solo cuando las aristas tienen atributos viales: los grafos
 de pesos genéricos muestran «peso», sin inventar distancia ni tiempo. Para

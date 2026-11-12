@@ -1,0 +1,1286 @@
+{
+  "version": "1.5.0",
+  "examples": [
+    {
+      "id": "intro_3_nodos",
+      "title": "Grafo introductorio de 3 nodos",
+      "category": "didactic",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 3,
+      "edges_count": 3,
+      "description": "Demostración mínima donde el camino directo (9) es más caro que rodear por B (4 + 2 = 6).",
+      "learning_goal": "Comprender por qué Dijkstra relaja aristas y actualiza distancias tentativas.",
+      "source_info": "Ejemplo base de la web (web/src/main.tsx) · v1.5.0",
+      "weights_meaning": "Pesos abstractos sin unidades físicas acreditadas.",
+      "coords_meaning": "Sin coordenadas geográficas.",
+      "suggested_source": "A",
+      "suggested_target": "C",
+      "expected_cost": 6.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "A",
+        "B",
+        "C"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "Grafo propuesto (3 nodos)",
+        "directed": true,
+        "source": "A",
+        "nodes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": 4
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "weight": 2
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "weight": 9
+          }
+        ]
+      }
+    },
+    {
+      "id": "cusco_didactico_6",
+      "title": "Centro Histórico Cusco (6 nodos didáctico)",
+      "category": "cusco",
+      "kind": "example",
+      "format": "json",
+      "directed": true,
+      "metric": "time",
+      "nodes_count": 6,
+      "edges_count": 9,
+      "description": "Red ilustrativa del Centro Histórico con longitudes, tipos de vía y pendientes.",
+      "learning_goal": "Comparar métrica tiempo (144.45 s por A->C->F) vs distancia (650 m por A->B->D->E).",
+      "source_info": "python/data/instances/cusco_centro.json · Modelo CuscoCostModel v1.5.0",
+      "weights_meaning": "Tiempo efectivo en segundos (con penalización por pendiente positiva) o distancia en metros.",
+      "coords_meaning": "Coordenadas esquemáticas en metros (no es cartografía georreferenciada).",
+      "suggested_source": "A",
+      "suggested_target": "F",
+      "expected_cost": 144.45,
+      "expected_unit": "s",
+      "expected_path": [
+        "A",
+        "C",
+        "F"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "cusco_manual_6_nodos",
+        "directed": true,
+        "metric": "time",
+        "source": "A",
+        "nodes": [
+          {
+            "id": "A",
+            "name": "Plaza Mayor del Cusco",
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "id": "B",
+            "name": "Plaza Regocijo (Cusipata)",
+            "x": -120.0,
+            "y": -10.0
+          },
+          {
+            "id": "C",
+            "name": "Qorikancha (Santo Domingo)",
+            "x": 180.0,
+            "y": -250.0
+          },
+          {
+            "id": "D",
+            "name": "Plaza San Francisco",
+            "x": -310.0,
+            "y": -80.0
+          },
+          {
+            "id": "E",
+            "name": "Mercado Central San Pedro",
+            "x": -480.0,
+            "y": -320.0
+          },
+          {
+            "id": "F",
+            "name": "Plazoleta Limacpampa",
+            "x": 350.0,
+            "y": -420.0
+          }
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "length_m": 180.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.5,
+            "street_name": "Calle Espaderos / Portal Carnicerías",
+            "travel_time_sec": 44.82
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "length_m": 450.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.0,
+            "street_name": "Calle Loreto / Pampa del Castillo",
+            "travel_time_sec": 108.0
+          },
+          {
+            "origin": "B",
+            "destination": "D",
+            "length_m": 220.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 3.0,
+            "street_name": "Calle Garcilaso / Calle Marqués",
+            "travel_time_sec": 56.76
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "length_m": 400.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -1.0,
+            "street_name": "Calle San Bernardo / Almagro",
+            "travel_time_sec": 96.0
+          },
+          {
+            "origin": "C",
+            "destination": "F",
+            "length_m": 350.0,
+            "street_type": "avenida",
+            "gradient_pct": 0.5,
+            "street_name": "Calle Ahuacpinta / Limacpampa Grande",
+            "travel_time_sec": 36.45
+          },
+          {
+            "origin": "C",
+            "destination": "E",
+            "length_m": 600.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.0,
+            "street_name": "Calle Matará / Tres Cruces de Oro",
+            "travel_time_sec": 151.2
+          },
+          {
+            "origin": "D",
+            "destination": "E",
+            "length_m": 250.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.5,
+            "street_name": "Calle Santa Clara / Arco Santa Clara",
+            "travel_time_sec": 63.75
+          },
+          {
+            "origin": "D",
+            "destination": "C",
+            "length_m": 500.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.5,
+            "street_name": "Calle Marqués / Mantas",
+            "travel_time_sec": 120.0
+          },
+          {
+            "origin": "E",
+            "destination": "F",
+            "length_m": 700.0,
+            "street_type": "avenida",
+            "gradient_pct": -1.0,
+            "street_name": "Calle Nueva Baja / Av. Tullumayo",
+            "travel_time_sec": 72.0
+          }
+        ],
+        "metadata": {
+          "provenance": "instancia_manual_ilustrativa",
+          "coordinate_kind": "esquematica"
+        }
+      }
+    },
+    {
+      "id": "clrs_01_json",
+      "title": "01 · Grafo didáctico CLRS (JSON)",
+      "category": "didactic",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 6,
+      "edges_count": 9,
+      "description": "Grafo clásico de 6 vértices con múltiples caminos alternativos entre A y F.",
+      "learning_goal": "Contrastar Dijkstra (3 colas) y A* sobre pesos abstractos.",
+      "source_info": "instancias_pruebas/json/01_simple_clrs.json",
+      "weights_meaning": "Pesos abstractos adimensionales.",
+      "coords_meaning": "Posiciones esquemáticas (x, y) en el plano.",
+      "suggested_source": "A",
+      "suggested_target": "F",
+      "expected_cost": 13.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "01 - Grafo Didactico CLRS (Simple)",
+        "directed": true,
+        "nodes": [
+          {
+            "id": "A",
+            "name": "Nodo A",
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "id": "B",
+            "name": "Nodo B",
+            "x": 100.0,
+            "y": 50.0
+          },
+          {
+            "id": "C",
+            "name": "Nodo C",
+            "x": 100.0,
+            "y": -50.0
+          },
+          {
+            "id": "D",
+            "name": "Nodo D",
+            "x": 200.0,
+            "y": 50.0
+          },
+          {
+            "id": "E",
+            "name": "Nodo E",
+            "x": 200.0,
+            "y": -50.0
+          },
+          {
+            "id": "F",
+            "name": "Nodo F",
+            "x": 300.0,
+            "y": 0.0
+          }
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": 4
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "weight": 2
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "weight": 1
+          },
+          {
+            "origin": "B",
+            "destination": "D",
+            "weight": 5
+          },
+          {
+            "origin": "C",
+            "destination": "D",
+            "weight": 8
+          },
+          {
+            "origin": "C",
+            "destination": "E",
+            "weight": 10
+          },
+          {
+            "origin": "D",
+            "destination": "E",
+            "weight": 2
+          },
+          {
+            "origin": "D",
+            "destination": "F",
+            "weight": 6
+          },
+          {
+            "origin": "E",
+            "destination": "F",
+            "weight": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "cusco_02_json",
+      "title": "02 · Cusco Centro con pendientes (JSON)",
+      "category": "cusco",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "time",
+      "nodes_count": 6,
+      "edges_count": 9,
+      "description": "Misma topología vial ilustrativa de 6 nodos con coordenadas aproximadas lon/lat.",
+      "learning_goal": "Probar importación JSON con length_m, street_type y gradient_pct.",
+      "source_info": "instancias_pruebas/json/02_intermedio_cusco_centro.json",
+      "weights_meaning": "Calculados por CuscoCostModel en segundos o metros según métrica.",
+      "coords_meaning": "Coordenadas ilustrativas lon/lat de referencia (no snapshot OSM oficial).",
+      "suggested_source": "A",
+      "suggested_target": "F",
+      "expected_cost": 144.45,
+      "expected_unit": "s",
+      "expected_path": [
+        "A",
+        "C",
+        "F"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "02 - Centro Historico Cusco (Intermedio con Pendientes)",
+        "directed": true,
+        "metric": "time",
+        "nodes": [
+          {
+            "id": "A",
+            "name": "Plaza Mayor del Cusco",
+            "lon": -71.9788,
+            "lat": -13.5165
+          },
+          {
+            "id": "B",
+            "name": "Plaza Regocijo (Cusipata)",
+            "lon": -71.9798,
+            "lat": -13.5168
+          },
+          {
+            "id": "C",
+            "name": "Qorikancha (Santo Domingo)",
+            "lon": -71.9755,
+            "lat": -13.519
+          },
+          {
+            "id": "D",
+            "name": "Plaza San Francisco",
+            "lon": -71.9818,
+            "lat": -13.5173
+          },
+          {
+            "id": "E",
+            "name": "Mercado Central San Pedro",
+            "lon": -71.9835,
+            "lat": -13.5202
+          },
+          {
+            "id": "F",
+            "name": "Plazoleta Limacpampa",
+            "lon": -71.973,
+            "lat": -13.5205
+          }
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "length_m": 180.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.5,
+            "street_name": "Calle Espaderos / Portal Carnicerias"
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "length_m": 450.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.0,
+            "street_name": "Calle Loreto / Pampa del Castillo"
+          },
+          {
+            "origin": "B",
+            "destination": "D",
+            "length_m": 220.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 3.0,
+            "street_name": "Calle Garcilaso / Calle Marques"
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "length_m": 400.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -1.0,
+            "street_name": "Calle San Bernardo / Almagro"
+          },
+          {
+            "origin": "C",
+            "destination": "F",
+            "length_m": 350.0,
+            "street_type": "avenida",
+            "gradient_pct": 0.5,
+            "street_name": "Calle Ahuacpinta / Limacpampa Grande"
+          },
+          {
+            "origin": "C",
+            "destination": "E",
+            "length_m": 600.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.0,
+            "street_name": "Calle Matara / Tres Cruces de Oro"
+          },
+          {
+            "origin": "D",
+            "destination": "E",
+            "length_m": 250.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.5,
+            "street_name": "Calle Santa Clara / Arco Santa Clara"
+          },
+          {
+            "origin": "D",
+            "destination": "C",
+            "length_m": 500.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.5,
+            "street_name": "Calle Marques / Mantas"
+          },
+          {
+            "origin": "E",
+            "destination": "F",
+            "length_m": 700.0,
+            "street_type": "avenida",
+            "gradient_pct": -1.0,
+            "street_name": "Calle Nueva Baja / Av. Tullumayo"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cusco_03_json",
+      "title": "03 · Cusco Urbano Monumental (15 nodos JSON)",
+      "category": "cusco",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "time",
+      "nodes_count": 15,
+      "edges_count": 26,
+      "description": "Red ilustrativa ampliada (San Blas, Saphy, Wanchaq) con subidas de hasta +11%.",
+      "learning_goal": "Evaluar cómo la pendiente y jerarquía vial dirigen el camino óptimo A->N.",
+      "source_info": "instancias_pruebas/json/03_complejo_cusco_urbano.json",
+      "weights_meaning": "Tiempo estimado en segundos según CuscoCostModel.",
+      "coords_meaning": "Coordenadas ilustrativas lon/lat (no sustituye snapshot OSM).",
+      "suggested_source": "A",
+      "suggested_target": "N",
+      "expected_cost": 187.2,
+      "expected_unit": "s",
+      "expected_path": [
+        "A",
+        "C",
+        "L",
+        "N"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "03 - Cusco Urbano Monumental (Complejo 15 Nodos con Relieve)",
+        "directed": true,
+        "metric": "time",
+        "nodes": [
+          {
+            "id": "A",
+            "name": "Plaza Mayor del Cusco",
+            "lon": -71.9788,
+            "lat": -13.5165
+          },
+          {
+            "id": "B",
+            "name": "Plaza Regocijo",
+            "lon": -71.9798,
+            "lat": -13.5168
+          },
+          {
+            "id": "C",
+            "name": "Qorikancha Santo Domingo",
+            "lon": -71.9755,
+            "lat": -13.519
+          },
+          {
+            "id": "D",
+            "name": "Plaza San Francisco",
+            "lon": -71.9818,
+            "lat": -13.5173
+          },
+          {
+            "id": "E",
+            "name": "Mercado San Pedro",
+            "lon": -71.9835,
+            "lat": -13.5202
+          },
+          {
+            "id": "F",
+            "name": "Plazoleta Limacpampa",
+            "lon": -71.973,
+            "lat": -13.5205
+          },
+          {
+            "id": "G",
+            "name": "Plazoleta San Blas",
+            "lon": -71.975,
+            "lat": -13.514
+          },
+          {
+            "id": "H",
+            "name": "Calle Choquechaca",
+            "lon": -71.9762,
+            "lat": -13.5148
+          },
+          {
+            "id": "I",
+            "name": "Calle Saphy",
+            "lon": -71.9805,
+            "lat": -13.5145
+          },
+          {
+            "id": "J",
+            "name": "Calle Plateros",
+            "lon": -71.9795,
+            "lat": -13.5158
+          },
+          {
+            "id": "K",
+            "name": "Calle Santa Teresa",
+            "lon": -71.981,
+            "lat": -13.516
+          },
+          {
+            "id": "L",
+            "name": "Av. El Sol Cruce Pardo",
+            "lon": -71.9768,
+            "lat": -13.5215
+          },
+          {
+            "id": "M",
+            "name": "Av. Tullumayo",
+            "lon": -71.974,
+            "lat": -13.522
+          },
+          {
+            "id": "N",
+            "name": "Estacion Wanchaq",
+            "lon": -71.9715,
+            "lat": -13.524
+          },
+          {
+            "id": "O",
+            "name": "Mirador San Cristobal",
+            "lon": -71.98,
+            "lat": -13.513
+          }
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "length_m": 180.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.5,
+            "street_name": "Calle Espaderos"
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "length_m": 450.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.0,
+            "street_name": "Calle Loreto"
+          },
+          {
+            "origin": "A",
+            "destination": "H",
+            "length_m": 320.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 3.0,
+            "street_name": "Triunfo y Hatun Rumiyoc"
+          },
+          {
+            "origin": "A",
+            "destination": "J",
+            "length_m": 150.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.0,
+            "street_name": "Portal de Panes"
+          },
+          {
+            "origin": "B",
+            "destination": "D",
+            "length_m": 220.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 3.0,
+            "street_name": "Calle Garcilaso"
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "length_m": 400.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -1.0,
+            "street_name": "Calle San Bernardo"
+          },
+          {
+            "origin": "C",
+            "destination": "F",
+            "length_m": 350.0,
+            "street_type": "avenida",
+            "gradient_pct": 0.5,
+            "street_name": "Calle Ahuacpinta"
+          },
+          {
+            "origin": "C",
+            "destination": "L",
+            "length_m": 320.0,
+            "street_type": "avenida",
+            "gradient_pct": -0.5,
+            "street_name": "Av. El Sol Tramo Central"
+          },
+          {
+            "origin": "C",
+            "destination": "E",
+            "length_m": 600.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.0,
+            "street_name": "Calle Matara"
+          },
+          {
+            "origin": "D",
+            "destination": "E",
+            "length_m": 250.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 2.5,
+            "street_name": "Calle Santa Clara"
+          },
+          {
+            "origin": "D",
+            "destination": "K",
+            "length_m": 190.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -1.5,
+            "street_name": "Calle Granada"
+          },
+          {
+            "origin": "E",
+            "destination": "L",
+            "length_m": 650.0,
+            "street_type": "avenida",
+            "gradient_pct": -1.0,
+            "street_name": "Calle Nueva Baja a El Sol"
+          },
+          {
+            "origin": "E",
+            "destination": "F",
+            "length_m": 700.0,
+            "street_type": "avenida",
+            "gradient_pct": -1.0,
+            "street_name": "Av. Tullumayo Oeste"
+          },
+          {
+            "origin": "F",
+            "destination": "M",
+            "length_m": 220.0,
+            "street_type": "avenida",
+            "gradient_pct": 0.0,
+            "street_name": "Av. Tullumayo Sur"
+          },
+          {
+            "origin": "F",
+            "destination": "N",
+            "length_m": 580.0,
+            "street_type": "avenida",
+            "gradient_pct": -0.8,
+            "street_name": "Av. Huascar a Estacion"
+          },
+          {
+            "origin": "G",
+            "destination": "H",
+            "length_m": 210.0,
+            "street_type": "peatonal",
+            "gradient_pct": -8.5,
+            "street_name": "Cuesta de San Blas bajada"
+          },
+          {
+            "origin": "H",
+            "destination": "G",
+            "length_m": 210.0,
+            "street_type": "peatonal",
+            "gradient_pct": 8.5,
+            "street_name": "Cuesta de San Blas subida"
+          },
+          {
+            "origin": "H",
+            "destination": "F",
+            "length_m": 520.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -3.0,
+            "street_name": "Calle Choquechaca a Tullumayo"
+          },
+          {
+            "origin": "I",
+            "destination": "O",
+            "length_m": 280.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 11.0,
+            "street_name": "Subida a San Cristobal"
+          },
+          {
+            "origin": "I",
+            "destination": "J",
+            "length_m": 180.0,
+            "street_type": "calle_centro",
+            "gradient_pct": -2.0,
+            "street_name": "Calle Saphy a Plateros"
+          },
+          {
+            "origin": "J",
+            "destination": "K",
+            "length_m": 160.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.0,
+            "street_name": "Calle Tigre a Santa Teresa"
+          },
+          {
+            "origin": "K",
+            "destination": "D",
+            "length_m": 190.0,
+            "street_type": "calle_centro",
+            "gradient_pct": 1.5,
+            "street_name": "Calle Santa Teresa a San Francisco"
+          },
+          {
+            "origin": "L",
+            "destination": "M",
+            "length_m": 240.0,
+            "street_type": "avenida",
+            "gradient_pct": 0.0,
+            "street_name": "Calle Arrayanniyoc"
+          },
+          {
+            "origin": "L",
+            "destination": "N",
+            "length_m": 450.0,
+            "street_type": "avenida",
+            "gradient_pct": -0.5,
+            "street_name": "Av. El Sol a Wanchaq"
+          },
+          {
+            "origin": "M",
+            "destination": "N",
+            "length_m": 390.0,
+            "street_type": "avenida",
+            "gradient_pct": -0.5,
+            "street_name": "Av. Garcilaso a Wanchaq"
+          },
+          {
+            "origin": "O",
+            "destination": "A",
+            "length_m": 380.0,
+            "street_type": "peatonal",
+            "gradient_pct": -10.0,
+            "street_name": "Bajada Resbalosa a Plaza Mayor"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lineal_01_txt",
+      "title": "01 · Lista de aristas simple (TXT)",
+      "category": "didactic",
+      "kind": "text",
+      "format": "text",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 6,
+      "edges_count": 9,
+      "description": "Formato de texto plano «origen destino peso» con directivas directed y source.",
+      "learning_goal": "Practicar importación TXT/CSV compatible con CLI y Web.",
+      "source_info": "instancias_pruebas/csv_txt/01_simple_lineal.txt",
+      "weights_meaning": "Pesos abstractos.",
+      "coords_meaning": "Sin coordenadas (distribución circular automática en grafo).",
+      "suggested_source": "A",
+      "suggested_target": "F",
+      "expected_cost": 13.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "A",
+        "B",
+        "D",
+        "E",
+        "F"
+      ],
+      "valid_expected": true,
+      "payload_text": "# Instancia 01: Simple lineal con bifurcaciones\n# Formato: origen destino peso\n# Grafo didactico con 6 nodos y 9 aristas\ndirected\nsource A\nA B 4\nA C 2\nB C 1\nB D 5\nC D 8\nC E 10\nD E 2\nD F 6\nE F 2\n"
+    },
+    {
+      "id": "cuadricula_02_csv",
+      "title": "02 · Malla Grid 3×3 (CSV)",
+      "category": "didactic",
+      "kind": "text",
+      "format": "text",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 9,
+      "edges_count": 18,
+      "description": "Cuadrícula CSV separada por comas con múltiples disminuciones de clave.",
+      "learning_goal": "Observar operaciones decrease_key entre Binary, 4-ary y Fibonacci Heap.",
+      "source_info": "instancias_pruebas/csv_txt/02_intermedio_cuadricula.csv",
+      "weights_meaning": "Pesos abstractos.",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "N1",
+      "suggested_target": "N9",
+      "expected_cost": 17.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "N1",
+        "N4",
+        "N5",
+        "N8",
+        "N9"
+      ],
+      "valid_expected": true,
+      "payload_text": "# Instancia 02: Red en Malla Grid 3x3 (9 Nodos)\n# Formato: origen,destino,peso\n# Pone a prueba disminuciones de clave (decrease-key) frecuentes\n# origin,destination,weight\nN1,N2,10\nN1,N4,5\nN2,N3,8\nN2,N5,4\nN3,N6,6\nN4,N5,3\nN4,N7,7\nN5,N2,2\nN5,N6,9\nN5,N8,4\nN6,N9,3\nN7,N8,2\nN8,N5,1\nN8,N9,5\nN2,N1,10\nN4,N1,5\nN5,N4,3\nN8,N7,2\n"
+    },
+    {
+      "id": "topografia_03_txt",
+      "title": "03 · Topografía Cusco 16 nodos (TXT)",
+      "category": "cusco",
+      "kind": "text",
+      "format": "text",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 16,
+      "edges_count": 22,
+      "description": "Lista de aristas con nombres de hitos de Cusco y pesos ilustrativos.",
+      "learning_goal": "Importar identificadores textuales largos desde archivo TXT.",
+      "source_info": "instancias_pruebas/csv_txt/03_complejo_topografia_cusco.txt",
+      "weights_meaning": "Pesos genéricos en TXT (la API etiqueta unidad «peso» al no traer atributos viales JSON).",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "PlazaMayor",
+      "suggested_target": "Wanchaq",
+      "expected_cost": 215.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "PlazaMayor",
+        "Qorikancha",
+        "ElSol",
+        "Wanchaq"
+      ],
+      "valid_expected": true,
+      "payload_text": "# Instancia 03: Red Urbana Cusco Topografia y Relieve (12 Nodos)\n# Formato: origen destino peso_tiempo_segundos\n# Tiempos calculados con pendientes reales y tipo de calzada\ndirected\nsource PlazaMayor\nPlazaMayor Regocijo 45\nPlazaMayor Qorikancha 108\nPlazaMayor SanBlas 120\nPlazaMayor Plateros 36\nRegocijo SanFrancisco 57\nRegocijo Qorikancha 96\nSanFrancisco SantaClara 64\nSanFrancisco SantaTeresa 45\nSantaClara MercadoSanPedro 58\nMercadoSanPedro ElSol 156\nMercadoSanPedro Tullumayo 168\nQorikancha Limacpampa 36\nQorikancha ElSol 42\nLimacpampa Tullumayo 25\nLimacpampa Wanchaq 78\nSanBlas Choquechaca 38\nChoquechaca Limacpampa 85\nPlateros Saphy 42\nSaphy SanCristobal 135\nSanCristobal PlazaMayor 50\nElSol Wanchaq 65\nTullumayo Wanchaq 55\n"
+    },
+    {
+      "id": "grid_empates_3x3",
+      "title": "Cuadrícula 3×3 con empates (peso unitario)",
+      "category": "edge_cases",
+      "kind": "custom",
+      "format": "json",
+      "directed": false,
+      "metric": "weight",
+      "nodes_count": 9,
+      "edges_count": 24,
+      "description": "Malla bidireccional con peso 1 en cada arista: existen 6 rutas óptimas de costo 4.",
+      "learning_goal": "Verificar que en empates distintas colas/A* mantienen el mismo costo óptimo.",
+      "source_info": "Basado en grid_network(3, 3, weight_mode='unit')",
+      "weights_meaning": "Pesos unitarios abstractos (1.0).",
+      "coords_meaning": "Posiciones esquemáticas en rejilla.",
+      "suggested_source": "0_0",
+      "suggested_target": "2_2",
+      "expected_cost": 4.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "0_0",
+        "0_1",
+        "0_2",
+        "1_2",
+        "2_2"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "grid_3x3_empates",
+        "directed": false,
+        "source": "0_0",
+        "nodes": [
+          {
+            "id": "0_0",
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "id": "0_1",
+            "x": 100.0,
+            "y": 0.0
+          },
+          {
+            "id": "0_2",
+            "x": 200.0,
+            "y": 0.0
+          },
+          {
+            "id": "1_0",
+            "x": 0.0,
+            "y": 100.0
+          },
+          {
+            "id": "1_1",
+            "x": 100.0,
+            "y": 100.0
+          },
+          {
+            "id": "1_2",
+            "x": 200.0,
+            "y": 100.0
+          },
+          {
+            "id": "2_0",
+            "x": 0.0,
+            "y": 200.0
+          },
+          {
+            "id": "2_1",
+            "x": 100.0,
+            "y": 200.0
+          },
+          {
+            "id": "2_2",
+            "x": 200.0,
+            "y": 200.0
+          }
+        ],
+        "edges": [
+          {
+            "origin": "0_0",
+            "destination": "0_1",
+            "weight": 1
+          },
+          {
+            "origin": "0_1",
+            "destination": "0_2",
+            "weight": 1
+          },
+          {
+            "origin": "1_0",
+            "destination": "1_1",
+            "weight": 1
+          },
+          {
+            "origin": "1_1",
+            "destination": "1_2",
+            "weight": 1
+          },
+          {
+            "origin": "2_0",
+            "destination": "2_1",
+            "weight": 1
+          },
+          {
+            "origin": "2_1",
+            "destination": "2_2",
+            "weight": 1
+          },
+          {
+            "origin": "0_0",
+            "destination": "1_0",
+            "weight": 1
+          },
+          {
+            "origin": "0_1",
+            "destination": "1_1",
+            "weight": 1
+          },
+          {
+            "origin": "0_2",
+            "destination": "1_2",
+            "weight": 1
+          },
+          {
+            "origin": "1_0",
+            "destination": "2_0",
+            "weight": 1
+          },
+          {
+            "origin": "1_1",
+            "destination": "2_1",
+            "weight": 1
+          },
+          {
+            "origin": "1_2",
+            "destination": "2_2",
+            "weight": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "caso_desconectado",
+      "title": "Caso borde · Destino inalcanzable",
+      "category": "edge_cases",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 4,
+      "edges_count": 2,
+      "description": "El nodo D queda aislado: no existe camino dirigido desde A hacia D.",
+      "learning_goal": "Comprobar que cost=null y path=[] se distinguen de costo cero y de error HTTP.",
+      "source_info": "Caso de prueba de contrato (test_arbitrary_new_instance_and_no_path)",
+      "weights_meaning": "Pesos abstractos.",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "A",
+      "suggested_target": "D",
+      "expected_cost": null,
+      "expected_unit": "peso",
+      "expected_path": [],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "grafo_desconectado",
+        "directed": true,
+        "source": "A",
+        "nodes": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": 3
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "weight": 4
+          }
+        ]
+      }
+    },
+    {
+      "id": "caso_peso_cero",
+      "title": "Caso borde · Aristas con peso cero",
+      "category": "edge_cases",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 3,
+      "edges_count": 3,
+      "description": "Camino A->B->C con costo total 0.0, válido para Dijkstra.",
+      "learning_goal": "Diferenciar costo óptimo 0.0 de destino inalcanzable (null).",
+      "source_info": "Caso límite de no negatividad (w >= 0)",
+      "weights_meaning": "Pesos abstractos no negativos (0 y 5).",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "A",
+      "suggested_target": "C",
+      "expected_cost": 0.0,
+      "expected_unit": "peso",
+      "expected_path": [
+        "A",
+        "B",
+        "C"
+      ],
+      "valid_expected": true,
+      "payload_json": {
+        "name": "grafo_peso_cero",
+        "directed": true,
+        "source": "A",
+        "nodes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": 0
+          },
+          {
+            "origin": "B",
+            "destination": "C",
+            "weight": 0
+          },
+          {
+            "origin": "A",
+            "destination": "C",
+            "weight": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "osm_centro_1500m",
+      "title": "Cusco Centro · Snapshot OSM (1,5 km)",
+      "category": "cusco",
+      "kind": "center",
+      "format": "server_snapshot",
+      "directed": true,
+      "metric": "time",
+      "nodes_count": 891,
+      "edges_count": 2139,
+      "description": "Snapshot canónico extraído de OpenStreetMap el 28/10/2026 alrededor de Plaza Mayor.",
+      "learning_goal": "Ejecutar rutas georreferenciadas sobre 891 intersecciones y 2139 aristas reales.",
+      "source_info": "python/data/processed/cusco_osm_drive.json · 28/10/2026",
+      "weights_meaning": "travel_time_sec nominal de OSMnx/highway (no tráfico real) o length_m en metros.",
+      "coords_meaning": "Coordenadas WGS84 (lon, lat) verificadas.",
+      "suggested_source": 1008097623,
+      "suggested_target": 995446309,
+      "expected_cost": 387.197,
+      "expected_unit": "s",
+      "expected_path": null,
+      "valid_expected": true
+    },
+    {
+      "id": "osm_ampliado_3000m",
+      "title": "Cusco Centro Ampliado · Snapshot OSM (3 km)",
+      "category": "cusco",
+      "kind": "urban",
+      "format": "server_snapshot",
+      "directed": true,
+      "metric": "time",
+      "nodes_count": 1938,
+      "edges_count": 4753,
+      "description": "Cobertura independiente de radio 3 km recortada por distancia de red (10/08/2026, revisada).",
+      "learning_goal": "Observar visualización simplificada (display_limited=true) con ruta completa preservada.",
+      "source_info": "python/data/processed/cusco_urbano_drive.json · coverage_reviewed: true",
+      "weights_meaning": "travel_time_sec nominal o length_m en metros.",
+      "coords_meaning": "Coordenadas WGS84 (lon, lat) verificadas.",
+      "suggested_source": null,
+      "suggested_target": null,
+      "expected_cost": null,
+      "expected_unit": "s",
+      "expected_path": null,
+      "valid_expected": true
+    },
+    {
+      "id": "invalido_peso_negativo",
+      "title": "Inválido · Arista con peso negativo (-2)",
+      "category": "invalid",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 2,
+      "edges_count": 1,
+      "description": "Ejercicio de validación: Dijkstra requiere pesos >= 0.",
+      "learning_goal": "Verificar el rechazo HTTP 422 y detección local de precondiciones.",
+      "source_info": "Caso negativo de contrato (test_invalid_graph_rejected)",
+      "weights_meaning": "Peso negativo inválido (-2).",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "A",
+      "suggested_target": "B",
+      "expected_cost": null,
+      "expected_unit": "peso",
+      "expected_path": null,
+      "valid_expected": false,
+      "expected_error": "peso negativo (-2.0)",
+      "payload_json": {
+        "name": "invalido_peso_negativo",
+        "directed": true,
+        "nodes": [
+          "A",
+          "B"
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": -2
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalido_nodos_duplicados",
+      "title": "Inválido · Identificadores duplicados",
+      "category": "invalid",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 2,
+      "edges_count": 0,
+      "description": "Ejercicio de validación: declara dos veces el nodo A.",
+      "learning_goal": "Verificar detección de IDs repetidos en el editor y en FastAPI.",
+      "source_info": "Caso negativo de contrato (test_invalid_graph_rejected)",
+      "weights_meaning": "Sin aristas.",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": null,
+      "suggested_target": null,
+      "expected_cost": null,
+      "expected_unit": "peso",
+      "expected_path": null,
+      "valid_expected": false,
+      "expected_error": "Identificadores de vértice repetidos",
+      "payload_json": {
+        "name": "invalido_nodos_duplicados",
+        "directed": true,
+        "nodes": [
+          "A",
+          "A"
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "invalido_destino_no_declarado",
+      "title": "Inválido · Arista hacia nodo inexistente",
+      "category": "invalid",
+      "kind": "custom",
+      "format": "json",
+      "directed": true,
+      "metric": "weight",
+      "nodes_count": 1,
+      "edges_count": 1,
+      "description": "Ejercicio de validación: la arista A->B apunta a un vértice no declarado en nodes.",
+      "learning_goal": "Verificar integridad referencial de vértices y aristas.",
+      "source_info": "Caso negativo de contrato (test_invalid_graph_rejected)",
+      "weights_meaning": "Peso 3.",
+      "coords_meaning": "Sin coordenadas.",
+      "suggested_source": "A",
+      "suggested_target": "B",
+      "expected_cost": null,
+      "expected_unit": "peso",
+      "expected_path": null,
+      "valid_expected": false,
+      "expected_error": "no fue declarado en 'nodes'",
+      "payload_json": {
+        "name": "invalido_nodo_inexistente",
+        "directed": true,
+        "nodes": [
+          "A"
+        ],
+        "edges": [
+          {
+            "origin": "A",
+            "destination": "B",
+            "weight": 3
+          }
+        ]
+      }
+    }
+  ]
+}

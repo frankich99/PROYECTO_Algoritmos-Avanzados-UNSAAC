@@ -403,3 +403,59 @@ def test_benchmark_read_only_and_new_experiment():
     assert len(experiment.json()["rows"]) == 3
     assert all(len(r["samples_us"]) == 4 for r in experiment.json()["rows"])
     assert before == (DATA / "benchmark_results.json").read_bytes()
+
+
+def test_contract_versions_limits_and_explicit_openapi_schemas():
+    ver = client.get("/api/v1/version").json()
+    assert ver["version"] == ver["api_version"] == "1.5.0"
+    assert ver["data_version"] and ver["docs_version"] and ver["generator_version"]
+    limits = client.get("/api/v1/catalog").json()["limits"]
+    assert limits["experiment_size_min"] == 5 and limits["experiment_size_max"] == 200
+    assert limits["experiment_sizes_max_count"] == 4
+    assert limits["experiment_runs_min"] == 2 and limits["experiment_runs_max"] == 10
+    assert limits["display_max_edges"] == 3000
+    spec = client.get("/openapi.json").json()
+    schemas = spec["components"]["schemas"]
+    for name in ("VersionResponse", "CatalogResponse", "InstanceValidateResponse",
+                 "InstanceExportResponse", "RouteSolveResponse", "BenchmarkResponse",
+                 "PilotResponse", "ExperimentResponse", "ConditionsResponse"):
+        assert name in schemas
+    assert "/api/v1/instances/export" in spec["paths"]
+    for bad_sizes in ([4], [201], [10, 10], [5, 10, 15, 20, 25]):
+        assert client.post("/api/v1/experiments", json={"profile": "sparse", "sizes": bad_sizes, "runs": 2}).status_code == 422
+
+
+def test_export_instance_is_complete_and_reimportable_without_truncation():
+    # 1. Generador denso con > 3000 aristas: validate trunca display_edges, export conserva todas.
+    dense_spec = {"kind": "generated", "generator": "dense", "nodes": 300, "seed": 42}
+    preview = client.post("/api/v1/instances/validate", json=dense_spec).json()
+    assert preview["edges"] > 3000 and len(preview["display_edges"]) < preview["edges"] and len(preview["display_edges"]) <= 3000 and preview["display_limited"] is True
+    exported = client.post("/api/v1/instances/export", json=dense_spec)
+    assert exported.status_code == 200, exported.text
+    payload = exported.json()
+    assert payload["edges"] == preview["edges"]
+    assert len(payload["instance"]["edges"]) == preview["edges"]
+    assert payload["instance"]["metadata"]["generator"] == "dense"
+    assert payload["instance"]["metadata"]["seed"] == 42
+    reimported = client.post("/api/v1/instances/validate", json={"kind": "custom", "data": payload["instance"]})
+    assert reimported.status_code == 200 and reimported.json()["edges"] == preview["edges"]
+    orig_route = client.post("/api/v1/routes/solve", json={"instance": dense_spec, "source": "N0", "target": "N299", "compare": False}).json()
+    reimp_route = client.post("/api/v1/routes/solve", json={"instance": {"kind": "custom", "data": payload["instance"]}, "source": "N0", "target": "N299", "compare": False}).json()
+    assert reimp_route["result"]["cost"] == pytest.approx(orig_route["result"]["cost"])
+
+    # 2. Ejemplo de 6 nodos: exportado conserva atributos viales para time y distance.
+    ex_export = client.post("/api/v1/instances/export?metric=time", json={"kind": "example"}).json()
+    re_time = client.post("/api/v1/routes/solve", json={"instance": {"kind": "custom", "data": ex_export["instance"]}, "source": "A", "target": "F", "metric": "time", "compare": False}).json()
+    re_dist = client.post("/api/v1/routes/solve", json={"instance": {"kind": "custom", "data": ex_export["instance"]}, "source": "A", "target": "E", "metric": "distance", "compare": False}).json()
+    assert re_time["unit"] == "s" and re_time["result"]["cost"] == pytest.approx(144.45)
+    assert re_dist["unit"] == "m" and re_dist["result"]["cost"] == pytest.approx(650)
+
+    # 3. Instancia vial personalizada: conserva atributos viales y directed=False al exportar.
+    road_custom = {"kind": "custom", "data": {"directed": False, "nodes": ["A", "B"], "edges": [
+        {"origin": "A", "destination": "B", "length_m": 100, "street_type": "avenida", "gradient_pct": 0}
+    ]}}
+    road_export = client.post("/api/v1/instances/export?metric=time", json=road_custom).json()
+    assert road_export["instance"]["directed"] is False
+    assert "length_m" in road_export["instance"]["edges"][0]
+    back = client.post("/api/v1/routes/solve", json={"instance": {"kind": "custom", "data": road_export["instance"]}, "source": "B", "target": "A", "metric": "distance", "compare": False}).json()
+    assert back["unit"] == "m" and back["result"]["cost"] == pytest.approx(100)

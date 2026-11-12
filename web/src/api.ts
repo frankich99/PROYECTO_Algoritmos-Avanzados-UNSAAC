@@ -58,8 +58,35 @@ export type Condition = {
   multiplier?: number; contributions?: Record<string, number>
   flow?: TrafficFlow
 }
+export type ApiLimits = {
+  max_nodes: number
+  max_edges: number
+  max_payload_bytes: number
+  display_max_nodes: number
+  display_max_edges: number
+  generator_nodes_min: number
+  generator_nodes_max: number
+  generator_grid_min: number
+  generator_grid_max: number
+  experiment_sizes_max_count: number
+  experiment_size_min: number
+  experiment_size_max: number
+  experiment_runs_min: number
+  experiment_runs_max: number
+  seed_min: number
+  seed_max: number
+}
 export type Catalog = { networks: { kind: Kind; label: string; available: boolean }[]; queues: Queue[]; example: string;
-  provider_keys?: { openweathermap: boolean; tomtom: boolean } }
+  provider_keys?: { openweathermap: boolean; tomtom: boolean }; limits?: ApiLimits }
+export type ExportedInstance = {
+  format: 'rutas-cusco-instance-v1'
+  api_version: string
+  generator_version: string
+  nodes: number
+  edges: number
+  metric: string
+  instance: Record<string, unknown>
+}
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
 
