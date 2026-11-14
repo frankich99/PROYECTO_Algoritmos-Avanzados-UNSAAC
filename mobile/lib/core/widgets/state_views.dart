@@ -47,7 +47,9 @@ class LoadingStateView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.warnBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.gold.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: AppTheme.gold.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: const Row(
                     children: [
@@ -55,7 +57,7 @@ class LoadingStateView extends StatelessWidget {
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'El servidor gratuito en Render puede tardar unos segundos en despertar tras inactividad. La app sigue usable mientras responde.',
+                          'El servicio está tardando en iniciar. Puedes consultar tu biblioteca mientras responde.',
                           style: TextStyle(fontSize: 13, color: AppTheme.ink),
                         ),
                       ),
@@ -108,10 +110,7 @@ class EmptyStateView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              if (action != null) ...[
-                const SizedBox(height: 16),
-                action!,
-              ],
+              if (action != null) ...[const SizedBox(height: 16), action!],
             ],
           ),
         ),
@@ -224,104 +223,145 @@ class SavedDataBadge extends StatelessWidget {
 }
 
 class ServerStatusBanner extends StatelessWidget {
-  const ServerStatusBanner({super.key, required this.repo});
+  const ServerStatusBanner({
+    super.key,
+    required this.repo,
+    this.compact = true,
+  });
 
   final ServerRepository repo;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    switch (repo.state) {
-      case ServerLoadState.initial:
-      case ServerLoadState.loading:
-        return Container(
-          width: double.infinity,
-          color: AppTheme.goldSoft,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppTheme.maroon,
+    final busy =
+        repo.state == ServerLoadState.initial ||
+        repo.state == ServerLoadState.loading;
+    final ready =
+        repo.state == ServerLoadState.ready && repo.isVersionCompatible;
+    if (compact && ready) return const SizedBox.shrink();
+
+    final (
+      title,
+      description,
+      icon,
+      foreground,
+      background,
+    ) = switch (repo.state) {
+      ServerLoadState.initial || ServerLoadState.loading => (
+        'Comprobando conexión…',
+        repo.slowWakeup
+            ? 'El servicio está iniciando. Puedes seguir usando la biblioteca.'
+            : 'Esto no impide abrir tus datos guardados.',
+        Icons.sync,
+        AppTheme.gold,
+        AppTheme.goldSoft,
+      ),
+      ServerLoadState.ready when repo.isVersionCompatible => (
+        'Servicio disponible',
+        'Puedes calcular rutas y consultar condiciones actuales.',
+        Icons.cloud_done_outlined,
+        AppTheme.okGreen,
+        AppTheme.okBg,
+      ),
+      ServerLoadState.ready => (
+        'El servicio necesita revisión',
+        'La versión no es compatible. Revisa Conexión avanzada en Ajustes.',
+        Icons.warning_amber_outlined,
+        AppTheme.warnAmber,
+        AppTheme.warnBg,
+      ),
+      ServerLoadState.saved => (
+        'Sin conexión al servicio',
+        'Usando el catálogo guardado. Los cálculos nuevos necesitan conexión.',
+        Icons.cloud_off_outlined,
+        AppTheme.warnAmber,
+        AppTheme.warnBg,
+      ),
+      ServerLoadState.offline => (
+        'Sin conexión al servicio',
+        'Revisa internet o la dirección del servicio. Tu biblioteca sigue disponible.',
+        Icons.cloud_off_outlined,
+        AppTheme.warnAmber,
+        AppTheme.warnBg,
+      ),
+      ServerLoadState.error => (
+        'No se pudo consultar el servicio',
+        'Inténtalo de nuevo. Si continúa, revisa Conexión avanzada en Ajustes.',
+        Icons.error_outline,
+        AppTheme.errorRed,
+        AppTheme.errorBg,
+      ),
+      ServerLoadState.empty => (
+        'Servicio sin redes disponibles',
+        'No se recibió un catálogo utilizable. Puedes abrir los ejemplos incluidos.',
+        Icons.info_outline,
+        AppTheme.warnAmber,
+        AppTheme.warnBg,
+      ),
+    };
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(compact ? 12 : 16),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: compact ? null : BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (busy)
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foreground,
+                    ),
+                  )
+                else
+                  Icon(icon, color: foreground),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(color: foreground),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: AppTheme.ink),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  repo.slowWakeup
-                      ? 'Render está despertando… puedes explorar ejemplos o borradores mientras responde.'
-                      : 'Verificando conexión y catálogo con FastAPI…',
-                  style: const TextStyle(fontSize: 12.5, color: AppTheme.ink),
-                ),
-              ),
-            ],
-          ),
-        );
-      case ServerLoadState.ready:
-        if (!repo.isVersionCompatible) {
-          return Container(
-            width: double.infinity,
-            color: AppTheme.warnBg,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Text(
-              'Versión de API distinta (${repo.version?.apiVersion}). Revisa compatibilidad en Proyecto.',
-              style: const TextStyle(fontSize: 12.5, color: AppTheme.ink),
+              ],
             ),
-          );
-        }
-        return const SizedBox.shrink();
-      case ServerLoadState.saved:
-        return Container(
-          width: double.infinity,
-          color: AppTheme.warnBg,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            children: [
-              const Icon(Icons.offline_bolt_outlined,
-                  size: 18, color: AppTheme.warnAmber),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Sin conexión actual: usando catálogo guardado localmente.',
-                  style: TextStyle(fontSize: 12.5, color: AppTheme.ink),
+            if (!busy)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: TextButton.icon(
+                  onPressed: repo.refreshStatus,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(
+                    ready ? 'Comprobar de nuevo' : 'Reintentar conexión',
+                  ),
                 ),
               ),
-              TextButton(
-                onPressed: repo.refreshStatus,
-                child: const Text('Conectar'),
-              ),
-            ],
-          ),
-        );
-      case ServerLoadState.offline:
-      case ServerLoadState.error:
-        return Container(
-          width: double.infinity,
-          color: AppTheme.errorBg,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            children: [
-              const Icon(Icons.cloud_off, size: 18, color: AppTheme.errorRed),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  repo.errorMessage ?? 'Sin conexión al servidor.',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12.5, color: AppTheme.ink),
-                ),
-              ),
-              TextButton(
-                onPressed: repo.refreshStatus,
-                child: const Text('Reintentar'),
-              ),
-            ],
-          ),
-        );
-      case ServerLoadState.empty:
-        return const SizedBox.shrink();
-    }
+          ],
+        ),
+      ),
+    );
   }
 }

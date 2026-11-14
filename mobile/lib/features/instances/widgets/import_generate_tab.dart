@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_select_field.dart';
 import '../../../data/models/catalog_models.dart';
 import '../../../data/models/editable_graph.dart';
 
@@ -19,7 +20,7 @@ class ImportGenerateTab extends StatefulWidget {
   final ApiLimits limits;
   final bool generating;
   final Future<void> Function(EditableGraph graph, String sourceLabel)
-      onImportParsed;
+  onImportParsed;
   final Future<String?> Function() onPickFile;
   final Future<void> Function({
     required String generator,
@@ -27,7 +28,8 @@ class ImportGenerateTab extends StatefulWidget {
     required int nodes,
     required int rows,
     required int cols,
-  }) onGenerateOfficial;
+  })
+  onGenerateOfficial;
 
   @override
   State<ImportGenerateTab> createState() => _ImportGenerateTabState();
@@ -226,39 +228,42 @@ class _ImportGenerateTabState extends State<ImportGenerateTab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Generador reproducible oficial (FastAPI)',
+                  'Generar una red',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'La generación oficial se ejecuta en Python para conservar equivalencia exacta de semillas entre web y móvil, y guarda el grafo completo en tu dispositivo.',
+                  'Requiere conexión. La misma semilla y parámetros generan la misma red que en la web. El grafo completo se guarda en este dispositivo.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _generator,
-                  decoration: const InputDecoration(labelText: 'Perfil de red'),
-                  items: const [
-                    DropdownMenuItem(
+                AppSelectField<String>(
+                  label: 'Perfil de red',
+                  value: _generator,
+                  leadingIcon: Icons.hub_outlined,
+                  options: const [
+                    SelectOption(
                       value: 'random',
-                      child: Text('Red local aleatoria'),
+                      label: 'Red local aleatoria',
+                      subtitle: 'Árbol de conectividad más aristas locales',
                     ),
-                    DropdownMenuItem(
+                    SelectOption(
                       value: 'grid',
-                      child: Text('Cuadrícula urbana'),
+                      label: 'Cuadrícula urbana',
+                      subtitle: 'Malla filas × columnas con múltiples empates',
                     ),
-                    DropdownMenuItem(
+                    SelectOption(
                       value: 'sparse',
-                      child: Text('Disperso (E ≈ 4V)'),
+                      label: 'Disperso (E ≈ 4V)',
+                      subtitle: 'Baja densidad, representativo de redes viales',
                     ),
-                    DropdownMenuItem(
+                    SelectOption(
                       value: 'dense',
-                      child: Text('Denso (8% aristas posibles)'),
+                      label: 'Denso (8% aristas posibles)',
+                      subtitle: 'Alta densidad para exigir decrease-key',
                     ),
                   ],
-                  onChanged: (v) {
-                    if (v != null) setState(() => _generator = v);
-                  },
+                  onChanged: (v) => setState(() => _generator = v),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -277,8 +282,7 @@ class _ImportGenerateTabState extends State<ImportGenerateTab> {
                     IconButton.outlined(
                       tooltip: 'Semilla aleatoria',
                       onPressed: () {
-                        _seedCtrl.text =
-                            Random().nextInt(100000).toString();
+                        _seedCtrl.text = Random().nextInt(100000).toString();
                       },
                       icon: const Icon(Icons.casino_outlined),
                     ),
@@ -343,7 +347,7 @@ class _ImportGenerateTabState extends State<ImportGenerateTab> {
                   label: Text(
                     widget.generating
                         ? 'Generando y guardando…'
-                        : 'Generar en FastAPI y guardar',
+                        : 'Generar y guardar',
                   ),
                 ),
               ],

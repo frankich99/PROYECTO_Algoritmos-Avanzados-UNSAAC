@@ -10,21 +10,10 @@ import '../models/catalog_models.dart';
 import '../models/version_info.dart';
 import 'settings_repository.dart';
 
-enum ServerLoadState {
-  initial,
-  loading,
-  ready,
-  empty,
-  offline,
-  error,
-  saved,
-}
+enum ServerLoadState { initial, loading, ready, empty, offline, error, saved }
 
 class ServerRepository extends ChangeNotifier {
-  ServerRepository({
-    required this.apiClient,
-    required this.settingsRepository,
-  });
+  ServerRepository({required this.apiClient, required this.settingsRepository});
 
   final ApiClient apiClient;
   final SettingsRepository settingsRepository;
@@ -89,19 +78,29 @@ class ServerRepository extends ChangeNotifier {
   }
 
   Future<void> updateServerUrl(String url) async {
+    final error = AppConfig.validateBaseUrl(url);
+    if (error != null) throw ArgumentError(error);
     final normalized = AppConfig.normalizeBaseUrl(url);
+    if (normalized != baseUrl) {
+      _guard.invalidateAll();
+      await settingsRepository.clearCachedServerMetadata();
+      _catalog = null;
+      _version = null;
+      _lastSyncedAt = null;
+      _state = ServerLoadState.initial;
+    }
     await settingsRepository.saveBaseUrl(normalized);
     apiClient.updateBaseUrl(normalized);
     await refreshStatus();
   }
 
   Future<void> resetServerUrl() async {
+    await updateServerUrl(AppConfig.configuredBaseUrl);
     await settingsRepository.resetBaseUrl();
-    apiClient.updateBaseUrl(AppConfig.configuredBaseUrl);
-    await refreshStatus();
   }
 
   Future<void> refreshStatus() async {
+    if (_state == ServerLoadState.loading) return;
     final token = _guard.nextToken();
     _state = ServerLoadState.loading;
     _slowWakeup = false;
@@ -146,6 +145,7 @@ class ServerRepository extends ChangeNotifier {
 
       await settingsRepository.saveCachedVersionJson(jsonEncode(versionMap));
       await settingsRepository.saveCachedCatalogJson(jsonEncode(catalogMap));
+      if (!_guard.isCurrent(token)) return;
       notifyListeners();
     } on ApiException catch (err) {
       if (!_guard.isCurrent(token)) return;
@@ -160,5 +160,11 @@ class ServerRepository extends ChangeNotifier {
       }
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    _guard.invalidateAll();
+    super.dispose();
   }
 }

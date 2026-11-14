@@ -48,4 +48,29 @@ class DeviceFilesService {
       ),
     );
   }
+
+  Future<void> shareAssetBinary({
+    required String assetPath,
+    required String outputFilename,
+    String? subject,
+  }) async {
+    final byteData = await rootBundle.load(assetPath);
+    final dir = await getTemporaryDirectory();
+    final safeName = outputFilename.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+    final file = File(p.join(dir.path, safeName));
+    await file.writeAsBytes(
+      byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      ),
+      flush: true,
+    );
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        subject: subject ?? outputFilename,
+        text: subject ?? outputFilename,
+      ),
+    );
+  }
 }

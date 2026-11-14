@@ -5,6 +5,7 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/state_views.dart';
 import '../../data/repositories/server_repository.dart';
+import 'widgets/about_app_section.dart';
 
 class ProjectSettingsScreen extends StatefulWidget {
   const ProjectSettingsScreen({super.key});
@@ -14,14 +15,16 @@ class ProjectSettingsScreen extends StatefulWidget {
 }
 
 class _ProjectSettingsScreenState extends State<ProjectSettingsScreen> {
-  late TextEditingController _urlController;
+  late final TextEditingController _urlController;
   String? _urlValidationError;
+  bool _applying = false;
 
   @override
   void initState() {
     super.initState();
-    final repo = context.read<ServerRepository>();
-    _urlController = TextEditingController(text: repo.baseUrl);
+    _urlController = TextEditingController(
+      text: context.read<ServerRepository>().baseUrl,
+    );
   }
 
   @override
@@ -30,337 +33,263 @@ class _ProjectSettingsScreenState extends State<ProjectSettingsScreen> {
     super.dispose();
   }
 
-  Future<void> _applyServerUrl() async {
+  Future<void> _applyServerUrl([String? preset]) async {
+    if (_applying) return;
+    if (preset != null) _urlController.text = preset;
     final raw = _urlController.text.trim();
-    final uri = Uri.tryParse(raw);
-    if (raw.isEmpty || uri == null || !uri.hasScheme || !uri.hasAuthority) {
-      setState(() {
-        _urlValidationError =
-            'Ingresa una URL completa válida (ej. https://rutas-cusco-unsaac.onrender.com).';
-      });
-      return;
+    final error = AppConfig.validateBaseUrl(raw);
+    setState(() => _urlValidationError = error);
+    if (error != null) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _applying = true);
+    try {
+      await context.read<ServerRepository>().updateServerUrl(raw);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _urlValidationError =
+              'No se pudo guardar la dirección. Vuelve a intentarlo.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _applying = false);
     }
-    setState(() => _urlValidationError = null);
-    await context.read<ServerRepository>().updateServerUrl(raw);
   }
 
   @override
   Widget build(BuildContext context) {
     final repo = context.watch<ServerRepository>();
-    final catalog = repo.catalog;
+    final busy = _applying || repo.state == ServerLoadState.loading;
     final version = repo.version;
     final limits = repo.limits;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Proyecto y servidor'),
-        actions: [
-          IconButton(
-            onPressed: repo.state == ServerLoadState.loading
-                ? null
-                : repo.refreshStatus,
-            tooltip: 'Actualizar estado del servidor',
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 780;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1080),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(title: const Text('Ajustes')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Conexión', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                ServerStatusBanner(repo: repo, compact: false),
+                const SizedBox(height: 24),
+                Text(
+                  'Tu trabajo queda en este dispositivo',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Los borradores y resultados que guardas se conservan en el teléfono. '
+                  'No necesitas configurar una base de datos ni un servidor para usar la app.',
+                ),
+                const SizedBox(height: 16),
+                const ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.only(bottom: 16),
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  title: Text('Qué puedes hacer sin internet'),
+                  subtitle: Text('Ejemplos, edición y resultados guardados'),
                   children: [
-                    _SectionHeader(
-                      kicker: 'CONEXIÓN Y CONTRATO',
-                      title: 'Estado del backend FastAPI',
-                      subtitle:
-                          'La aplicación móvil reutiliza los algoritmos y validaciones oficiales de FastAPI.',
+                    _HelpItem(
+                      icon: Icons.edit_outlined,
+                      title: 'Preparar y consultar',
+                      description:
+                          'Explora los ejemplos, edita grafos y abre '
+                          'rutas, experimentos y documentos ya guardados.',
+                    ),
+                    _HelpItem(
+                      icon: Icons.route_outlined,
+                      title: 'Para calcular algo nuevo',
+                      description:
+                          'Conéctate para calcular rutas, validar en el '
+                          'servidor, generar redes o ejecutar experimentos nuevos.',
+                    ),
+                  ],
+                ),
+                const ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.only(bottom: 16),
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  title: Text('Cómo se conectan los mapas'),
+                  subtitle: Text('Plano local y calles OpenStreetMap'),
+                  children: [
+                    _HelpItem(
+                      icon: Icons.map_outlined,
+                      title: 'Plano sin conexión',
+                      description:
+                          'Dibuja los nodos y las vías cuando hay una '
+                          'vista previa cargada. No descarga imágenes de calles.',
+                    ),
+                    _HelpItem(
+                      icon: Icons.public_outlined,
+                      title: 'Calles OSM',
+                      description:
+                          'Las imágenes se descargan de OpenStreetMap '
+                          'con internet, por separado del servicio de cálculo. '
+                          'No se garantiza que queden disponibles sin conexión.',
+                    ),
+                    _HelpItem(
+                      icon: Icons.cloud_outlined,
+                      title: 'Rutas y condiciones actuales',
+                      description:
+                          'El servicio calcula Dijkstra y A* y consulta '
+                          'clima o tráfico cuando lo solicitas. No se ejecuta '
+                          'FastAPI dentro del teléfono.',
+                    ),
+                  ],
+                ),
+                const AboutAppSection(),
+                const SizedBox(height: 8),
+                ExpansionTile(
+                  key: const ValueKey('advanced-connection'),
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: const EdgeInsets.only(bottom: 24),
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  title: const Text('Conexión avanzada'),
+                  subtitle: const Text(
+                    'Solo para pruebas o un servidor propio',
+                  ),
+                  children: [
+                    const Text(
+                      'Por defecto se usa el servicio del proyecto alojado en Render. '
+                      'No cambies esta dirección para el uso habitual.',
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _urlController,
+                      enabled: !busy,
+                      keyboardType: TextInputType.url,
+                      autocorrect: false,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: busy ? null : (_) => _applyServerUrl(),
+                      decoration: InputDecoration(
+                        labelText: 'Dirección del servicio',
+                        helperText:
+                            'URL base con https:// o http://, sin /api/v1.',
+                        helperMaxLines: 3,
+                        errorText: _urlValidationError,
+                        errorMaxLines: 3,
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    if (repo.state == ServerLoadState.loading)
-                      LoadingStateView(
-                        title: 'Conectando con FastAPI…',
-                        subtitle: repo.baseUrl,
-                        showWakeupNotice: repo.slowWakeup,
-                      )
-                    else if (repo.state == ServerLoadState.offline ||
-                        repo.state == ServerLoadState.error) ...[
-                      ErrorStateBanner(
-                        message: repo.errorMessage ?? 'No se pudo consultar el servidor.',
-                        isOffline: repo.state == ServerLoadState.offline,
-                        onRetry: repo.refreshStatus,
-                      ),
-                      const SizedBox(height: 12),
-                    ] else if (repo.state == ServerLoadState.saved) ...[
-                      const SavedDataBadge(
-                        label: 'Catálogo guardado en caché · sin conexión actual',
-                      ),
-                      const SizedBox(height: 12),
-                    ],
                     Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        SizedBox(
-                          width: isWide ? 520 : double.infinity,
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Versiones y estado',
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  _KeyValueRow(
-                                    label: 'Estado',
-                                    value: _stateLabel(repo.state),
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'API FastAPI',
-                                    value: version?.apiVersion ?? 'Sin consultar',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Datos canónicos',
-                                    value: version?.dataVersion.isNotEmpty == true
-                                        ? version!.dataVersion
-                                        : '—',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Documentación',
-                                    value: version?.docsVersion.isNotEmpty == true
-                                        ? version!.docsVersion
-                                        : '—',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Generador',
-                                    value:
-                                        version?.generatorVersion.isNotEmpty == true
-                                            ? version!.generatorVersion
-                                            : '—',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Colas disponibles',
-                                    value: catalog == null
-                                        ? '—'
-                                        : catalog.queues.join(', '),
-                                  ),
-                                ],
-                              ),
-                            ),
+                        FilledButton.icon(
+                          onPressed: busy ? null : () => _applyServerUrl(),
+                          icon: const Icon(Icons.check),
+                          label: Text(
+                            _applying ? 'Comprobando…' : 'Guardar y comprobar',
                           ),
                         ),
-                        SizedBox(
-                          width: isWide ? 520 : double.infinity,
-                          child: Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Coberturas y límites unificados',
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  if (catalog != null)
-                                    for (final net in catalog.networks)
-                                      _KeyValueRow(
-                                        label: net.kind == 'center'
-                                            ? 'Centro OSM'
-                                            : 'Ampliada OSM',
-                                        value: net.available
-                                            ? 'Disponible'
-                                            : 'No verificada',
-                                      ),
-                                  _KeyValueRow(
-                                    label: 'Máx. grafo',
-                                    value:
-                                        '${limits.maxNodes} nodos / ${limits.maxEdges} aristas',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Experimentos',
-                                    value:
-                                        '${limits.experimentSizeMin}–${limits.experimentSizeMax} nodos (máx. ${limits.experimentSizesMaxCount})',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Repeticiones',
-                                    value:
-                                        '${limits.experimentRunsMin}–${limits.experimentRunsMax} por instancia',
-                                  ),
-                                  _KeyValueRow(
-                                    label: 'Generadores',
-                                    value:
-                                        '${limits.generatorNodesMin}–${limits.generatorNodesMax} nodos · malla ${limits.generatorGridMin}–${limits.generatorGridMax}',
-                                  ),
-                                ],
-                              ),
-                            ),
+                        OutlinedButton(
+                          onPressed: busy
+                              ? null
+                              : () => _applyServerUrl(
+                                  AppConfig.productionBaseUrl,
+                                ),
+                          child: const Text(
+                            'Restablecer servicio del proyecto',
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Dirección del servidor FastAPI',
-                              style: Theme.of(context).textTheme.titleMedium,
+                    const Text(
+                      'En un teléfono físico, usa la IP del equipo con FastAPI '
+                      'en la misma red Wi-Fi. «localhost» apunta al teléfono, no al equipo. '
+                      'Una dirección HTTP local no cifra las solicitudes; úsala solo en una red de confianza.',
+                    ),
+                    TextButton(
+                      onPressed: busy
+                          ? null
+                          : () => _applyServerUrl(
+                              AppConfig.androidEmulatorLocalUrl,
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Producción apunta a Render. En pruebas locales desde emulador Android usa http://10.0.2.2:8000 (localhost apunta al teléfono).',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: _urlController,
-                              keyboardType: TextInputType.url,
-                              autocorrect: false,
-                              decoration: InputDecoration(
-                                labelText: 'URL base del backend',
-                                errorText: _urlValidationError,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                FilledButton.icon(
-                                  onPressed: _applyServerUrl,
-                                  icon: const Icon(Icons.check),
-                                  label: const Text('Aplicar y comprobar'),
-                                ),
-                                OutlinedButton(
-                                  onPressed: () {
-                                    _urlController.text =
-                                        AppConfig.productionBaseUrl;
-                                    _applyServerUrl();
-                                  },
-                                  child: const Text('Usar Render oficial'),
-                                ),
-                                OutlinedButton(
-                                  onPressed: () {
-                                    _urlController.text =
-                                        AppConfig.androidEmulatorLocalUrl;
-                                    _applyServerUrl();
-                                  },
-                                  child: const Text('Usar emulador local'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      child: const Text(
+                        'Usar servidor del emulador (10.0.2.2)',
                       ),
+                    ),
+                    const Divider(height: 24),
+                    Text(
+                      'Información técnica',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText('Servicio actual: ${repo.baseUrl}'),
+                    if (repo.errorMessage != null) ...[
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        'Detalle de conexión: ${repo.errorMessage}',
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(
+                      repo.isUsingSavedFallback
+                          ? 'Datos del último catálogo guardado, no de una conexión actual.'
+                          : repo.catalog == null
+                          ? 'Sin catálogo consultado. Los límites indicados son los valores predeterminados de la app.'
+                          : 'Versiones y límites recibidos del servicio.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text('API: ${version?.apiVersion ?? 'Sin consultar'}'),
+                    if (version != null) ...[
+                      Text('Datos: ${version.dataVersion}'),
+                      Text('Documentación: ${version.docsVersion}'),
+                      Text('Generador: ${version.generatorVersion}'),
+                    ],
+                    Text(
+                      'Grafos: hasta ${limits.maxNodes} nodos y ${limits.maxEdges} aristas.',
+                    ),
+                    Text(
+                      'Experimentos: ${limits.experimentSizeMin} a ${limits.experimentSizeMax} nodos; '
+                      '${limits.experimentRunsMin} a ${limits.experimentRunsMax} repeticiones.',
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
-
-  String _stateLabel(ServerLoadState state) {
-    switch (state) {
-      case ServerLoadState.initial:
-        return 'Inicializando';
-      case ServerLoadState.loading:
-        return 'Consultando servidor';
-      case ServerLoadState.ready:
-        return 'Conectado';
-      case ServerLoadState.empty:
-        return 'Catálogo vacío';
-      case ServerLoadState.offline:
-        return 'Sin conexión';
-      case ServerLoadState.error:
-        return 'Error de respuesta';
-      case ServerLoadState.saved:
-        return 'Caché guardada (sin conexión)';
-    }
-  }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.kicker,
+class _HelpItem extends StatelessWidget {
+  const _HelpItem({
+    required this.icon,
     required this.title,
-    required this.subtitle,
+    required this.description,
   });
 
-  final String kicker;
+  final IconData icon;
   final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          kicker,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
-            color: AppTheme.maroon,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(title, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 4),
-        Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-      ],
-    );
-  }
-}
-
-class _KeyValueRow extends StatelessWidget {
-  const _KeyValueRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(top: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 132,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: AppTheme.mutedInk,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          Icon(icon, color: AppTheme.mutedInk),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: AppTheme.ink,
-                fontFeatures: AppTheme.tabularFigures,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 4),
+                Text(description),
+              ],
             ),
           ),
         ],

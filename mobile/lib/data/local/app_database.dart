@@ -67,6 +67,102 @@ class SavedInstanceRecord {
   }
 }
 
+class SavedRouteRecord {
+  const SavedRouteRecord({
+    required this.id,
+    required this.title,
+    required this.instanceName,
+    required this.metric,
+    required this.unit,
+    required this.sourceLabel,
+    required this.targetLabel,
+    this.cost,
+    required this.requestJson,
+    required this.responseJson,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String title;
+  final String instanceName;
+  final String metric;
+  final String unit;
+  final String sourceLabel;
+  final String targetLabel;
+  final double? cost;
+  final String requestJson;
+  final String responseJson;
+  final String createdAt;
+
+  Map<String, Object?> toRow() => {
+        'id': id,
+        'title': title,
+        'instance_name': instanceName,
+        'metric': metric,
+        'unit': unit,
+        'source_label': sourceLabel,
+        'target_label': targetLabel,
+        'cost': cost,
+        'request_json': requestJson,
+        'response_json': responseJson,
+        'created_at': createdAt,
+      };
+
+  factory SavedRouteRecord.fromRow(Map<String, Object?> row) {
+    return SavedRouteRecord(
+      id: row['id'] as String,
+      title: row['title'] as String,
+      instanceName: row['instance_name'] as String,
+      metric: row['metric'] as String,
+      unit: row['unit'] as String,
+      sourceLabel: row['source_label'] as String,
+      targetLabel: row['target_label'] as String,
+      cost: (row['cost'] as num?)?.toDouble(),
+      requestJson: row['request_json'] as String,
+      responseJson: row['response_json'] as String,
+      createdAt: row['created_at'] as String,
+    );
+  }
+}
+
+class SavedExperimentRecord {
+  const SavedExperimentRecord({
+    required this.id,
+    required this.profile,
+    required this.seed,
+    required this.runs,
+    required this.responseJson,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String profile;
+  final int seed;
+  final int runs;
+  final String responseJson;
+  final String createdAt;
+
+  Map<String, Object?> toRow() => {
+        'id': id,
+        'profile': profile,
+        'seed': seed,
+        'runs': runs,
+        'response_json': responseJson,
+        'created_at': createdAt,
+      };
+
+  factory SavedExperimentRecord.fromRow(Map<String, Object?> row) {
+    return SavedExperimentRecord(
+      id: row['id'] as String,
+      profile: row['profile'] as String,
+      seed: row['seed'] as int,
+      runs: row['runs'] as int,
+      responseJson: row['response_json'] as String,
+      createdAt: row['created_at'] as String,
+    );
+  }
+}
+
 /// Base de datos SQLite interna del dispositivo (sin servidor de BD externo).
 /// Almacena borradores, instancias completas exportadas/importadas, consultas
 /// guardadas y experimentos de sesión con esquema versionado.
@@ -179,6 +275,52 @@ class AppDatabase {
   Future<void> deleteInstance(String id) async {
     final db = await open();
     await db.delete('saved_instances', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<SavedRouteRecord>> listRoutes() async {
+    final db = await open();
+    final rows = await db.query(
+      'saved_routes',
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(SavedRouteRecord.fromRow).toList();
+  }
+
+  Future<void> upsertRoute(SavedRouteRecord record) async {
+    final db = await open();
+    await db.insert(
+      'saved_routes',
+      record.toRow(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteRoute(String id) async {
+    final db = await open();
+    await db.delete('saved_routes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<SavedExperimentRecord>> listExperiments() async {
+    final db = await open();
+    final rows = await db.query(
+      'saved_experiments',
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(SavedExperimentRecord.fromRow).toList();
+  }
+
+  Future<void> upsertExperiment(SavedExperimentRecord record) async {
+    final db = await open();
+    await db.insert(
+      'saved_experiments',
+      record.toRow(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> deleteExperiment(String id) async {
+    final db = await open();
+    await db.delete('saved_experiments', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> close() async {

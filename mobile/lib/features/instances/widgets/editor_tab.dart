@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../../data/models/editable_graph.dart';
 
@@ -138,10 +139,9 @@ class _EditorTabState extends State<EditorTab> {
                   return;
                 }
                 final duplicate = g.nodes.asMap().entries.any(
-                      (entry) =>
-                          entry.key != editIndex &&
-                          entry.value.idText == rawId,
-                    );
+                  (entry) =>
+                      entry.key != editIndex && entry.value.idText == rawId,
+                );
                 if (duplicate) {
                   setDialogState(
                     () => error = 'Ya existe un vértice con el ID «$rawId».',
@@ -201,11 +201,13 @@ class _EditorTabState extends State<EditorTab> {
     if (g == null) return;
     final existing = editIndex != null ? g.edges[editIndex] : null;
     final originCtrl = TextEditingController(
-      text: existing?.origin.toString() ??
+      text:
+          existing?.origin.toString() ??
           (g.nodes.isNotEmpty ? g.nodes.first.idText : ''),
     );
     final destCtrl = TextEditingController(
-      text: existing?.destination.toString() ??
+      text:
+          existing?.destination.toString() ??
           (g.nodes.length > 1 ? g.nodes[1].idText : ''),
     );
     final weightCtrl = TextEditingController(
@@ -217,9 +219,7 @@ class _EditorTabState extends State<EditorTab> {
     final gradientCtrl = TextEditingController(
       text: existing?.gradientPct?.toString() ?? '0',
     );
-    final streetCtrl = TextEditingController(
-      text: existing?.streetName ?? '',
-    );
+    final streetCtrl = TextEditingController(text: existing?.streetName ?? '');
     var streetType = existing?.streetType ?? 'calle_centro';
     var roadMode = existing?.isRoadEdge ?? g.isRoadBased;
     String? error;
@@ -261,33 +261,35 @@ class _EditorTabState extends State<EditorTab> {
                 else ...[
                   TextField(
                     controller: lengthCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(
                       labelText: 'Longitud (m)',
                     ),
                   ),
                   const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    initialValue: streetType,
-                    decoration: const InputDecoration(labelText: 'Tipo de vía'),
-                    items: const [
-                      DropdownMenuItem(
+                  AppSelectField<String>(
+                    label: 'Tipo de vía',
+                    value: streetType,
+                    options: const [
+                      SelectOption(
                         value: 'avenida',
-                        child: Text('Avenida (35 km/h)'),
+                        label: 'Avenida (35 km/h)',
+                        subtitle: 'Vía principal de mayor velocidad nominal',
                       ),
-                      DropdownMenuItem(
+                      SelectOption(
                         value: 'calle_centro',
-                        child: Text('Calle centro (15 km/h)'),
+                        label: 'Calle centro (15 km/h)',
+                        subtitle: 'Calzada urbana intermedia',
                       ),
-                      DropdownMenuItem(
+                      SelectOption(
                         value: 'peatonal',
-                        child: Text('Peatonal (8 km/h)'),
+                        label: 'Peatonal (8 km/h)',
+                        subtitle: 'Pasaje o vía restringida',
                       ),
                     ],
-                    onChanged: (v) {
-                      if (v != null) setDialogState(() => streetType = v);
-                    },
+                    onChanged: (v) => setDialogState(() => streetType = v),
                   ),
                   const SizedBox(height: 10),
                   TextField(
@@ -403,8 +405,7 @@ class _EditorTabState extends State<EditorTab> {
       return const EmptyStateView(
         icon: Icons.edit_off_outlined,
         title: 'Instancia de solo lectura',
-        message:
-            'Los snapshots OSM de Cusco no se editan celda por celda. Selecciona un ejemplo editable, crea un borrador o importa un archivo JSON/CSV/TXT.',
+        message: 'Los snapshots OSM de Cusco no se editan celda por celda. Selecciona un ejemplo editable, crea un borrador o importa un archivo JSON/CSV/TXT.',
       );
     }
 
@@ -414,7 +415,7 @@ class _EditorTabState extends State<EditorTab> {
         if (widget.localErrors.isNotEmpty) ...[
           ErrorStateBanner(
             message:
-                'Revisión local de formato: ${widget.localErrors.join(' · ')} (la validación definitiva la realiza FastAPI).',
+                'Revisa el formato: ${widget.localErrors.join(' · ')}. La validación definitiva se realiza en el servidor.',
           ),
           const SizedBox(height: 12),
         ],
@@ -456,7 +457,7 @@ class _EditorTabState extends State<EditorTab> {
                     FilledButton.icon(
                       onPressed: widget.onValidateServer,
                       icon: const Icon(Icons.verified_outlined, size: 18),
-                      label: const Text('Validar con FastAPI'),
+                      label: const Text('Validar en el servidor'),
                     ),
                     OutlinedButton.icon(
                       onPressed: widget.onSaveDraft,
@@ -529,8 +530,8 @@ class _EditorTabState extends State<EditorTab> {
                     subtitle: g.nodes[i].x != null
                         ? Text('(${g.nodes[i].x}, ${g.nodes[i].y})')
                         : g.nodes[i].lat != null
-                            ? Text('lat ${g.nodes[i].lat}, lon ${g.nodes[i].lon}')
-                            : null,
+                        ? Text('lat ${g.nodes[i].lat}, lon ${g.nodes[i].lon}')
+                        : null,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -547,9 +548,11 @@ class _EditorTabState extends State<EditorTab> {
                             final nextNodes = List<EditableNode>.from(g.nodes)
                               ..removeAt(i);
                             final nextEdges = g.edges
-                                .where((e) =>
-                                    e.origin.toString() != removedId &&
-                                    e.destination.toString() != removedId)
+                                .where(
+                                  (e) =>
+                                      e.origin.toString() != removedId &&
+                                      e.destination.toString() != removedId,
+                                )
                                 .toList();
                             widget.onChanged(
                               g.copyWith(nodes: nextNodes, edges: nextEdges),

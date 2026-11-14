@@ -37,9 +37,8 @@ class _InstancesScreenState extends State<InstancesScreen>
 
   void _showSnack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _selectAndValidate(BundledExample ex) async {
@@ -49,7 +48,7 @@ class _InstancesScreenState extends State<InstancesScreen>
     if (!mounted) return;
     if (preview != null) {
       _showSnack(
-        'Validada en FastAPI: ${preview.nodes} nodos, ${preview.edges} aristas.',
+        'Validada en el servidor: ${preview.nodes} nodos, ${preview.edges} aristas.',
       );
     } else if (repo.validationError != null) {
       _showSnack('Validación: ${repo.validationError}');
@@ -83,7 +82,7 @@ class _InstancesScreenState extends State<InstancesScreen>
     if (!mounted) return;
     if (preview != null) {
       _showSnack(
-        'Válida en FastAPI (${preview.nodes} nodos, ${preview.edges} aristas).',
+        'Válida en el servidor (${preview.nodes} nodos, ${preview.edges} aristas).',
       );
     }
   }
@@ -160,7 +159,7 @@ class _InstancesScreenState extends State<InstancesScreen>
       if (!mounted) return;
       _tabController.animateTo(1);
       _showSnack(
-        'Generada en FastAPI (${saved.nodesCount} nodos, ${saved.edgesCount} aristas) con semilla $seed.',
+        'Red generada (${saved.nodesCount} nodos, ${saved.edgesCount} aristas) con semilla $seed.',
       );
     } catch (err) {
       _showSnack('No se pudo generar: $err');
@@ -186,7 +185,10 @@ class _InstancesScreenState extends State<InstancesScreen>
                 name: 'Nuevo grafo',
                 directed: true,
                 metric: 'weight',
-                nodes: [EditableNode(id: 'A'), EditableNode(id: 'B')],
+                nodes: [
+                  EditableNode(id: 'A'),
+                  EditableNode(id: 'B'),
+                ],
                 edges: [EditableEdge(origin: 'A', destination: 'B', weight: 1)],
               );
               await repo.saveDraftGraph(blank, sourceKind: 'draft');
@@ -294,7 +296,7 @@ class _ActiveInstanceSummary extends StatelessWidget {
                     if (nodesCount != null && edgesCount != null)
                       '$nodesCount nodos · $edgesCount aristas',
                     if (preview != null)
-                      'Validada en FastAPI (${preview.metric})'
+                      'Validada en el servidor (${preview.metric})'
                     else
                       'Sin validar en servidor aún',
                   ].join(' · '),

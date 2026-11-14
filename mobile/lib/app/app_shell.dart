@@ -46,18 +46,15 @@ const List<AppNavDestination> appDestinations = [
     semanticHint: 'Consultas, instancias y documentos guardados',
   ),
   AppNavDestination(
-    label: 'Proyecto',
-    icon: Icons.school_outlined,
-    selectedIcon: Icons.school,
-    semanticHint: 'Evidencias, cobertura, servidor y ayuda',
+    label: 'Ajustes',
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings,
+    semanticHint: 'Conexión, uso sin internet y ayuda de mapas',
   ),
 ];
 
 class AppShell extends StatefulWidget {
-  const AppShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -83,7 +80,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && mounted) {
       final serverRepo = context.read<ServerRepository>();
       if (serverRepo.state == ServerLoadState.offline ||
-          serverRepo.state == ServerLoadState.loading ||
+          serverRepo.state == ServerLoadState.saved ||
           serverRepo.state == ServerLoadState.error) {
         serverRepo.refreshStatus();
       }
@@ -105,7 +102,8 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
     final content = Column(
       children: [
-        ServerStatusBanner(repo: serverRepo),
+        if (widget.navigationShell.currentIndex != 4)
+          ServerStatusBanner(repo: serverRepo),
         Expanded(child: widget.navigationShell),
       ],
     );
@@ -141,7 +139,10 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
               minWidth: 76,
               minExtendedWidth: 210,
               leading: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
                 child: Column(
                   children: [
                     Container(
