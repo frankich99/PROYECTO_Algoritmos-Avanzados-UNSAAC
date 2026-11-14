@@ -67,26 +67,22 @@ La aplicación móvil en **Flutter 3.47 / Dart 3.13** (`mobile/`) traslada todo 
 
 ### 📦 Dónde está el APK y Cómo Instalarlo en tu Celular
 
-Los paquetes APK compilados se encuentran generados en la carpeta del repositorio:
-`mobile/build/app/outputs/flutter-apk/`
+Los paquetes APK oficiales listos para descargar e instalar se encuentran en la carpeta raíz [`apk-mobile/`](apk-mobile/):
 
-| Archivo APK | Tamaño | Destino Recomendado |
-| :--- | :---: | :--- |
-| **`app-arm64-v8a-debug.apk`** | **100.8 MB** | **⭐ Recomendado para celulares Android modernos** (Samsung, Xiaomi, Motorola, Pixel, etc. con procesador de 64 bits). |
-| **`app-debug.apk`** | **174.2 MB** | **Universal** (compatible con cualquier celular, tablet o emulador Android de 32 o 64 bits). |
-| **`app-x86_64-debug.apk`** | **87.5 MB** | Para emuladores de PC (Android Studio, BlueStacks, etc.). |
-| **`app-armeabi-v7a-debug.apk`** | **80.8 MB** | Para dispositivos Android antiguos (32 bits). |
+| Archivo APK | Tamaño | Arquitectura | Destino Recomendado |
+| :--- | :---: | :---: | :--- |
+| **[`apk-mobile/rutas_cusco_pro_v1.2_arm64.apk`](apk-mobile/rutas_cusco_pro_v1.2_arm64.apk)** | **22.87 MB** | `arm64-v8a` | **⭐ RECOMENDADO:** Para la gran mayoría de celulares Android modernos (Samsung, Xiaomi, Motorola, Pixel, Honor, etc. de 64 bits). Descarga ultraligera. |
+| **[`apk-mobile/rutas_cusco_pro_v1.2_universal.apk`](apk-mobile/rutas_cusco_pro_v1.2_universal.apk)** | **59.72 MB** | Universal | Compatible con cualquier celular, tablet o emulador Android (32 o 64 bits). |
 
-#### Ruta Absoluta en este Repositorio
-```text
-F:\unsaac\alg-avanzados\proyecto\mobile\build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk
-F:\unsaac\alg-avanzados\proyecto\mobile\build\app\outputs\flutter-apk\app-debug.apk
-```
+#### Rutas en este Repositorio:
+* **Carpeta directa con instaladores y SHA-256:** [`apk-mobile/`](apk-mobile/)
+* **Compilaciones de desarrollo adicionales:** `mobile/build/app/outputs/flutter-apk/`
 
 #### Paso a Paso para Instalar el APK en tu Celular Android:
 1. **Copiar el APK a tu celular:**
-   * Conecta tu celular a la PC mediante cable USB y copia el archivo `app-arm64-v8a-debug.apk` a la carpeta *Descargas* (*Downloads*) de tu teléfono.
+   * Conecta tu celular a la PC mediante cable USB y copia el archivo `apk-mobile/rutas_cusco_pro_v1.2_arm64.apk` a la carpeta *Descargas* (*Downloads*) de tu teléfono.
    * *O bien:* Envíate el archivo por WhatsApp, Telegram, Google Drive o correo electrónico y descárgalo en el celular.
+   * *O bien:* Descárgalo directamente desde GitHub en el navegador del celular pulsando en [`apk-mobile/rutas_cusco_pro_v1.2_arm64.apk`](apk-mobile/rutas_cusco_pro_v1.2_arm64.apk).
 2. **Habilitar instalación de aplicaciones desconocidas:**
    * Abre el archivo `.apk` descargado desde el explorador de archivos de tu celular.
    * Si el sistema muestra el aviso de seguridad de Android, pulsa en **Configuración / Ajustes** y activa la opción **«Permitir desde esta fuente»** o **«Instalar aplicaciones desconocidas»**.
