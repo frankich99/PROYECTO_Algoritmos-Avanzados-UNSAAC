@@ -6,7 +6,7 @@ El trabajo permite resumir los cuatro objetivos así:
 \begin{enumerate}
     \item \textbf{OE1 (Modelar):} Se implementaron dos ámbitos distintos: una instancia didáctica con pendientes supuestas y un \textit{snapshot} OSM sin pendientes medidas ni congestión por arista. El escenario climático escala de manera uniforme los tiempos base.
     \item \textbf{OE2 (Implementar):} Dijkstra utiliza tres colas intercambiables en Python; $A^*$ se evalúa aparte para la consulta punto a punto.
-    \item \textbf{OE3 (Verificar):} La suite documentada reúne 287 pruebas. El banco compara las tres colas y NetworkX antes de medir, y certifica una solución por instancia; Bellman-Ford se usa en las pruebas independientes. La ejecución de la suite debe comprobarse en el entorno en que se presente el sistema.
+    \item \textbf{OE3 (Verificar):} La suite documentada reúne 349 pruebas Python (complementadas por 44 pruebas web y 40 pruebas móviles Flutter). El banco compara las tres colas y NetworkX antes de medir, y certifica una solución por instancia; Bellman-Ford se usa en las pruebas independientes. La ejecución de la suite debe comprobarse en el entorno en que se presente el sistema.
     \item \textbf{OE4 (Evaluar):} El banco conservado tiene 1,350 muestras temporales y diez escalas sintéticas. La consulta OSM añade 30 mediciones por cola para un par origen--destino. Los resultados no permiten extrapolar el orden de rendimiento a otras máquinas o redes.
 \end{enumerate}
 
@@ -25,8 +25,9 @@ Los tiempos observados dependen de la implementación, la instancia y el equipo 
 \begin{itemize}
     \item Un núcleo algorítmico desacoplado, modular y reproducible en Python 3.12 con tres colas intercambiables y extensión $A^*$.
     \item Un certificado de optimalidad que comprueba aristas y predecesores; su costo es $O(|V|+|E|+L)$ si también se verifican caminos explícitos de longitud total $L$.
-    \item Una suite de 287 pruebas unitarias y de integración documentadas en \texttt{python/tests/}.
-    \item Una aplicación interactiva web React/TypeScript con API FastAPI y MapLibre que combina cálculos de ruteo, exploración cartográfica y telemetría de rendimiento.
+    \item Una suite de 349 pruebas unitarias y de integración en \texttt{python/tests/}, junto con 44 pruebas web en \texttt{web/tests/} y 40 pruebas móviles en \texttt{mobile/test/} (433 pruebas automatizadas en total).
+    \item Una aplicación web React/TypeScript desplegada en GitHub Pages conectada a la API FastAPI (\texttt{v1.5.0}) en Render con visores MapLibre.
+    \item Una aplicación móvil Flutter/Dart (\texttt{mobile/}) para Android (y estructura compatible con iOS) que consume el mismo contrato FastAPI, integra ejemplos, editor táctil, mapa/grafo, experimentos, documentación sin conexión y almacenamiento interno SQLite en el dispositivo.
 \end{itemize}
 
 \subsection*{Recomendaciones para la Práctica de Ingeniería}
@@ -41,6 +42,7 @@ Los tiempos observados dependen de la implementación, la instancia y el equipo 
     \item Repetir el banco con implementaciones en otros lenguajes y equipos para comprobar si se mantiene el orden de tiempos observado en Python.
     \item Perfilar asignaciones y accesos a memoria, y medir fallos de caché con herramientas apropiadas antes de atribuirles una diferencia de rendimiento.
     \item Calibrar coeficientes de impedancia meteorológica y congestión diferenciados por segmento vial a partir de aforos de tránsito en tiempo real en la ciudad del Cusco.
+    \item Completar la compilación, firma y distribución de la variante iOS de \texttt{mobile/} en un entorno macOS con Xcode, además de pruebas de campo adicionales sobre teléfonos Android físicos mediante ADB.
 \end{enumerate}
 
 \subsection*{Lecciones Aprendidas}

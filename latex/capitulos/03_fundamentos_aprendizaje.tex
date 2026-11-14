@@ -112,7 +112,7 @@ La Tabla~\ref{tab:criterios_fuentes} sistematiza la bibliografía fundamental es
 En el código y las pruebas se distinguen cinco temas de estudio. La documentación disponible no permite fechar cuándo los identificó cada integrante ni sustituye su registro personal de aprendizaje:
 
 \subsubsection{Metodología de Pruebas Unitarias AAA y Oráculos de Verificación}
-La suite reúne 346 casos unitarios y de integración con \texttt{pytest}. Sus aserciones comprueban distancias frente a Bellman-Ford y NetworkX, así como propiedades del certificado de optimalidad. No todas las pruebas utilizan ambos oráculos.
+La suite en Python reúne 349 casos unitarios y de integración con \texttt{pytest} (complementados por 44 pruebas web en Vitest y 40 pruebas móviles en Flutter). Sus aserciones comprueban distancias frente a Bellman-Ford y NetworkX, así como propiedades del certificado de optimalidad. No todas las pruebas utilizan ambos oráculos.
 
 \subsubsection{Manipulación Dinámica de Estructuras Arbóreas con Múltiples Punteros}
 El Fibonacci Heap utiliza enlaces circulares y referencias \texttt{parent}, \texttt{child}, \texttt{left}, \texttt{right}, \texttt{degree} y \texttt{marked}. Su contrato se comprueba en las pruebas de estructuras; no se midieron fugas de memoria.
@@ -143,7 +143,7 @@ El commit \texttt{221bf21} (04/10/2026) incluye el montículo Fibonacci. El cód
 \end{equation}
 
 \subsubsection{Hito 4: Verificación Integral mediante Suite AAA y Certificado de Bellman}
-La suite actual contiene 346 casos que cubren contratos de colas, validación de entradas y comprobación de distancias, entre otros módulos. El certificado opera en $O(|V|+|E|)$ para distancias y predecesores, más el costo de recorrer los caminos explícitos cuando se proporcionan. Los resultados sintéticos y OSM se guardaron en el commit \texttt{80e2593} del 28/10/2026.
+La suite actual en Python contiene 349 casos que cubren contratos de colas, validación de entradas, API HTTP y comprobación de distancias, entre otros módulos. El certificado opera en $O(|V|+|E|)$ para distancias y predecesores, más el costo de recorrer los caminos explícitos cuando se proporcionan. Los resultados sintéticos y OSM se guardaron en el commit \texttt{80e2593} del 28/10/2026.
 
 \subsubsection{Evidencias Verificables de Logro del Atributo AG\_C06}
 El repositorio permite verificar componentes técnicos, pero no todas las actividades individuales exigidas por el atributo:

@@ -2,7 +2,7 @@
 \label{sec:pruebas}
 
 \subsection{Framework de Pruebas y Patrón Arrange-Act-Assert (AAA)}
-La suite con \texttt{pytest} contiene 346 casos (verificación del 08/11/2026). El patrón \textbf{Arrange--Act--Assert (AAA)} ayuda a distinguir preparación, ejecución y comprobación en los casos; no se verificó que cada uno de los 346 esté escrito con esa misma estructura. La Sección~\ref{sec:fundamentos_aaa} explica el patrón:
+La suite en Python con \texttt{pytest} contiene 349 casos, complementada por 44 pruebas de la interfaz web en Vitest y 40 pruebas unitarias y de widgets en Flutter (433 pruebas automatizadas en total al 13/11/2026). El patrón \textbf{Arrange--Act--Assert (AAA)} ayuda a distinguir preparación, ejecución y comprobación en los casos; no se verificó que cada uno de los 349 esté escrito con esa misma estructura. La Sección~\ref{sec:fundamentos_aaa} explica el patrón:
 \begin{itemize}
     \item \textbf{Arrange (Organizar):} Configuración del entorno determinista, definición de semillas pseudoaleatorias fijas, instanciación del grafo de prueba o cola concreta y declaración explícita de los valores esperados.
     \item \textbf{Act (Actuar):} Invocación del método o solver bajo evaluación (\texttt{dijkstra\_solver}, \texttt{a\_star\_solver}, operaciones primitivas de cola o comandos de la CLI).
@@ -13,8 +13,8 @@ La suite con \texttt{pytest} contiene 346 casos (verificación del 08/11/2026). 
 python -m pytest python/tests -q
 \end{lstlisting}
 
-\subsection{Tipología y Cobertura de la Suite Automatizada (346 Pruebas)}
-La suite reúne 346 pruebas automatizadas en las categorías de las Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}. Esta clasificación no equivale a un porcentaje de cobertura de código, que no se midió.
+\subsection{Tipología y Cobertura de la Suite Automatizada (349 Pruebas Python)}
+La suite en Python reúne 349 pruebas automatizadas en las categorías de las Tablas~\ref{tab:categorias_prueba} y~\ref{tab:suite_pruebas}. Esta clasificación no equivale a un porcentaje de cobertura de código, que no se midió.
 
 \begin{table}[H]
     \centering
@@ -39,7 +39,7 @@ La suite reúne 346 pruebas automatizadas en las categorías de las Tablas~\ref{
     \centering
     \fontsize{9}{11}\selectfont
     \renewcommand{\arraystretch}{1.12}
-    \caption{Distribución modular de la suite de 346 pruebas}
+    \caption{Distribución modular de la suite Python de 349 pruebas}
     \label{tab:suite_pruebas}
     \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.3cm} r >{\raggedright\arraybackslash}X@{}}
         \toprule
@@ -53,7 +53,7 @@ La suite reúne 346 pruebas automatizadas en las categorías de las Tablas~\ref{
         \texttt{test\_dijkstra.py} & 11 & Casos base de SSSP, límites y equivalencia a escala. \\
         \texttt{test\_a\_star.py} & 8 & Poda de búsqueda, admisibilidad, consistencia y fallback cuando no hay coordenadas. \\
         \texttt{test\_weather.py} & 12 & Servicio climático, respuestas simuladas, manejo de 401 y modo desconectado. \\
-        \texttt{test\_web\_api.py} & 27 & Contratos de la API FastAPI, validación de coberturas, geometría OSM y escenarios uniformes. \\
+        \texttt{test\_web\_api.py} & 29 & Contratos FastAPI tipados, límites unificados, exportación sin recorte, geometría OSM y escenarios uniformes. \\
         \texttt{test\_traffic.py} & 11 & Escenarios horarios y factores de congestión vial. \\
         \texttt{test\_osm\_loader.py} & 4 & Carga determinista de OpenStreetMap y serialización JSON. \\
         \texttt{test\_benchmark\_protocol.py} & 4 & Estadísticas robustas (mediana e IQR) y estructura del benchmark. \\
@@ -61,8 +61,30 @@ La suite reúne 346 pruebas automatizadas en las categorías de las Tablas~\ref{
         \texttt{test\_delivery\_pipeline.py} & 48 & Referencia exhaustiva en grafos pequeños con semillas, flujo HTTP generar--validar--resolver--verificar y rechazo de entradas no finitas en el modelo de costo. \\
         \texttt{test\_delivery\_report.py} & 2 & Resumen JUnit que separa éxitos, fallos y omisiones; un informe vacío no se presenta como éxito. \\
         \texttt{test\_provider\_keys.py} & 1 & Lectura de claves desde \texttt{.env} local y sobrescritura por variable de proceso, sin publicarlas. \\
+        \texttt{test\_runtime\_deploy.py} & 1 & Consistencia de archivos mínimos de despliegue (\texttt{Dockerfile}, \texttt{render.yaml} y requisitos). \\
         \midrule
-        \textbf{Total} & \textbf{346} & Casos recolectados por \texttt{pytest} el 08/11/2026; comprobar la ejecución en el entorno de evaluación. \\
+        \textbf{Total Python} & \textbf{349} & Casos recolectados y aprobados con \texttt{pytest} el 12/11/2026; comprobar en el entorno de evaluación. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsection{Pruebas Multiplataforma (Web Vitest y Móvil Flutter)}
+Además de las 349 pruebas del núcleo Python, la verificación continua abarca las capas cliente en \texttt{web/tests/} y \texttt{mobile/test/} (Tabla~\ref{tab:suite_multiplataforma}). Las pruebas móviles emplean \texttt{MockClient} para simular respuestas HTTP del contrato, \texttt{sqflite\_common\_ffi} para probar SQLite real en memoria y pruebas de widgets con escalado tipográfico (\texttt{1.4x} y \texttt{2.0x}) para verificar diseño adaptativo sin desbordes.
+
+\begin{table}[H]
+    \centering
+    \fontsize{9}{11}\selectfont
+    \renewcommand{\arraystretch}{1.12}
+    \caption{Pruebas automatizadas de los clientes Web (44) y Móvil Flutter (40)}
+    \label{tab:suite_multiplataforma}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.8cm} r >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Capa / Suite} & \textbf{Cantidad} & \textbf{Cobertura funcional verificada} \\
+        \midrule
+        Web (\texttt{web/tests/}, Vitest) & 44 & Validación de límites experimentales (5--200), generadores, componentes React, fallback estático y filtro de evidencias. \\
+        Móvil (\texttt{mobile/test/}, Flutter) & 40 & Contrato HTTP y manejo de errores/nulos, caché y modo sin conexión, 16 ejemplos incluidos, round-trip JSON/CSV/TXT, persistencia en SQLite interno, flujo completo de rutas/4 comparaciones, clima/experimentos, documentos offline, visualización responsive sin desbordes (\texttt{ResponsiveDataView} a 1.4x y 2.0x), validación de URLs del backend y panel institucional «Acerca de». \\
+        \midrule
+        \textbf{Total multiplataforma} & \textbf{433} & Suma de Python (349) + Web (44) + Móvil (40) aprobadas al 13/11/2026 (no equivale a cobertura de líneas). \\
         \bottomrule
     \end{tabularx}
 \end{table}

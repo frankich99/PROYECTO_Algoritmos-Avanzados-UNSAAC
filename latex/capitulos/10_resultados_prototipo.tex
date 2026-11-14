@@ -69,7 +69,74 @@ La Tabla~\ref{tab:benchmark_osm} resume los tiempos de cómputo para esa consult
 \subsection{Extensión Algorítmica con Búsqueda Heurística \texorpdfstring{$A^*$}{A*}}
 Con la heurística euclidiana escalada ($\lambda=6484.687$), $A^*$ devolvió el mismo costo para el par consultado que Dijkstra: 387.197 segundos. Expandió 823 vértices, frente a 887 de Dijkstra (64 menos, o 7.2\%). El JSON guarda la igualdad de costos y los contadores, no la ruta obtenida por $A^*$ ni su tiempo de cómputo dentro del banco de colas.
 
-\subsection{Análisis de Sensibilidad Meteorológica y Tráfico}
-La observación meteorológica canónica congelada en \texttt{applied\_results.json} (28/10/2026, 12:30 hora de Lima) registró $P=0.1$ mm, $V=8920$ m y ráfagas de viento de $40.7$ km/h. Con los coeficientes de escenario formulados en la Sección~\ref{sec:formulacion}, el multiplicador resultante fue de $m_{\text{clima}} = 1.0691$ ($+6.91\%$). Al aplicarse dicho factor sobre el tiempo base de 387.197 s, el tiempo estimado de viaje se incrementó a 413.952 s.
+\subsection{Ampliación del Caso de Estudio: Escala Urbana (1.5 km vs. 3.0 km) e Integración de Condiciones}
+\label{sec:ampliacion_caso_cusco}
+Para evaluar la respuesta algorítmica ante una expansión del dominio espacial sin alterar el marco canónico, el sistema incorpora dos recortes viales estructurados mediante OSMnx:
+\begin{enumerate}
+    \item \textbf{Malla Central (1.5 km):} Centrada en $(-13.5165, -71.9788)$, cubre el Centro Histórico y vías colectoras con 891 intersecciones y 2\,148 aristas dirigidas ($|E|/|V|=2.41$).
+    \item \textbf{Red Urbana Ampliada (3.0 km):} Amplía el radio a 3\,000 m con 1\,938 nodos y 4\,798 aristas ($|E|/|V|=2.48$), integrando avenidas periféricas y mayor redundancia de desvíos.
+\end{enumerate}
 
-El script guardó \texttt{path\_unchanged=true}: para este par y el factor uniforme, la secuencia de 17 vértices no cambió. Un factor estrictamente positivo preserva los costos relativos de los caminos antes de los redondeos empleados al guardar los pesos; la observación no es una medición de viaje real.
+La Tabla~\ref{tab:comparacion_escalas_cusco} sintetiza la comparación estructural y de desempeño entre ambas escalas para la misma consulta canónica ($s=\texttt{30972889} \to t=\texttt{5996728243}$). En la red de 3.0 km, el tiempo de cálculo de Dijkstra pasa de 11.84 ms a 30.40 ms (factor $\times 2.57$), mientras que el costo óptimo de viaje resultante es de 389.69 s a través de 18 vértices (frente a 387.20 s y 17 vértices en la red central), reflejando la convergencia sobre arterias perimétricas de mayor fluidez.
+
+\begin{table}[H]
+    \centering
+    \fontsize{8.5}{10.5}\selectfont
+    \renewcommand{\arraystretch}{1.14}
+    \setlength{\tabcolsep}{4pt}
+    \caption{Comparación entre el recorte central (1.5 km) y la red urbana ampliada (3.0 km) de Cusco}
+    \label{tab:comparacion_escalas_cusco}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{3.6cm} >{\centering\arraybackslash}p{2.6cm} >{\centering\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Atributo / Parámetro} & \textbf{Centro Cusco (1.5 km)} & \textbf{Red Ampliada (3.0 km)} & \textbf{Comportamiento en Interfaces} \\
+        \midrule
+        Archivo en repositorio & \makecell{\scriptsize\texttt{cusco\_osm\_}\\\scriptsize\texttt{drive.json}} & \makecell{\scriptsize\texttt{cusco\_urbano\_}\\\scriptsize\texttt{drive.json}} & Conmutación instantánea mediante selectores en cabecera. \\
+        Vértices ($|V|$) & 891 intersecciones & 1\,938 intersecciones & Renderizado interactivo sobre mapa vectorial. \\
+        Aristas dirigidas ($|E|$) & 2\,148 tramos & 4\,798 tramos & Validación sub-segundo con cache local. \\
+        Densidad ($|E|/|V|$) & 2.41 aristas/nodo & 2.48 aristas/nodo & Topología cuasi-plana vial típica. \\
+        Costo óptimo base ($s \to t$) & 387.20 s (17 nodos, 2\,811 m) & 389.69 s (18 nodos, 2\,844 m) & Equivalencia certificada entre Dijkstra y $A^*$. \\
+        Tiempo cómputo solver & 11.84 ms & 30.40 ms & Medido en servidor Python (FastAPI). \\
+        Condiciones dinámicas & Clima + Tráfico horario & Clima + Tráfico horario & Ajustes aplicables en vivo o por histórico. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\noindent\textbf{Ejemplo numérico de cálculo de peso con impedancia dinámica.}
+Para ilustrar la aplicación de la función de costo formulada en la Ecuación~\eqref{eq:costo}, considérese un tramo vial representativo en el Centro Histórico (e.g., Cuesta San Blas, arista $u \to v$):
+\begin{itemize}
+    \item Parámetros físicos base: longitud $L = 120$ m, tipología \texttt{calle\_centro} con velocidad nominal $v_{\text{nom}} = 15$ km/h ($4.167$ m/s), y pendiente ascendente $\theta = +8\%$ ($0.08$).
+    \item Tiempo de viaje nominal plano: $T_{\text{base}} = \frac{120\text{ m}}{4.167\text{ m/s}} = 28.80\text{ s}$.
+    \item Penalización topográfica ($\alpha = 2.5$): $f_{\text{topo}} = 1 + 2.5 \times 0.08 = 1.20 \implies T_{\text{topo}} = 28.80 \times 1.20 = 34.56\text{ s}$ ($+20.0\%$).
+    \item Multiplicador climático ($P=0.1$ mm, viento $40.7$ km/h, visibilidad $8\,920$ m): $m_{\text{clima}} = 1.0691 \implies T_{\text{clima}} = 34.56 \times 1.0691 = 36.95\text{ s}$ ($+6.91\%$).
+    \item Coeficiente de congestión horaria (hora punta matutina 08:30, $c_{\text{tráfico}} = 1.25$):
+    \begin{equation}
+        w(u, v) = T_{\text{base}} \cdot f_{\text{topo}} \cdot m_{\text{clima}} \cdot c_{\text{tráfico}} = 28.80 \times 1.20 \times 1.0691 \times 1.25 = 46.19\text{ s}.
+    \end{equation}
+    El costo del tramo se incrementa un $+60.38\%$ respecto al valor plano ($28.80\text{ s} \to 46.19\text{ s}$), reflejando el impacto acumulado de gradiente, fricción atmosférica y hora pico.
+\end{itemize}
+
+\noindent\textbf{Integración operativa en las interfaces Web y Móvil.}
+Tanto en la plataforma Web React como en la aplicación móvil Flutter (\texttt{mobile/}), el usuario dispone de controles visuales integrados (Figura~\ref{fig:interfaz_movil_modos_condiciones}):
+\begin{itemize}
+    \item \textbf{Conmutación de escala de red (Figura~\ref{fig:mobile_modos_red}):} La cabecera del módulo de Rutas ofrece selectores dedicados (\texttt{[Cusco OSM 1,5 km]} y \texttt{[Ampliada 3 km]}), permitiendo alternar entre el casco monumental y la red urbana ampliada sin recarga ni pérdida del origen/destino seleccionado.
+    \item \textbf{Panel interactivo de condiciones (Figura~\ref{fig:mobile_condiciones_panel}):} El acordeón desplegable permite activar independientemente el ajuste climático (conmutando entre la observación histórica congelada del 28/10/2026 y mediciones en vivo vía Open-Meteo o OpenWeatherMap) y el tráfico vehicular (simulación horaria según franja horaria programada o en vivo mediante TomTom).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_modos_red.png}
+        \caption{Selección de escala (1.5 km vs 3.0 km) y parámetros.}
+        \label{fig:mobile_modos_red}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_condiciones_panel.png}
+        \caption{Panel interactivo de clima histórico y tráfico horario.}
+        \label{fig:mobile_condiciones_panel}
+    \end{subfigure}
+    \caption{Integración de modos de escala e interfaces de condiciones ambientales en la aplicación móvil Flutter. A la izquierda, alternancia rápida entre el recorte de 1.5 km y la red ampliada de 3.0 km con controles de búsqueda y visualización. A la derecha, configuración modular del escenario climático (Open-Meteo) y congestión horaria programada.}
+    \label{fig:interfaz_movil_modos_condiciones}
+\end{figure}

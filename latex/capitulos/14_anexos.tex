@@ -11,14 +11,16 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r python/requirements.txt
 \end{lstlisting}
-Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{fastapi}, \texttt{uvicorn}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}; la interfaz requiere Node.js y las dependencias de \texttt{web/}. La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
+Los requisitos principales son Python 3.10 o superior, \texttt{pytest}, \texttt{networkx}, \texttt{osmnx}, \texttt{fastapi}, \texttt{uvicorn}, \texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}; la interfaz web requiere Node.js 22+ y las dependencias de \texttt{web/}; la aplicación móvil en \texttt{mobile/} requiere Flutter 3.47+ (Dart 3.13+) y Android SDK (o macOS con Xcode para compilar iOS). La compilación del informe requiere una distribución LaTeX con \texttt{pdflatex} y \texttt{biber}. La red OSM y el clima se versionan como \textit{snapshots}; no es obligatorio descargarlos para ejecutar las pruebas.
 
 \subsection*{Anexo B: Uso del prototipo}
 \label{anexo:uso}
 
-\noindent\textbf{Suite de pruebas.} Desde la raíz:
-\begin{lstlisting}[language=bash, caption={Ejecución de la suite completa de pruebas (346 pruebas)}]
+\noindent\textbf{Suites de pruebas.} Desde la raíz o el módulo correspondiente:
+\begin{lstlisting}[language=bash, caption={Ejecución de las suites automatizadas (349 Python, 44 web y 40 móvil)}]
 .\.venv\Scripts\python.exe -m pytest python/tests -q
+cd web && npm test && npm run build
+cd mobile && flutter analyze && flutter test
 \end{lstlisting}
 
 \noindent\textbf{Configuración de credenciales de API (opcional).} Tras revocar cualquier clave expuesta, configure una clave nueva y propia. Para la CLI se admite la variable de entorno, nunca un archivo versionado (\url{https://home.openweathermap.org/api_keys}):
@@ -52,7 +54,9 @@ El siguiente ejemplo recorre generación, validación, ejecución, exportación 
 cd web
 npm run dev
 \end{lstlisting}
-Abrir \url{http://127.0.0.1:5173/}. La interfaz tiene seis vistas: Rutas, Instancias, Comparar, Experimentos, Cobertura Cusco y Datos y método. En Rutas se seleccionan red, puntos, costo, algoritmo y cola; se contrastan las tres colas de Dijkstra y $A^*$ por costo y se elige una observación histórica, local o temporal como escenario uniforme. Instancias permite crear o importar grafos; Comparar revisa el banco canónico y agrega consultas de sesión sin mezclarlas; Experimentos mide redes nuevas; Cobertura Cusco distingue el snapshot central de 1,5 km del centro ampliado de 3 km, sin presentar ninguno como toda la ciudad; Datos y método reúne procedencia, límites y contrato OpenAPI. El plano local no necesita Internet; solo el mapa base necesita teselas. Ninguna consulta opcional sobrescribe las mediciones.
+Abrir \url{http://127.0.0.1:5173/} (o el sitio publicado en GitHub Pages conectado al servicio FastAPI en Render). La interfaz web tiene ocho vistas: Rutas, Instancias, Comparar, Experimentos, Cobertura Cusco, Evidencias, Datos y método y Acerca de. En Rutas se seleccionan red, puntos, costo, algoritmo y cola; se contrastan las tres colas de Dijkstra y $A^*$ por costo y se elige una observación histórica, local o temporal como escenario uniforme. Instancias permite crear o importar grafos; Comparar revisa el banco canónico y agrega consultas de sesión sin mezclarlas; Experimentos mide redes nuevas (tamaños 5 a 200); Cobertura Cusco distingue el snapshot central de 1,5 km del centro ampliado de 3 km, sin presentar ninguno como toda la ciudad; Evidencias y Datos y método reúnen pruebas, bitácora, procedencia, límites y contrato OpenAPI. El plano local no necesita Internet; solo el mapa base necesita teselas. Ninguna consulta opcional sobrescribe las mediciones.
+
+\noindent\textbf{Aplicación móvil Flutter (\texttt{mobile/}).} Desde \texttt{mobile/} se compila la APK de desarrollo con \texttt{flutter build apk --debug}. La aplicación apunta por defecto al servicio en Render (\url{https://rutas-cusco-unsaac.onrender.com}), admite URL local de emulador (\texttt{http://10.0.2.2:8000}) y conserva en su base SQLite interna (\texttt{rutas\_cusco\_local.db}) borradores, instancias exportadas sin recorte, consultas de rutas y experimentos de sesión. Las instrucciones completas se detallan en \texttt{docs/MOVIL\_FLUTTER.md} y \texttt{docs/CONTRATO\_MOVIL\_API.md}.
 
 \noindent\textbf{Reproducción de tablas y figuras.} Desde la raíz, sin alterar las mediciones del 28/10/2026:
 \begin{lstlisting}[language=bash, caption={Regeneración de tablas y figuras con mediciones guardadas}]
@@ -68,49 +72,49 @@ El piloto del 04/11/2026 se conserva aparte en \texttt{pilot\_benchmark\_results
 
 \subsection*{Anexo C: Cronología verificable del repositorio}
 \label{anexo:bitacora}
-La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 04/11/2026. Cada fecha y autor corresponden al commit, no necesariamente al momento de trabajo o a la persona que redactó cada línea. No se deducen reuniones, horas de dedicación ni lecturas individuales. La bitácora de aprendizaje por estudiante sigue sin constancia en el repositorio.
+La Tabla~\ref{tab:bitacora_detallada} reúne hitos clave del historial Git en la rama \texttt{main} hasta el 12/11/2026. Cada fecha y autor corresponden al registro del commit, no necesariamente al momento de estudio o a la persona que redactó cada línea. No se deducen reuniones, horas de dedicación ni lecturas individuales. La bitácora de aprendizaje por estudiante sigue sin constancia separada en el repositorio.
 
 \begin{table}[H]
     \centering
-    \fontsize{8.5}{10.5}\selectfont
+    \fontsize{8.3}{10.2}\selectfont
     \renewcommand{\arraystretch}{1.12}
     \setlength{\tabcolsep}{3.5pt}
-    \caption{Cambios fechados comprobables en Git}
+    \caption{Hitos fechados comprobables en la historia de Git (\texttt{main})}
     \label{tab:bitacora_detallada}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.65cm} >{\centering\arraybackslash}p{1.55cm} >{\raggedright\arraybackslash}p{1.35cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.95cm} >{\centering\arraybackslash}p{1.65cm} >{\raggedright\arraybackslash}p{1.35cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
         \textbf{Autor en Git} & \textbf{Fecha} & \textbf{Commit} & \textbf{Cambios identificables} \\
         \midrule
         Choquenaira, Noe & 02/10/2026 & \texttt{24e526f} & \texttt{dijkstra.py}, \texttt{indexed\_min\_heap.py}, \texttt{cost\_model.py} y primera versión del informe. \\
-        \midrule
         Porroa, Yeni & 04/10/2026 & \texttt{442ea56} & \texttt{d\_ary\_heap.py}, capítulo de evaluación del stack y tabla comparativa. \\
-        \midrule
         Quispe, Romario & 04/10/2026 & \texttt{221bf21} & \texttt{fibonacci\_heap.py}, \texttt{scalability\_benchmark.py} y resultados preliminares. \\
-        \midrule
         Yaranga, Aldo & 04/10/2026 & \texttt{ee3109d} & \texttt{test\_dijkstra.py}, cuaderno Colab y exportación de figuras y tablas. \\
         \midrule
-        Yaranga, Aldo & 22/10/2026 & \texttt{4b080db} & Integración de avances 4 y 5: \texttt{cli.py}, \texttt{graph\_io.py}, \texttt{instance\_generator.py}, registros de colas e instancias inválidas. \\
-        \midrule
+        Yaranga, Aldo & 22/10/2026 & \texttt{4b080db} & Integración de avances 4 y 5: \texttt{cli.py}, \texttt{graph\_io.py}, \texttt{instance\_generator.py}, registros e instancias inválidas. \\
         Choquenaira, Noe & 23/10/2026 & \texttt{1abbfb5} & \texttt{a\_star.py} y capítulo de aprendizaje. \\
         Porroa, Yeni & 23/10/2026 & \texttt{fbb14f8} & Capítulo de diseño algorítmico y análisis de estructuras. \\
-        Quispe, Romario & 23/10/2026 & \texttt{83ea30a} & Actualización de \texttt{benchmark\_results.json}; el snapshot canónico se integró después como commit grupal. \\
+        Quispe, Romario & 23/10/2026 & \texttt{83ea30a} & Actualización de \texttt{benchmark\_results.json} previa a la consolidación grupal. \\
         Yaranga, Aldo & 23/10/2026 & \texttt{82e7dd1} & \texttt{cli.py} y \texttt{test\_cli.py}. \\
         \midrule
-        Grupo 5 & 28/10/2026 & \texttt{80e2593} & \textit{Snapshots} OSM y clima, banco de 1,350 tiempos y caso aplicado. \\
+        Choquenaira, Noe F. & 28/10/2026 & \texttt{80e2593} & \textit{Snapshots} OSM y clima, banco canónico de 1\,350 tiempos y caso aplicado. \\
+        Choquenaira, Noe F. & 04/11/2026 & \texttt{f574216} & Piloto reproducible de 18 tiempos y síntesis comparativa revisada. \\
+        Choquenaira, Noe F. & 08/11/2026 & \texttt{327b4d6} & Sincronización de bitácora oficial y evidencias entre las 4 ramas. \\
         \midrule
-        Grupo 5 & 03/11/2026 & \texttt{6543f89} & Revisión de estructura e índice del informe, PDF compilado. \\
+        Choquenaira, Noe F. & 10/11/2026 & \texttt{afd523a}, \texttt{570f602} & API REST FastAPI, cargador OSM/snapping, visor MapLibre en React y capítulos 1, 6, 7, 11 y 12. \\
+        Yaranga, Aldo & 10/11/2026 & \texttt{37c1ce1}, \texttt{dc0e7e3} & Certificado $O(|V|+|E|)$, pruebas $A^*$/Vitest, \texttt{instancias\_pruebas/}, Colab y capítulo 8. \\
+        Quispe, Romario & 10/11/2026 & \texttt{4fe5483}, \texttt{8e7d2cc} & Modelo de impedancia, servicios clima/TomTom, vistas Comparar/Experimentos y capítulos 9--10. \\
+        Porroa, Yeni & 10--11/11 & \texttt{1fdf102}, \texttt{86067fd} & Sincronización de archivos comunes y fusión de \texttt{ramaYeni} hacia \texttt{main}. \\
         \midrule
-        Grupo 5 & 04/11/2026 & \texttt{8e36625} & Ajustes metodológicos y vista de referencia OSM. \\
-        \midrule
-        Grupo 5 & 04/11/2026 & \texttt{f574216} & Piloto reproducible, figura y síntesis comparativa revisada. \\
+        Choquenaira, Noe F. & 12/11/2026 & \texttt{3280038} & Despliegue unificado con \texttt{Dockerfile} y \texttt{render.yaml} (Render + GitHub Pages). \\
+        Choquenaira, Noe F. & 12/11/2026 & \texttt{adbaa59}, \texttt{2984d33} & Contrato API \texttt{v1.5.0}, base móvil Flutter (\texttt{mobile/}) y actualización de evidencias/bitácora. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \begin{table}[H]
     \centering
-    \fontsize{9}{11}\selectfont
-    \renewcommand{\arraystretch}{1.15}
+    \fontsize{8.8}{10.8}\selectfont
+    \renewcommand{\arraystretch}{1.14}
     \caption{Anexo D: matriz de trazabilidad entre objetivos, componentes y evidencia}
     \label{tab:matriz_trazabilidad}
     \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{4.7cm} >{\raggedright\arraybackslash}X@{}}
@@ -119,38 +123,61 @@ La Tabla~\ref{tab:bitacora_detallada} reúne cambios del historial Git hasta el 
         \midrule
         OE1 & Modelo de grafo y costo temporal & Sección~\ref{sec:formulacion}; ecuación~\eqref{eq:costo}; instancia ilustrativa y red OSM. \\
         OE2 & Tres colas y Dijkstra parametrizado & Sección~\ref{sec:diseno_algoritmico}; \texttt{src/datastructures/}; 61 pruebas de contrato. \\
-        OE3 & Validación y certificado & Sección~\ref{sec:pruebas}; 346 pruebas; Bellman y cadenas al origen; NetworkX y Bellman-Ford. \\
-        OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
+        OE3 & Validación, certificado y suites & Sección~\ref{sec:pruebas}; 349 pruebas Python + 44 web + 40 móvil (433 total); Bellman, NetworkX y Bellman-Ford. \\
+        OE4 & Benchmark, caso OSM, $A^*$ y clima & Sección~\ref{sec:resultados}; 1\,350 muestras; 891 vértices; 823 vs 887 expansiones; factor 1.0691. \\
         AG\_C06.01 & Aprendizaje autónomo & Sección~\ref{sec:fundamentos}; Anexo~C; pendientes individuales en \texttt{docs/CONTROL\_ENTREGA.md}. \\
         AG\_C06.02 & Selección de stack & Sección~\ref{sec:stack}; Tabla~\ref{tab:matriz_multicriterio}; adopción temprana por verificar. \\
         AG\_C06.03 & Experimentación y pensamiento crítico & Sección~\ref{sec:metodologia}; Sección~\ref{sec:discusion}; conclusión condicionada. \\
-        Aplicación & React + FastAPI & Sección~\ref{sec:implementacion}; \texttt{web/}, \texttt{web\_api.py}; pruebas de API. \\
+        Web y API & React + FastAPI + Render/Pages & Sección~\ref{sec:implementacion}; \texttt{web/}, \texttt{web\_api.py}, \texttt{render.yaml}; pruebas de API. \\
+        Aplicación móvil & Flutter + SQLite interno (\texttt{mobile/}) & Sección~\ref{sec:integracion_movil}; \texttt{mobile/lib/}, \texttt{mobile/test/} (40 pruebas), APK debug y capturas en Figs.~\ref{fig:interfaz_movil_rutas}--\ref{fig:interfaz_movil_analisis_ajustes}. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
-\subsection*{Anexo E: Matriz de contribuciones}
+\subsection*{Anexo E: Distribución de commits y contribuciones por integrante}
 \label{anexo:contribuciones}
+Para reflejar con precisión el aporte de cada estudiante según su rama de trabajo en el repositorio oficial (\texttt{main}, 122 commits al 12/11/2026), la Tabla~\ref{tab:distribucion_commits} consolida los commits atribuidos a cada integrante mediante su rama de desarrollo (\texttt{ramaFRANKI}, \texttt{ramaAldo}, \texttt{RamaRomario} y \texttt{ramaYeni}), asociando tanto los commits firmados con cuentas personales como los commits de consolidación, pruebas y despliegue canalizados a través de su rama. La Tabla~\ref{tab:contribuciones} resume los módulos trabajados por cada integrante.
+
+\begin{table}[H]
+    \centering
+    \fontsize{8.8}{10.8}\selectfont
+    \renewcommand{\arraystretch}{1.14}
+    \caption{Distribución verificable de los 122 commits en \texttt{main} por autoría Git y rama asociada}
+    \label{tab:distribucion_commits}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{2.3cm} r >{\raggedright\arraybackslash}X@{}}
+        \toprule
+        \textbf{Autor(es) registrados en Git} & \textbf{Rama asociada} & \textbf{Commits} & \textbf{Alcance comprobable en esos commits} \\
+        \midrule
+        Choquenaira Quispe, Noe Franklin (\texttt{ramaFRANKI}) & \texttt{ramaFRANKI} & 71 & Dijkstra, $A^*$, cargador OSM, API FastAPI, frontend React/MapLibre, aplicación móvil Flutter, contrato \texttt{v1.5.0}, despliegue unificado (Docker/Render) y consolidación de entregas (20 individuales + 51 de integración). \\
+        Yaranga Achahui, Aldo (\texttt{Aldo Yaranga}, \texttt{aldobaz01}) & \texttt{ramaAldo} & 22 & Suite \texttt{pytest} (AAA), certificado $O(|V|+|E|)$, CLI, E/S y generadores, \texttt{instancias\_pruebas/}, Colab, pruebas Vitest y capítulo 8. \\
+        Quispe Rimachi, Romario (\texttt{Romario Quispe}) & \texttt{RamaRomario} & 19 & Fibonacci Heap, modelo de impedancia, servicios clima/TomTom, vistas Comparar/Experimentos/Condiciones y capítulos 9--10. \\
+        Porroa Sivana, Yeni Ruth (\texttt{Yeni Porroa}) & \texttt{ramaYeni} & 10 & Montículo 4-ario (\texttt{DAryHeap}), evaluación de stack, diseño de estructuras, sincronización y fusión de rama. \\
+        \midrule
+        \textbf{Total en \texttt{main} (12/11/2026)} & \textbf{4 ramas} & \textbf{122} & Conteo directo de \texttt{git log} sobre \texttt{main}; no mide horas de esfuerzo ni líneas redactadas fuera de Git. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
 \begin{table}[H]
     \centering
     \fontsize{9}{11}\selectfont
     \renewcommand{\arraystretch}{1.15}
-    \caption{Contribuciones por integrante y evidencia en el repositorio}
+    \caption{Matriz de componentes por integrante y evidencia en el repositorio}
     \label{tab:contribuciones}
-    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{5.0cm} >{\raggedright\arraybackslash}X@{}}
+    \begin{tabularx}{\textwidth}{@{}>{\bfseries\raggedright\arraybackslash}p{2.9cm} >{\raggedright\arraybackslash}p{5.5cm} >{\raggedright\arraybackslash}X@{}}
         \toprule
         \textbf{Integrante} & \textbf{Componentes principales} & \textbf{Evidencia} \\
         \midrule
-        Choquenaira, Noe & Dijkstra, heap binario, modelo didáctico, $A^*$ e informe & \texttt{24e526f}, \texttt{1abbfb5}, \texttt{ee12c43}; archivos en anexo C. \\
-        Porroa, Yeni & Heap 4-ario y análisis de estructuras & \texttt{442ea56}, \texttt{fbb14f8}; \texttt{d\_ary\_heap.py} y Sección~\ref{sec:diseno_algoritmico}. \\
-        Quispe, Romario & Fibonacci heap, benchmark y resultados preliminares & \texttt{221bf21}, \texttt{83ea30a}; módulos y JSON del anexo C. \\
-        Yaranga, Aldo & Pruebas, CLI, cuaderno y exportadores & \texttt{ee3109d}, \texttt{4b080db}, \texttt{82e7dd1}; pruebas, CLI y E/S del anexo C. \\
+        Choquenaira, Noe & Dijkstra, heap binario, $A^*$, cargador OSM, API FastAPI, interfaz React/MapLibre, aplicación móvil Flutter (\texttt{mobile/}) y redacción transversal & \texttt{24e526f}, \texttt{1abbfb5}, \texttt{afd523a}, \texttt{570f602}, \texttt{adbaa59}; Secciones~\ref{sec:implementacion} y~\ref{sec:integracion_movil}. \\
+        Porroa, Yeni & Heap 4-ario (\texttt{DAryHeap}), evaluación del stack, análisis de estructuras e integración de rama & \texttt{442ea56}, \texttt{fbb14f8}, \texttt{1fdf102}, \texttt{86067fd}; \texttt{d\_ary\_heap.py} y Secciones~\ref{sec:stack} y~\ref{sec:diseno_algoritmico}. \\
+        Quispe, Romario & Fibonacci Heap, modelo de impedancia, servicios clima/TomTom, benchmark y vistas de comparación/experimentos & \texttt{221bf21}, \texttt{83ea30a}, \texttt{4fe5483}, \texttt{8e7d2cc}, \texttt{7826748}; módulos en \texttt{services/} y Secciones~\ref{sec:metodologia}--\ref{sec:resultados}. \\
+        Yaranga, Aldo & Suite de pruebas AAA, certificado de optimalidad, CLI, E/S, instancias de prueba, Colab y pruebas web & \texttt{ee3109d}, \texttt{4b080db}, \texttt{37c1ce1}, \texttt{bd9ba70}, \texttt{dc0e7e3}; \texttt{python/tests/} y Sección~\ref{sec:pruebas}. \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \subsection*{Anexo F: Estado del seguimiento}
 \label{anexo:seguimiento}
-Al 04/11/2026 hay código integrado, pruebas automatizadas, análisis de complejidad, datos del banco y de la consulta OSM, tablas y figuras, instrucciones de reproducción y un PDF del informe. El piloto de 18 muestras se guardó el 04/11, \emph{después} de las mediciones canónicas del 28/10; no se presenta como una etapa previa que no ocurrió. Las muestras cronometradas de los JSON se expresan en microsegundos; los 387.197 segundos del caso OSM corresponden al costo estimado de viaje de la ruta.
+Al 13/11/2026 el repositorio integra el núcleo Python, pruebas automatizadas en tres plataformas (349 Python, 44 web y 40 móvil, totalizando 433 pruebas), análisis de complejidad, datos del banco canónico y de la consulta OSM, despliegue unificado en Render y GitHub Pages, aplicación móvil Flutter con SQLite interno, APK de desarrollo compilada y verificada en emulador Android con capturas reales integradas en la Sección~\ref{sec:integracion_movil}. El piloto de 18 muestras se guardó el 04/11, \emph{después} de las mediciones canónicas del 28/10; no se presenta como una etapa previa que no ocurrió. Las muestras cronometradas de los JSON se expresan en microsegundos; los 387.197 segundos del caso OSM corresponden al costo estimado de viaje de la ruta.
 
-No se localizaron bitácoras originales de fuentes, actividades y aprendizajes por integrante, ni actas con compromisos fechados. Tampoco hay constancia de recepción de la segunda entrega o de una presentación ante el docente. El equipo debe confirmar la instalación en un entorno limpio, conservar una salida reciente de la suite de pruebas y aportar sus registros individuales auténticos si existen. El 04/11 es una fecha objetivo comunicada por el equipo, no una fecha oficial ni una entrega acreditada en el repositorio. La matriz de pendientes y la plantilla están en \texttt{docs/CONTROL\_ENTREGA.md} y \texttt{docs/plantilla\_evidencia\_individual.md}; no sustituyen esas evidencias.
+Siguen pendientes de acreditación académica las bitácoras originales individuales de fuentes y aprendizajes por integrante, las actas firmadas, la comprobación de instalación en una máquina limpia, la compilación iOS en macOS/Xcode y la prueba de campo de la APK en teléfonos físicos conectados por ADB. La matriz de pendientes y la plantilla están en \texttt{docs/CONTROL\_ENTREGA.md} y \texttt{docs/plantilla\_evidencia\_individual.md}.

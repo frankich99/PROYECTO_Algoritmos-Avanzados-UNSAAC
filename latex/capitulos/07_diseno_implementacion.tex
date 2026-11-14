@@ -13,9 +13,9 @@ La Figura~\ref{fig:arquitectura} agrupa módulos por función: datos, colas, alg
     ]
     \node[layer, fill=purple!5, draw=purple!70] (L4) at (0, 8.20) {};
     \node[anchor=north, yshift=-4pt, text=purple!85!black, font=\scriptsize\bfseries] at (L4.north) {4. VALIDACIÓN, EXPERIMENTACIÓN Y APLICACIÓN};
-    \node[box] at (-5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{tests/}}}\\[1pt]{\fontsize{7.3}{9}\selectfont 287 pruebas automatizadas}};
+    \node[box] at (-5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{tests/}}}\\[1pt]{\fontsize{7.3}{9}\selectfont 349 Py + 44 Web + 19 Móvil}};
     \node[box] at (0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{scalability\_benchmark.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont Benchmark Canónico (1350 corridas)}};
-    \node[box] at (5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{web/} + \texttt{web\_api.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont React + FastAPI}};
+    \node[box] at (5.0, 8.02) {{\fontsize{8.3}{10}\selectfont\textbf{\texttt{web/} + \texttt{mobile/} + \texttt{web\_api.py}}}\\[1pt]{\fontsize{7.3}{9}\selectfont React + Flutter + FastAPI v1.5}};
 
     \node[layer, fill=green!5, draw=green!60!black] (L3) at (0, 5.55) {};
     \node[anchor=north, yshift=-4pt, text=green!50!black, font=\scriptsize\bfseries] at (L3.north) {3. ALGORITMOS Y VERIFICACIÓN FORMAL};
@@ -55,9 +55,76 @@ El software se estructura modularmente dentro del directorio \texttt{python/}:
     \item \texttt{src/services/traffic.py}: Modelo de congestión vehicular horaria y coeficientes por clase de vía.
     \item \texttt{src/verification/certificate.py}: Verifica distancias y predecesores en $O(|V|+|E|)$, más el recorrido de los caminos explícitos si se proporcionan; compara soluciones.
     \item \texttt{src/benchmarks/scalability\_benchmark.py}: Banco de experimentación sistemática para medir tiempos y primitivas en perfiles sintéticos dispersos y densos.
-    \item \texttt{python/web\_api.py} y \texttt{web/}: API FastAPI y aplicación React/TypeScript con MapLibre para consultar rutas, comparar mediciones y revisar la cobertura OSM; no alteran los JSON canónicos.
+    \item \texttt{python/web\_api.py}, \texttt{web/} y \texttt{mobile/}: API FastAPI (\texttt{v1.5.0}) con modelos de respuesta explícitos, límites unificados en \texttt{/api/v1/catalog} y exportación completa en \texttt{POST /api/v1/instances/export}; interfaz web React/TypeScript (8 vistas) y cliente móvil Flutter/Dart (5 secciones adaptativas para teléfonos y tabletas) que no alteran los JSON canónicos.
     \item \texttt{main.py} y \texttt{src/cli.py}: Interfaz de línea de comandos para automatización y demostración en vivo.
 \end{enumerate}
+
+\subsection{Contrato Unificado e Integración de la Aplicación Móvil (\texttt{mobile/})}
+\label{sec:integracion_movil}
+Para garantizar equivalencia exacta de costos, límites y resultados entre la interfaz web y la aplicación móvil sin duplicar la lógica algorítmica en Dart, ambos clientes consumen \texttt{python/web\_api.py} (desplegada mediante Docker en Render con health check \texttt{/api/v1/health}). Las decisiones clave de esta integración son:
+\begin{description}
+    \item[Contrato tipado y límites compartidos] \texttt{GET /api/v1/version} separa versiones de API, datos, documentación y generador; \texttt{GET /api/v1/catalog} expone los límites de validación (hasta 5\,000 vértices, 30\,000 aristas, 2\,MB de carga útil y tamaños experimentales de 5 a 200 nodos) compartidos entre FastAPI, React (\texttt{experimentInput.ts}) y Flutter.
+    \item[Exportación sin recorte] \texttt{POST /api/v1/instances/validate} limita \texttt{display\_edges} a 3\,000 aristas para fluidez visual, mientras que \texttt{POST /api/v1/instances/export} entrega la instancia completa (incluidos grafos densos generados por semilla e identificadores mixtos entero/cadena) para su reimportación sin pérdida.
+    \item[Almacenamiento interno del dispositivo (sin servidor de BD externo)] La aplicación Flutter utiliza una base SQLite local (\texttt{rutas\_cusco\_local.db} mediante \texttt{sqflite}, esquema versionado) para guardar borradores editables, instancias importadas o generadas (\texttt{saved\_instances}), consultas calculadas (\texttt{saved\_routes}) y experimentos de sesión (\texttt{saved\_experiments}), además de \texttt{SharedPreferences} para ajustes del servidor y lecturas climáticas guardadas explícitamente.
+    \item[Operación sin conexión y separación de tiempos] Sin Internet, la aplicación permite estudiar 16 ejemplos incluidos, editar borradores, revisar el banco canónico (1\,350 muestras), el piloto (18 muestras), la documentación técnica y resultados previamente guardados (rotulados como \enquote{Resultado guardado · sin conexión}). Los tiempos puros del solver en Python ($\mu$s/ms) se muestran separados de la latencia total de solicitud en red del dispositivo.
+\end{description}
+
+\subsubsection{Arquitectura y Diseño de la Aplicación Móvil Flutter}
+El cliente móvil (\texttt{mobile/}) se implementó en Flutter 3.47 con Dart 3.13 bajo una arquitectura modular por capas orientada a mantenibilidad:
+\begin{enumerate}
+    \item \textbf{Capa de red y datos (\texttt{core/network/}, \texttt{data/}):} Centralizada en \texttt{ApiClient} con control de concurrencia mediante \texttt{RequestGuard} para descartar respuestas de solicitudes desfasadas o canceladas, manejo de excepciones tipadas (\texttt{ApiException}) y persistencia local reactiva estructurada en repositorios desacoplados (\texttt{ServerRepository}, \texttt{InstanceRepository}, \texttt{RouteRepository}, \texttt{ConditionsRepository}, \texttt{AnalysisRepository}, \texttt{DocsRepository} y \texttt{SettingsRepository}).
+    \item \textbf{Gestión de estado y navegación adaptativa (\texttt{app/}):} Implementada con el patrón MVVM soportado en \texttt{ChangeNotifierProvider} y enrutamiento declarativo vía \texttt{go\_router} (\texttt{StatefulShellRoute}). La interfaz conmuta automáticamente entre \texttt{NavigationBar} inferior en teléfonos compactos ($<640$\,px) y \texttt{NavigationRail} lateral en tabletas y pantallas amplias ($\ge640$\,px).
+    \item \textbf{Identidad visual institucional y componentes táctiles:} Adopta la paleta oficial de la UNSAAC (\texttt{\#681C32} granate, \texttt{\#8A6418} dorado oscuro, \texttt{\#1F1B1C} tinta y \texttt{\#F7F3EA} papel) definida en \texttt{DESIGN.md}. Los selectores desplegables estándar de escritorio se reemplazaron por componentes táctiles modales (\texttt{AppSelectField}) que despliegan hojas inferiores redondeadas (\textit{bottom sheets}) con subtítulos explicativos e iconos distintivos, y controles segmentados (\texttt{SegmentedButton}) para la elección de algoritmo.
+    \item \textbf{Visualización responsive sin desbordes (\texttt{ResponsiveDataView}):} Para tablas de complejidad, benchmarks canónicos y registros piloto, el componente conmuta dinámicamente: en teléfonos genera tarjetas estructuradas legibles con cifras tabulares que evitan el desplazamiento horizontal incómodo, mientras que en pantallas anchas proyecta tablas formales de datos.
+\end{enumerate}
+
+\subsubsection{Módulos de la Aplicación Móvil}
+La aplicación organiza sus capacidades en cinco secciones principales accesibles desde la barra de navegación:
+\begin{itemize}
+    \item \textbf{Rutas (Figura~\ref{fig:interfaz_movil_rutas}):} Permite seleccionar origen y destino mediante identificador de vértice, coordenadas GPS en tiempo real o pulsación directa sobre el mapa. El visualizador integra \texttt{flutter\_map} con teselas OpenStreetMap o plano local abstracto, complementado con controles flotantes (píldora superior de selección Origen/Destino/Bloqueo para evitar modificaciones accidentales al navegar, y barra lateral con botones de acercar, alejar, encuadre de red, centrado de ruta y ampliación a pantalla completa). Al pulsar \enquote{Calcular y contrastar}, resuelve la ruta en el backend y presenta simultáneamente el costo óptimo, longitud, tiempo estimado, operaciones de cola, tiempo del solver y la comparación de las cuatro variantes algorítmicas (Dijkstra con colas Binaria, 4-aria, Fibonacci y $A^*$).
+    \item \textbf{Instancias:} Ofrece el catálogo de 16 redes canónicas y didácticas, un editor táctil completo de nodos y aristas con validación local preliminar, duplicación en copias editables, importación de archivos JSON, CSV o TXT y generador reproducible oficial con semillas.
+    \item \textbf{Análisis (Figura~\ref{fig:interfaz_movil_analisis_ajustes}a):} Permite cotejar dos consultas guardadas en SQLite, consultar las gráficas de dispersión y medianas de las 1\,350 muestras del banco canónico por cola y ejecutar nuevos experimentos controlados conectándose a FastAPI.
+    \item \textbf{Biblioteca y Referencia Académica:} Administra instancias y rutas guardadas en el almacenamiento interno SQLite, incorpora el módulo de Referencia Académica con síntesis de complejidades asintóticas, modelo de costos de impedancia y visualizador/compartidor del informe final de investigación en formato PDF.
+    \item \textbf{Ajustes y Acerca de (Figura~\ref{fig:interfaz_movil_analisis_ajustes}b):} Monitoriza el estado de salud y latencia del servicio backend, ofrece diagnóstico y reintento de conexión, documentación de uso sin internet y de capas cartográficas, y contiene la sección institucional «Acerca de» con la versión instalada obtenida dinámicamente del paquete (\texttt{package\_info\_plus}), el alcance formativo del software y la acreditación explícita del equipo de desarrollo del Grupo 5 de la UNSAAC.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_rutas_mapa.png}
+        \caption{Mapa interactivo con ruta trazada y controles flotantes.}
+        \label{fig:mobile_rutas_mapa}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_rutas_resultado.png}
+        \caption{Métricas detalladas y comparación simultánea de 4 variantes.}
+        \label{fig:mobile_rutas_resultado}
+    \end{subfigure}
+    \caption{Módulo de cálculo de Rutas en la aplicación móvil Flutter (\texttt{mobile/}). A la izquierda, visualización de la ruta mínima calculada sobre el plano vial de Cusco con controles flotantes de interacción, zoom y bloqueo. A la derecha, desglose cuantitativo con distinción entre tiempo del solver en servidor y latencia de red, junto al contraste de las cuatro variantes algorítmicas.}
+    \label{fig:interfaz_movil_rutas}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_analisis.png}
+        \caption{Módulo de Análisis con gráfica de colas y tarjetas responsive.}
+        \label{fig:mobile_analisis}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.47\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figuras/mobile_ajustes_acerca.png}
+        \caption{Pantalla de Ajustes y panel institucional «Acerca de».}
+        \label{fig:mobile_ajustes}
+    \end{subfigure}
+    \caption{Módulos de Análisis y Ajustes en la aplicación móvil Flutter. A la izquierda, inspección visual de las medianas e IQR del banco canónico de 1\,350 corridas. A la derecha, estado de conectividad en vivo con el backend FastAPI, guía de operación sin internet y panel «Acerca de» con versión instalada y autoría académica del Grupo 5 (UNSAAC).}
+    \label{fig:interfaz_movil_analisis_ajustes}
+\end{figure}
 
 \subsection{Formatos y Estructura de Datos (Serialización JSON)}
 Los resultados y \textit{snapshots} principales se guardan en JSON (Tabla~\ref{tab:formatos}); la CLI también acepta instancias TXT, CSV y en línea. Las pruebas que usan los archivos locales no requieren consultar APIs en vivo.
